@@ -8,7 +8,6 @@
   --color-off-white: #F8F8F5;
   --color-off-black: #2C2C2C;
   --color-off-transparent: rgba(218, 218, 218 , 0.3);
-  
 
   --font-default: "Fraunces";
 }
@@ -24,19 +23,23 @@
     color: var(--color-off-black); 
   }
 
-  .nav-ling{
-    @apply text-base font-light;
+  .nav-link{
+    @apply text-base font-light uppercase;
   }
 
   .para{
     @apply text-2xl font-light text-justify;
   }
   .para-small{
-    @apply text-xl font-light text-justify;
+    @apply text-lg font-light text-justify;
   }
 
   .label{
     @apply text-sm font-thin uppercase;
+  }
+  
+  .label-large{
+    @apply text-sm font-semibold uppercase;
   }
 
 
