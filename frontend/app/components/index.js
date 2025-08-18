@@ -1,0 +1,12 @@
+export { default as NavLink } from "./NavLink";
+export { default as NavContainer } from "./NavContainer";
+export { default as HeroLabel } from "./HeroLabel";
+export { default as Brief } from "./Brief";
+export { default as QuickLinks } from "./QuickLinks";
+export { default as Contact } from "./Contact";
+export { default as FooterSection } from "./FooterSection";
+export { default as QuickLinksList } from "./QuickLinksList";
+export { default as SocialLink } from "./SocialLink.jsx";
+export { default as FollowUs } from "./FollowUs.jsx";
+export { default as CopyRights } from "./CopyRights.jsx";
+export { default as Line } from "./Line.jsx";
