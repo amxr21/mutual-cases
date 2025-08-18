@@ -283,15 +283,6 @@ const deleteProduct = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
 const test = async (req, res) => {
     
     try {
