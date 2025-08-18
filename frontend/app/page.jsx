@@ -1,10 +1,12 @@
+import { Hero } from "./sections/index";
 
-export default function Home() {
+const Home = () => {
   return (
-    <div className="">
-      <div className="">
-        <h1 className="subheader">test</h1>
-      </div>
-    </div>
+    <main className="">
+      <Hero />
+    </main>
   );
 }
+
+
+export default Home;
