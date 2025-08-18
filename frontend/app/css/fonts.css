@@ -1,0 +1,127 @@
+/* Fraunce../../public/fonts/*/
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-BLACK.TTF') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-BLACKITALIC.TTF') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-BOLD.TTF') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-BOLDITALIC.TTF') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-EXTRABOLD.TTF') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-EXTRABOLDITALIC.TTF') format('truetype');
+  font-weight: 800;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-EXTRALIGHT.TTF') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-EXTRALIGHTITALIC.TTF') format('truetype');
+  font-weight: 200;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-ITALIC.TTF') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-LIGHT.TTF') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-LIGHTITALIC.TTF') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-MEDIUM.TTF') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-MEDIUMITALIC.TTF') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-REGULAR.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-SEMIBOLD.TTF') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-SEMIBOLDITALIC.TTF') format('truetype');
+  font-weight: 600;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-THIN.TTF') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../../public/fonts/FRAUNCES-THINITALIC.TTF') format('truetype');
+  font-weight: 100;
+  font-style: italic;
+}

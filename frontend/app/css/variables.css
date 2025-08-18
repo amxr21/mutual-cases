@@ -1,0 +1,57 @@
+@import url("./fonts.css");
+@import "tailwindcss";
+
+@theme {
+  --color-blue: #055AB0;
+  --color-light-blue: #6D9CCB;
+  --color-gold: #DFA61D;
+  --color-off-white: #F8F8F5;
+  --color-off-black: #2C2C2C;
+  --color-off-transparent: rgba(218, 218, 218 , 0.3);
+  
+
+  --font-default: "Fraunces";
+}
+
+@layer components{
+  .heading{
+    @apply text-6xl font-bold;
+    color: var(--color-black);
+  }
+
+  .header{
+    @apply text-3xl font-black;
+    color: var(--color-off-black); 
+  }
+
+  .nav-ling{
+    @apply text-base font-light;
+  }
+
+  .para{
+    @apply text-2xl font-light text-justify;
+  }
+  .para-small{
+    @apply text-xl font-light text-justify;
+  }
+
+  .label{
+    @apply text-sm font-thin uppercase;
+  }
+
+
+  .product-header{
+    @apply text-4xl capitalize;
+
+  }
+
+  .product-price{
+    @apply text-5xl uppercase;
+
+  }
+
+
+
+
+
+}
