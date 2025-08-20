@@ -10,3 +10,8 @@ export { default as SocialLink } from "./SocialLink.jsx";
 export { default as FollowUs } from "./FollowUs.jsx";
 export { default as CopyRights } from "./CopyRights.jsx";
 export { default as Line } from "./Line.jsx";
+export { default as ImagesSlider } from "./ImagesSlider.jsx";
+export { default as ImageContainer } from "./ImageContainer.jsx";
+export { default as EmiratiBadge } from "./EmiratiBadge.jsx";
+export { default as Stars } from "./Stars.jsx";
+export { default as Mark } from "./Mark.jsx";
