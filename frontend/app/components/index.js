@@ -15,3 +15,8 @@ export { default as ImageContainer } from "./ImageContainer.jsx";
 export { default as EmiratiBadge } from "./EmiratiBadge.jsx";
 export { default as Stars } from "./Stars.jsx";
 export { default as Mark } from "./Mark.jsx";
+export { default as Header } from "./Header.jsx";
+export { default as AboutText } from "./AboutText.jsx";
+export { default as BoldText } from "./BoldText.jsx";
+export { default as ImageCaption } from "./ImageCaption.jsx";
+export { default as AboutImage } from "./AboutImage.jsx";
