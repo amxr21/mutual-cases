@@ -19,7 +19,7 @@
   }
 
   .header{
-    @apply text-3xl font-black;
+    @apply text-3xl font-semibold;
     color: var(--color-off-black); 
   }
 

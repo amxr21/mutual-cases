@@ -9,7 +9,7 @@ function QuickLinksList({header, links}) {
                 {
                     links.map(link => {
                         return (
-                            <li><Link key={link.text} href={link.link}>{link.text}</Link> </li>
+                            <li key={link.text}><Link href={link.link}>{link.text}</Link> </li>
                         ) 
                     })
                 }

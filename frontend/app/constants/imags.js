@@ -12,4 +12,11 @@ import stars from "../../public/images/stars.svg"
 
 import mark from "../../public/images/circle.png"
 
-export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark }
+import iPhoneDrawing from "../../public/images/iphone.png";
+import iPadDrawing from "../../public/images/iPad.png";
+
+
+
+
+
+export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark, iPhoneDrawing, iPadDrawing }

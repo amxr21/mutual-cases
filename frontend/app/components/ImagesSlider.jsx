@@ -14,7 +14,7 @@ function ImagesSlider() {
       <Swiper
         autoplay={{ delay: 3000, disableOnInteraction: false }}
         slidesPerView={'auto'}
-        spaceBetween={16} 
+        spaceBetween={14} 
         height={'10px'}
         modules={[Autoplay]} 
         className="mySwiper" 
