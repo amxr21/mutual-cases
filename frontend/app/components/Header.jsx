@@ -6,7 +6,7 @@ function Header({headerText = "", subheader = true, subheaderText = "", textAlig
     <div className={`relative flex flex-col gap-5 ${textAlignment == 'left' ? 'text-left' : 'text-center'}`}>
         {mark && <Mark classes={markClasses} />}
         <h2 className='header uppercase'>{headerText}</h2>
-        <p className='para'>{subheader}</p>
+        {subheader && <p className={`para ${textAlignment == 'left' ? 'text-left' : 'text-center'}`}>{subheaderText}</p>}
     </div>
   )
 }
