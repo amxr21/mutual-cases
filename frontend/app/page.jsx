@@ -1,10 +1,11 @@
-import { Hero, About } from "./sections/index";
+import { Hero, About, Discover } from "./sections/index";
 
 const Home = () => {
   return (
-    <main className="">
+    <main className="flex flex-col gap-40">
       <Hero />
       <About />
+      <Discover />
     </main>
   );
 }
