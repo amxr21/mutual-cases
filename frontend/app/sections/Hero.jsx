@@ -3,7 +3,7 @@ import { HeroLabel, ImagesSlider, EmiratiBadge, Stars, Mark } from '../component
 
 function Hero() {
   return (
-    <div className='relative flex flex-col items-center py-6 mb-20 gap-6'>
+    <div className='relative flex flex-col items-center py-6 gap-6'>
         <HeroLabel />
 
         <EmiratiBadge />
