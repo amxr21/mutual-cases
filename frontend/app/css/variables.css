@@ -44,12 +44,12 @@
 
 
   .product-header{
-    @apply text-4xl capitalize;
+    @apply text-3xl capitalize;
 
   }
 
   .product-price{
-    @apply text-5xl uppercase;
+    @apply text-3xl uppercase;
 
   }
 
