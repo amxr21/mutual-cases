@@ -15,8 +15,8 @@ import mark from "../../public/images/circle.png"
 import iPhoneDrawing from "../../public/images/iphone.png";
 import iPadDrawing from "../../public/images/iPad.png";
 
+import starsEmoji from "../../public/images/stars-emojii.png"
 
 
 
-
-export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark, iPhoneDrawing, iPadDrawing }
+export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark, iPhoneDrawing, iPadDrawing, starsEmoji }
