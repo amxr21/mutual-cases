@@ -3,9 +3,18 @@ const pool = require("../db")
 
 const _ = require("lodash");
 
+// let sql = 
+// `
+//     SELECT p.id,  p.trend, p.category, p.model, t.type, p.price, p.stock_quantity_id, sq.quantity,  p.created_at, p.updated_at FROM products p 
+//     JOIN stock_quantity sq
+//         ON p.stock_quantity_id = sq.stock_id
+//     JOIN types t
+//         ON p.type_id = t.id
 let sql = 
 `
-    SELECT p.id,  p.trend, p.category, p.model, t.type, p.price, p.stock_quantity_id, sq.quantity,  p.created_at, p.updated_at FROM products p 
+    SELECT p.id,  p.trend, p.edition, p.category, p.model, t.type, p.price, p.stock_quantity_id, sq.quantity, p.image_url_1, p.image_url_2, p.image_url_3,  p.created_at, p.updated_at FROM products p 
+    JOIN CATEGORY c
+        ON p.category = c.category_title
     JOIN stock_quantity sq
         ON p.stock_quantity_id = sq.stock_id
     JOIN types t
@@ -112,38 +121,20 @@ const postProduct = async (req, res) => {
 
 
     
-    const { trend, price, model, edition, category, type, quantity } = req.body
+    const { trend, price, model, edition, category, type, quantity, image_url_1, image_url_2, image_url_3 } = req.body
 
     try {
         
         let generated_stock_id = Math.floor(Math.random() * 100000)
 
-
-        // const sql = 
-        // `
-        //     INSERT INTO products 
-        //     (trend, price, model_id, edition_id, category_id, stock_quantity_id, type_id) 
-        //     VALUES( ${trend}, ${price}, ${await getId('model', model)}, ${await getId('edition', edition)} ,${await getId('category', category)}, ${generated_stock_id},${await getId('type', type)});
-        // `
-
-        // const [result, fields] = await pool.query(sql);
-
-        
-        // const sql2 = 
-        // `
-        //     INSERT INTO stock_quantity
-        //     (edition_id, model_id,  category_id, quantity, stock_id) 
-        //     VALUES ( ${await getId('edition', edition)}, ${await getId('model', model)}, ${await getId('category', category)}, ${quantity}, ${generated_stock_id} )
-        // `
-
         const sql = 
         `
             INSERT INTO products 
-            (trend, price, model, edition, category, stock_quantity_id, type_id) 
-            VALUES( ${trend}, ${price}, '${String(model).toLowerCase()}', '${String(edition).toLowerCase()}' ,'${String(category).toLowerCase()}', ${generated_stock_id}, ${await getId('type', type)});
+            (trend, price, model, edition, category, stock_quantity_id, type_id, image_url_1, image_url_2, image_url_3) 
+            VALUES( ${trend}, ${price}, '${String(model).toLowerCase()}', '${String(edition).toLowerCase()}' ,'${String(category).toLowerCase()}', ${generated_stock_id}, ${await getId('type', type)}, '${image_url_1}', '${image_url_2}', '${image_url_3}');
         `
 
-        const [result, fields] = await pool.query(sql);
+        const [ result, fields ] = await pool.query(sql);
 
         
         const sql2 = 
@@ -182,7 +173,7 @@ const updateProduct = async (req, res) => {
         try {
             const difference = Object.keys(_.pickBy(product[0], (value, key) => !_.isEqual(value, req?.body[key])))?.filter(d => d != 'created_at' && d != 'updated_at' && d != 'stock_quantity_id' )
             
-            console.log(difference);
+            console.log("--------------------------------------------", difference, "--------------------------------------------");
             
             difference.map(async (d) => {
                 let a = `UPDATE`
@@ -214,6 +205,23 @@ const updateProduct = async (req, res) => {
                     case 'quantity':
                         a += ` stock_quantity SET quantity = ${req.body[d]}`
                         break;
+
+                    case 'image_url_1':
+                        a += ` products SET image_url_1 = "${req.body[d]}"`
+                        break;
+
+                    case 'image_url_2':
+                        a += ` products SET image_url_2 = "${req.body[d]}"`
+                        break;
+
+                    case 'image_url_3':
+                        a += ` products SET image_url_3 = "${req.body[d]}"`
+                        break;
+                    
+                        default: 
+                            console.log("erorr");
+                            break
+                            
     
     
                 }
