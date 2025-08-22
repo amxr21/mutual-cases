@@ -9,3 +9,7 @@ body{
 .swiper-slide{
     width: fit-content !important; 
 }
+
+#Features{
+    background-image: url("../../public//images/blue-pattern.jpg");
+}
