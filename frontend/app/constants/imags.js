@@ -17,6 +17,10 @@ import iPadDrawing from "../../public/images/iPad.png";
 
 import starsEmoji from "../../public/images/stars-emojii.png"
 
+import step1 from "../../public/images/steps/1.jpg"; 
+import step2 from "../../public/images/steps/2.jpg"; 
+import step3 from "../../public/images/steps/3.jpg"; 
+import step4 from "../../public/images/steps/4.jpg"; 
 
 
-export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark, iPhoneDrawing, iPadDrawing, starsEmoji }
+export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark, iPhoneDrawing, iPadDrawing, starsEmoji, step1, step2, step3, step4 }
