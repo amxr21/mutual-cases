@@ -28,3 +28,4 @@ export { default as Label } from "./Label.jsx";
 export { default as ProductRate } from "./ProductRate.jsx";
 export { default as ProductPrice } from "./ProductPrice.jsx";
 export { default as Button } from "./Button.jsx";
+export { default as Feature } from "./Feature.jsx";
