@@ -1,11 +1,20 @@
 require("dotenv").config()
 const exprees = require('express');
+const cors = require('cors')
 // routes 
 const productsRoutes = require("./routes/productsRoutes.js");
 
 const app = exprees()
+const allowedOrigins = ["http://localhost:3001", "https://example.com"];
 
+const corsOptions = {
+//   origin:  allowedOrigins, // or '*' if open access is OK
+  origin:  '*', // or '*' if open access is OK
+  credentials: true,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+};
 
+app.use(cors(corsOptions))
 
 // middleware to accept json-format files
 app.use(exprees.json());

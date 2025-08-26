@@ -198,9 +198,14 @@ const updateProduct = async (req, res) => {
                         a += ` products SET edition_id = ${await getId('edition', req.body[d])} `
                         break;
                         
+                    // case 'type':
+                    //     a += ` types SET ${d} = ${await getId('type', req.body[d])} `
+                    //     break;
                     case 'type':
-                        a += ` types SET ${d} = ${await getId('type', req.body[d])} `
+                        const typeId = await getId('type', req.body[d]);
+                        a += ` products SET type_id = ${typeId} `;
                         break;
+
     
                     case 'quantity':
                         a += ` stock_quantity SET quantity = ${req.body[d]}`
@@ -218,18 +223,18 @@ const updateProduct = async (req, res) => {
                         a += ` products SET image_url_3 = "${req.body[d]}"`
                         break;
                     
-                        default: 
-                            console.log("erorr");
-                            break
+                    default: 
+                        console.log("erorr");
+                        break
                             
     
     
                 }
                 // console.log(product[0].stock_quantity_id);
                 
-                a += ` WHERE ${d != 'quantity' ? 'ID' : 'stock_id'} = ${d != 'quantity' ? id : product[0].stock_quantity_id};`
+                a += ` WHERE ${d != 'quantity' ? 'id' : 'stock_id'} = ${d != 'quantity' ? id : product[0].stock_quantity_id};`
         
-                console.log(a, d);
+                console.log(a,"-------------", d);
                 
                 try {
                     await pool.query(a); 
