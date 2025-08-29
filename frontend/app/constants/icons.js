@@ -4,4 +4,15 @@ const Heart = () => (
     </svg>
 )
 
-export { Heart }
+
+import HeartIcon from "../../public/images/icons/heart.svg";
+import BoxIcon from "../../public/images/icons/box.svg";
+import AimIcon from "../../public/images/icons/aim.svg";
+
+import IPhone from "../../public/images/devices_icons/iphone.svg";
+import IPad from "../../public/images/devices_icons/ipad.svg";
+import Charm from "../../public/images/devices_icons/charm.svg";
+
+ 
+
+export { Heart, HeartIcon, BoxIcon, AimIcon, IPhone, IPad, Charm }
