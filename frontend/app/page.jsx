@@ -1,4 +1,4 @@
-import { Hero, About, Discover, Features, Steps } from "./sections/index";
+import { Hero, About, Discover, Features, Steps, Unique } from "./sections/index";
 
 const Home = () => {
   return (
@@ -8,6 +8,8 @@ const Home = () => {
       <Discover />
       <Features />
       <Steps />
+      <Unique />
+
     </main>
   );
 }
