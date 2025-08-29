@@ -3,6 +3,7 @@ import { Header } from '../components';
 import Step from '../components/Step';
 
 import { step1, step2, step3, step4 } from "../constants/imags"
+import { MainSection } from '.';
 
 const text = {
     'en': [
@@ -17,7 +18,7 @@ const text = {
 
 function Steps() {
   return (
-    <section className='flex flex-col gap-10'>
+    <MainSection>
         <Header headerText='How We Make Your Order' subheader={true} subheaderText='From concept to your doorstep — every cover goes through a thoughtful, hands-on process.' textAlignment='center' mark={true} markClasses='grow w-40 flex justify-center -top-6 right-[35%]' textColor='' />
 
         <div className='flex flex-col gap-15'>
@@ -28,12 +29,9 @@ function Steps() {
                     )
                 })
             }
-
         </div>
 
-        
-
-    </section>
+    </MainSection>
   )
 }
 

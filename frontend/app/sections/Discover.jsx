@@ -1,5 +1,5 @@
 import React from 'react'
-import { Header, Product } from '../components'
+import { Header, Product, MainSection } from '../components';
 
 const fetchProducts = async () => {
     try {
@@ -21,17 +21,17 @@ async function Discover() {
     const productsList = await fetchProducts()    
 
     return (
-        <section className='flex flex-col gap-10'>
+        <MainSection classes="">
             <Header key='Discover' headerText='Our Products' subheader={true} subheaderText={`Flexible. Secure. Instantly ready. \n Designed to stand, fold, and flex around your workflow — wherever that takes you`} mark={true} markClasses='-top-10 inset-x-0 flex justify-center' textAlignment='center' />
             <div className="products grid grid-cols-3 gap-10">
                 {
-                    productsList.map((p, indx) => {
+                    productsList.slice(0,3).map((p, indx) => {
                         return <Product key={indx} details={p} />
                     })
                 }
 
             </div>
-        </section>
+        </MainSection>
   )
 }
 

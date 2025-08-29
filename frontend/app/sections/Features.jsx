@@ -1,4 +1,4 @@
-import { Header, Feature } from "../components/index"
+import { Header, Feature, MainSection } from "../components/index"
 
 
 function Features() {
@@ -13,7 +13,7 @@ function Features() {
 
 
   return (
-    <div id="Features" className="flex flex-col gap-6 items-center bg-blue py-16 px-20 -mx-20 text-white">
+    <MainSection Id="Features" classes="banner items-center bg-blue py-16 px-20 -mx-20 text-white">
         <Header textColor="white" textAlignment="center" headerText="We offer three types of cases" subheaderText="Each has specific functions to match your needs!" subheader={true} mark={false} />
         <ul className="features-details grid grid-cols-3 w-full justify-between">
             {
@@ -29,7 +29,8 @@ function Features() {
 
             }
         </ul>
-    </div>
+
+    </MainSection>
   )
 }
 
