@@ -1,5 +1,5 @@
 import React from 'react'
-import { BoldText, Header, Mark } from '../components'
+import { BoldText, Header, Mark } from '.'
 
 
 function AboutText() {
