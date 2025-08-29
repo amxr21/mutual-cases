@@ -186,8 +186,8 @@ const updateProduct = async (req, res) => {
                         a += ` products SET ${d} = ${req.body[d]} `
                         break;
                     
-                    case 'model_type':
-                        a += ` model SET ${d} = ${await getId('model', req.body[d])} `
+                    case 'model':
+                        a += ` products SET ${d} = '${`${req.body[d]}`}' `
                         break;
                         
                     case 'category_title':
