@@ -1,7 +1,18 @@
-import React from 'react'
+import ProductsSection from "@/app/components/ProductsSection";
+ 
+export const metadata = {
+  title: "Mutual - Products ",
+  description: ""
+};
 
 export default function products() {
+
+
+
   return (
-    <div>products</div>
+    <main>
+      <ProductsSection />
+
+    </main>
   )
 }
