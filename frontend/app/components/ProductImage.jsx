@@ -12,7 +12,7 @@ function getDriveDirectLink(url) {
   
   const fileId = match ? (match[1] || match[2]) : null;
 
-  console.log(`https://drive.google.com/thumbnail?id=${fileId}`);
+  // console.log(`https://drive.google.com/thumbnail?id=${fileId}`);
   if (!fileId) return null; // not a valid drive link
     
   
