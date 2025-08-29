@@ -1,5 +1,6 @@
 import React from 'react'
 import { FooterSection, FollowUs } from './index'
+import PaymentMethods from './PaymentMethods'
 
 function Contact() {
   return (
@@ -9,6 +10,9 @@ function Contact() {
             <p className='para-small'>Got a question or a custom request? We’re here to help.</p>
         </div>
         <FollowUs />
+
+        <PaymentMethods />
+
     </FooterSection>
   )
 }
