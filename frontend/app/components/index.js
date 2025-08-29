@@ -29,3 +29,14 @@ export { default as ProductRate } from "./ProductRate.jsx";
 export { default as ProductPrice } from "./ProductPrice.jsx";
 export { default as Button } from "./Button.jsx";
 export { default as Feature } from "./Feature.jsx";
+export { default as Info } from "./Info.jsx";
+export { default as Filters } from "./Filters.jsx";
+export { default as Products } from "./Products.jsx";
+export { default as Checkbox } from "./Checkbox.jsx";
+export { default as RemoveFilters } from "./RemoveFilters.jsx";
+
+
+
+
+
+export { default as MainSection } from "./MainContainer.jsx";
