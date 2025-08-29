@@ -10,6 +10,16 @@ body{
     width: fit-content !important; 
 }
 
-#Features{
+.banner{
     background-image: url("../../public//images/blue-pattern.jpg");
+}
+
+.page-banner::after {
+    position: absolute;
+    left: 0; top: 0;
+    content: '';
+    width: 100%; height: 100%;
+    background-color: var(--color-blue) !important;
+    opacity: 80%;
+    /* background-image: url("../../public/images/cases.jpg"); */
 }
