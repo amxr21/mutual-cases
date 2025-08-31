@@ -24,7 +24,7 @@ const getProducts = async (req, res) => {
 
     try {
         const [ rows, fields ] = await pool.query(sql);
-        console.log(rows);
+        // console.log(rows);
         
         res.json(rows)
 

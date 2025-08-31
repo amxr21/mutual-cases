@@ -10,7 +10,7 @@ export default function products() {
 
 
   return (
-    <main>
+    <main className="">
       <ProductsSection />
 
     </main>

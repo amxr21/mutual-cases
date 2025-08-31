@@ -23,7 +23,7 @@ export { default as AboutImage } from "./AboutImage.jsx";
 export { default as Product } from "./Product.jsx";
 export { default as ProductImage } from "./ProductImage.jsx";
 export { default as ProductHeader } from "./ProductHeader.jsx";
-export { default as ProductDetails } from "./ProductDetails.jsx";
+export { default as ProductCardDetails } from "./ProductCardDetails.jsx";
 export { default as Label } from "./Label.jsx";
 export { default as ProductRate } from "./ProductRate.jsx";
 export { default as ProductPrice } from "./ProductPrice.jsx";
@@ -34,6 +34,25 @@ export { default as Filters } from "./Filters.jsx";
 export { default as Products } from "./Products.jsx";
 export { default as Checkbox } from "./Checkbox.jsx";
 export { default as RemoveFilters } from "./RemoveFilters.jsx";
+export { default as ProductImages } from "./ProductImages.jsx";
+export { default as ProductDetails } from "./ProductDetails.jsx";
+export { default as LargeButton } from "./LargeButton.jsx";
+export { default as ShippingFeatures } from "./ShippingFeatures.jsx";
+export { default as ShippingFeature } from "./ShippingFeature.jsx";
+export { default as ProductDetailsHeader } from "./ProductDetailsHeader.jsx";
+export { default as ProductDetailsPrice } from "./ProductDetailsPrice.jsx";
+export { default as ProductDetailsCategory } from "./ProductDetailsCategory.jsx";
+export { default as PageBanner } from "./PageBanner.jsx";
+export { default as WarrantyBanner } from "./WarrantyBanner.jsx";
+export { default as ProductViewContainer } from "./ProductViewContainer.jsx";
+export { default as OrderOptions } from "./OrderOptions.jsx";
+export { default as OrderOption } from "./OrderOption.jsx";
+export { default as Total } from "./Total.jsx";
+export { default as CartItem } from "./CartItem.jsx";
+export { default as CartItemImage } from "./CartItemImage.jsx";
+export { default as CartItemHeader } from "./CartItemHeader.jsx";
+export { default as CaretItemPrice } from "./CaretItemPrice.jsx";
+export { default as CartItemQuantity } from "./CartItemQuantity.jsx";
 
 
 
