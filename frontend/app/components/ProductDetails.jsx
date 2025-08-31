@@ -1,33 +1,24 @@
-import React from 'react'
-import { ProductHeader, ProductPrice, ProductRate } from './index'
-import product from '../(main)/products/[id]/page'
+import { LargeButton, ShippingFeatures, ProductDetailsHeader, ProductDetailsPrice, ProductDetailsCategory } from "."
 
-// {
-//     "id": 10,
-//     "trend": true,
-//     "edition": "uaq edition",
-//     "category": "ipad",
-//     "model": "m1",
-//     "type": "magnet",
-//     "price": 110,
-//     "stock_quantity_id": 46888,
-//     "quantity": 10,
-//     "image_url_1": null,
-//     "image_url_2": null,
-//     "image_url_3": null,
-//     "created_at": "2025-08-17T18:16:39.000Z",
-//     "updated_at": "2025-08-17T18:16:39.000Z"
-//   },
-
-function ProductDetails( { data }) {
+function ProductDetails({ details }) {
   return (
-    <div className='flex flex-col gap-5'>
-      <div className='flex gap-4'>
-          <ProductHeader header={`${String(data.edition).toUpperCase()}`} subheader={`${data.category} ${data.model}`} />
-          <ProductRate />
-      </div>
+    <div className="flex flex-col gap-8 h-full overflow-hidden">
 
-      <ProductPrice price={data.price} />
+        <div className="flex flex-col gap-3">
+            <ProductDetailsCategory details={details} />
+            <ProductDetailsHeader details={details} />
+        </div>
+
+        <div className="flex flex-col gap-3">
+            <ProductDetailsPrice details={details} />
+            <div className="buttons flex gap-5">
+                <LargeButton key={'Add To Cart'} handleClick={() => {}} text="Add To Cart" color="blue" classes="w-full"  />
+                <LargeButton key={'Checkout'} handleClick={() => {}} text="Checkout" color="white" classes="w-full"  />
+            </div>
+        </div>
+
+        <ShippingFeatures />
+
 
     </div>
   )
