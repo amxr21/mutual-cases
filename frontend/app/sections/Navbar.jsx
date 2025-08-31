@@ -18,9 +18,9 @@ function Navbar() {
 
 
   return (
-    <nav className='flex w-full justify-between items-center my-10'>
-        <div className="logo">
-            <Image src={Logo} alt='test' quality={100} />
+    <nav className='flex w-full justify-between items-center my-8'>
+        <div className="logo h-8">
+            <Image className='h-full w-auto' src={Logo} alt='test' quality={100} />
         </div>
         <div className="links w-fit flex gap-x-8">
             <NavContainer type='text'>
