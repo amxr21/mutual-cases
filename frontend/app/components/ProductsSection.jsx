@@ -1,4 +1,3 @@
-"use client"
 import { Filters, Products } from "@/app/components";
 import { FilterWrapper } from "../Context/FilterContext";
 
