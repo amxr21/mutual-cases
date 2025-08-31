@@ -24,7 +24,7 @@
   }
 
   .nav-link{
-    @apply text-base font-light uppercase;
+    @apply text-sm font-light uppercase;
   }
 
   .para{
