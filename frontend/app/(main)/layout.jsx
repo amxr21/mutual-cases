@@ -3,8 +3,7 @@ import { PrimeReactProvider } from 'primereact/api';
 import "../css/globals.css";
 import localFont from "next/font/local"
 
-import { Navbar, Footer } from '../sections/index'
-import PageBanner from "../components/PageBanner";
+import { PageBanner, WarrantyBanner } from "../components/index";
 
 const fraunces = localFont({
   src: '../../public/fonts/FRAUNCES-REGULAR.woff2'
@@ -17,15 +16,12 @@ export const metadata = {
 
 
 export default function MainLayout({ children, params }) {
-    // const route = useRouter().pathname;
-    console.log(params.section);
-    
-
   return (
     <PrimeReactProvider>
-      <div className={`${fraunces.className} `}>
+      <div className={`${fraunces.className} relative`}>
           <PageBanner/>
           {children}
+          <WarrantyBanner />
       </div>
     </PrimeReactProvider>
   );
