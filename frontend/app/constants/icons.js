@@ -13,6 +13,12 @@ import IPhone from "../../public/images/devices_icons/iphone.svg";
 import IPad from "../../public/images/devices_icons/ipad.svg";
 import Charm from "../../public/images/devices_icons/charm.svg";
 
+import Star from "../../public/images/icons/star.svg"
+import Truck from "../../public/images/icons/truck.svg"
+import Lightining from "../../public/images/icons/lightining.svg"
+
+import Gift from "../../public/images/icons/gift.svg"
+import Note from "../../public/images/icons/note.svg"
  
 
-export { Heart, HeartIcon, BoxIcon, AimIcon, IPhone, IPad, Charm }
+export { Heart, HeartIcon, BoxIcon, AimIcon, IPhone, IPad, Charm, Star, Truck, Lightining, Gift, Note }
