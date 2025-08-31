@@ -23,3 +23,7 @@ body{
     opacity: 80%;
     /* background-image: url("../../public/images/cases.jpg"); */
 }
+
+.product {
+    z-index: 999999 !important;
+}
