@@ -32,7 +32,9 @@ import MasterCard from "../components/MasterCard";
 import GooglePay from "../components/GooglePay";
 import ApplePay from "../components/ApplePay";
 
-import Cases from "../../public/images/cases.jpg" 
+import Cases from "../../public/images/cases.jpg"
+
+import Spark from "../../public/images/spark.png"
 
 
-export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark, iPhoneDrawing, iPadDrawing, starsEmoji, step1, step2, step3, step4, Visa, MasterCard, GooglePay, ApplePay, Cases }
+export { Logo, Image1, Image2, Image3, Image4, Image5, Image6, emiratiBadge, stars, mark, iPhoneDrawing, iPadDrawing, starsEmoji, step1, step2, step3, step4, Visa, MasterCard, GooglePay, ApplePay, Cases, Spark }
