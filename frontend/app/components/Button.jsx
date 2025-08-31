@@ -2,7 +2,7 @@
 
 function Button({buttonContent = '', type = 'text', handleClick, classes}) {
   return (
-    <button onClick={handleClick} className={`${classes} cursor-pointer text-off-black font-light min-w-4 min-h-4 p-2 bg-off-transparent rounded-md`}>
+    <button onClick={handleClick} className={`${classes} cursor-pointer text-off-black font-light min-w-4 bg-off-transparent rounded-md`}>
         {buttonContent}
     </button>
   )
