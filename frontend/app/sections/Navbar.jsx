@@ -3,6 +3,7 @@ import React from 'react'
 
 import { Logo } from '../constants/imags'
 import { NavContainer, NavLink } from '../components'
+import GoogleLoginButton from '../components/GoogleLoginButton'
 
 function Navbar() {
     const links = {
@@ -38,6 +39,7 @@ function Navbar() {
                     })
                 }
             </NavContainer>
+            <GoogleLoginButton />
         </div>
     </nav>
   )
