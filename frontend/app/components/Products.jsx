@@ -50,7 +50,7 @@ function Products() {
 
   useEffect(() => {
     setFilteredProducts(
-      products.filter((product) => {
+      products?.filter((product) => {
         if( filters.length == 0 ){
           return product
         }
