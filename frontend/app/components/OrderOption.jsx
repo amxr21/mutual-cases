@@ -1,13 +1,27 @@
 'use client'
 import Image from 'next/image'
 import { Gift, Note } from "../constants/icons"
-import { useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
+import { CartContext } from '../Context/CartContext'
 
 function OrderOption({ icon, text }) {
     const [ isClicked, setIsClicked ] = useState(false)
+    const { cartDetails, setCartDetails } = useContext(CartContext);
+
+    useEffect(() => {
+        console.log(cartDetails);
+        
+    }, [isClicked])
 
     const handleClick = () => {
         setIsClicked(p => !p)
+        if(icon == 'gift'){
+            setCartDetails((prev) => ({...prev, requests: {...prev.requests, gift: isClicked}}))
+        }
+        
+        if(icon != 'gift'){
+            setCartDetails((prev) => ({...prev, requests: {...prev.requests, note: text}}))
+        }
     }
 
     return (
