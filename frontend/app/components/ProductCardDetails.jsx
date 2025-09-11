@@ -21,7 +21,7 @@ import product from '../(main)/products/[id]/page'
 
 function ProductCardDetails( { data }) {
   return (
-    <div className='flex flex-col gap-5'>
+    <div className='flex flex-col gap-3'>
       <div className='flex gap-4'>
           <ProductHeader header={`${String(data.edition).toUpperCase()}`} subheader={`${data.category} ${data.model}`} />
           <ProductRate />

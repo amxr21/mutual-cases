@@ -7,7 +7,7 @@ import { Cases } from "../constants/imags"
 import { usePathname } from "next/navigation"
 
 
-function PageBanner({ page }) {
+function PageBanner() {
 
   const pathname = usePathname()
 
