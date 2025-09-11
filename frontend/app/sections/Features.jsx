@@ -19,7 +19,7 @@ function Features() {
             {
                 text['en'].map((feature, indx) => {
                     let a = Object.entries(feature)[0]
-                    console.log(a);
+                    // console.log(a);
                     
                     return (
                         <Feature key={indx} index={indx+1} header={a[0]} details={a[1]} />
