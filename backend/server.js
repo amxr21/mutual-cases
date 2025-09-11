@@ -28,11 +28,11 @@ app.get("/", async (req, res) => {
     res.json({'test': "this is just a test"})
 })
 
-app.use("", authRouter);
-
-
 // products routes 
 app.use("/products", productsRoutes)
+
+
+app.use("/", authRouter);
 
 
 
