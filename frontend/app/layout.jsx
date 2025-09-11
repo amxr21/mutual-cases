@@ -20,6 +20,10 @@ export default function RootLayout({ children }) {
           <Navbar />
           {children}
         </div>
+          <script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
         <Footer />
 
         
