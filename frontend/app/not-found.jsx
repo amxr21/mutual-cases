@@ -9,7 +9,7 @@ export default function NotFound() {
         <p className='text-[14rem] leading-40 mb-12'>404</p>
         <p className='text-5xl font-semibold'>Oops... something wrong happened</p>
         
-        <p className='my-4'>Go Back to <Link href={'/'}>Homepage</Link></p>
+        <p className='my-4 font-light z-50'>Go Back to <Link className='underline cursor-pointer' href={'/'}>Homepage</Link></p>
         <Image src={Scratches} alt='scratches' className='absolute w-[50%] top-0' />
 
     </div>
