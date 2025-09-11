@@ -27,3 +27,13 @@ body{
 .product {
     z-index: 999999 !important;
 }
+
+.up{
+    z-index: 999999 !important;
+    
+}
+
+.down{
+    z-index: -999999 !important;
+
+}
