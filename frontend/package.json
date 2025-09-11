@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "next": "15.4.6",
+    "primereact": "^10.9.7",
     "react": "19.1.0",
     "react-alice-carousel": "^2.9.1",
     "react-dom": "19.1.0",
