@@ -2,21 +2,24 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+
 function CartBtn() {
-    
-    
     const [ cartLength, setCartLength ] = useState(0)
     
     useEffect(() => {
         const userId = localStorage.getItem("userId")
-        const link = `http://localhost:3000/cart/${userId}`
-        const getCartLength = async () => {
-            const response = await fetch(link)
-            const data = await response.json()
-            setCartLength(data.length);
-        }
+        const link = `${API_ENDPOINT}/cart/${userId}`
+        if(userId){
+            const getCartLength = async () => {
+                const response = await fetch(link)
+                const data = await response.json()
+                setCartLength(data.length);
+            }
+    
+            getCartLength();
 
-        getCartLength();
+        }
 
     }, [])
 

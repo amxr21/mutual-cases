@@ -3,18 +3,18 @@ import { Dropdown } from 'primereact/dropdown';
 import { Button, RemoveItemBtn, } from '.';
 import { useContext, useEffect } from 'react';
 import { CartContext } from '../Context/CartContext';
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
 
 function CartItemQuantity({ count, countFunc, remove = true, itemId }) {
   const { cartDetails, setCartDetails } = useContext(CartContext)
-  
-  const link = "http://localhost:3000"
+
 
   useEffect(() => {
     console.log(cartDetails);
     
     try {
       const updateCartItem = async () => {
-        const response = await fetch(`${link}/cart`, {
+        const response = await fetch(`${API_ENDPOINT}/cart`, {
           method: 'PATCH',
           headers: {'Content-Type' : 'application/json'},
           body: JSON.stringify({

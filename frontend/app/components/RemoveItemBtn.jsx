@@ -2,8 +2,10 @@
 import { useEffect, useState } from 'react';
 import { Button, } from '.';
 
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+
 function RemoveItemBtn({ func, itemId }) {
-    const link = `http://localhost:3000/cart/${itemId}`;
+    const link = `${API_ENDPOINT}/cart/${itemId}`;
 
     const [ res, setRes ] = useState()
     

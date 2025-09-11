@@ -3,9 +3,8 @@
 import { useContext, useEffect, useState } from "react"
 import { CartItem } from "."
 import { CartContext } from "../Context/CartContext"
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
 
-
-const link = 'http://localhost:3000'
 
 function CartItems() {
     const { cartDetails, setCartDetails  } = useContext(CartContext)
@@ -21,7 +20,7 @@ function CartItems() {
         const userId = localStorage.getItem('userId')
         
         const getCartItems = async () => {
-            const response = await fetch(`${link}/cart/${userId}`);
+            const response = await fetch(`${API_ENDPOINT}/cart/${userId}`);
             const items = await response.json();
             
             if(items){

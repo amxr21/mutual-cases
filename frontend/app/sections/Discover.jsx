@@ -18,7 +18,7 @@ const fetchProducts = async () => {
 
 
 async function Discover() {
-    const productsList = await fetchProducts()    
+    const productsList = await fetchProducts()
 
     return (
         <MainSection classes="">

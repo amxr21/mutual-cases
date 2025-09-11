@@ -2,15 +2,16 @@
 import { useEffect } from "react"
 import { LargeButton } from "."
 
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+
 // const { user_id, product_id, quantity } = req.body
 
 function AddToCart( {id} ) {
-    const link = `http://localhost:3000/cart`
     
     const cartRequest = async (e) => {
 
         try {
-            const response = await fetch(link, {
+            const response = await fetch(API_ENDPOINT, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

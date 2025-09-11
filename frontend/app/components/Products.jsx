@@ -3,7 +3,8 @@ import { useContext, useEffect, useState } from "react"
 import { Product, ProductHeader } from "."
 import { FilterContext } from "../Context/FilterContext";
 import ProductsBar from "./ProductsBar";
-const link = 'http://localhost:3000/products'
+
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
 
 function Products() {
 
@@ -16,7 +17,8 @@ function Products() {
 
   useEffect(() => {
     // console.log(filters);
-
+    // console.log(API_ENDPOINT);
+    
   }, [])
   
 
@@ -24,7 +26,7 @@ function Products() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const data = await fetch(link)
+      const data = await fetch(`${API_ENDPOINT}/products`)
       const response = await data.json();
       // console.log(data);
       
@@ -69,9 +71,6 @@ function Products() {
 
 
   useEffect(() => {
-    console.log(selectedFilter?.name);
-
-    
     // console.log(products);
     // console.log('====================================================');
     // console.log(products.sort((a, b) => b.id - a.id));

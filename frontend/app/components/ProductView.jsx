@@ -3,6 +3,8 @@ import React from "react";
 import { ProductDetails, ProductImages, ProductViewContainer } from "@/app/components"; 
 import { useEffect, useState } from "react";
 
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+
 
 export default function ProductView({ params }) {
     const { id } = React.use(params)
@@ -12,9 +14,8 @@ export default function ProductView({ params }) {
     useEffect(() => {
         if(id){
 
-        const link = `http://localhost:3000/products/${id}`
         const getData = async () => {
-            const response = await fetch(link)
+            const response = await fetch(`${API_ENDPOINT}/products/${id}`)
             
             if(response.ok){
                 const productDetails = await response.json()

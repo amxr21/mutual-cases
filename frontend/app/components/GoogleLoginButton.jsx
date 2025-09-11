@@ -1,8 +1,7 @@
 'use client'
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
-const link = 'http://localhost:3000'
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
 
 export default function GoogleLoginButton(){
     const[ user, setUser ] = useState()
@@ -10,6 +9,8 @@ export default function GoogleLoginButton(){
 
 
     useEffect(() => {
+        // console.log("API_ENDPOINT", `${API_ENDPOINT}/api/auth`);
+
 
         const token = localStorage.getItem("token")
         const name = localStorage.getItem("userName")
@@ -17,7 +18,7 @@ export default function GoogleLoginButton(){
         // const googleId = localStorage.getItem("google_id")
         const userId = localStorage.getItem("userId")
 
-        if (token && name) {
+        if (token && name && picture && userId) {
             setUser({ name, picture, userId });
         } 
         else {
@@ -37,7 +38,7 @@ export default function GoogleLoginButton(){
 
 
     const handleCredentialResponse = async (response) => {            
-        const res = await fetch(`${link}/api/auth`, {
+        const res = await fetch(`${API_ENDPOINT}/api/auth`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id_token: response.credential })
@@ -55,24 +56,26 @@ export default function GoogleLoginButton(){
             console.log(data );
             
             localStorage.setItem('token', data.token)
+
+
+
+            const googleButtonDiv = document.getElementById("googleSignIn");
+            if (googleButtonDiv) googleButtonDiv.style.display = "none";
         }
     
     
     }
 
-
-    if(user){
-        return <>
-            <div className="  top-0 left-0 flex gap-4 max-w-48">
+    return user ? <>
+            <div className="grow top-0 left-0 flex items-center gap-4">
                 <div className="relative min-w-10 w-10 min-h-10 h-10 overflow-hidden rounded-2xl ">
                     <Image fill src={`${String(user?.picture)}`} alt="profile image" className=" object-cover" />
                 </div>
                 {/* <h2 className="text-base font-medium">{user?.name}</h2> */}
             </div>
         </>
-    }
+
+        : !user && <div id="googleSignIn"></div>
 
 
-
-    return <div id="googleSignIn"></div>
 }

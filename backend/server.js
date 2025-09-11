@@ -1,23 +1,22 @@
 require("dotenv").config()
-const exprees = require('express');
+const express = require('express');
 const cors = require('cors')
 // routes 
 const productsRoutes = require("./routes/productsRoutes.js");
+const authRouter = require("./routes/googleRoutes.js");
 
-const app = exprees()
-const allowedOrigins = ["http://localhost:3001", "https://example.com"];
+const app = express()
+const allowedOrigins = ["http://localhost:3000", "http://localhost:3001"];
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+}));
 
-const corsOptions = {
-//   origin:  allowedOrigins, // or '*' if open access is OK
-  origin:  '*', // or '*' if open access is OK
-  credentials: true,
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-};
-
-app.use(cors(corsOptions))
+// app.use(cors(corsOptions))
 
 // middleware to accept json-format files
-app.use(exprees.json());
+app.use(express.json());
 
 // to keep following on req method and path taken
 app.use((req, res, next) => {
@@ -28,6 +27,9 @@ app.use((req, res, next) => {
 app.get("/", async (req, res) => {
     res.json({'test': "this is just a test"})
 })
+
+app.use("", authRouter);
+
 
 // products routes 
 app.use("/products", productsRoutes)
