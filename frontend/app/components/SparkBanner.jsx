@@ -1,3 +1,4 @@
+'use client'
 import Image from 'next/image'
 import { Spark } from '../constants/imags'
 import { LargeButton } from '.'
