@@ -1,26 +1,13 @@
-import { ProductViewContainer, OrderOptions, Total, CartItem } from "@/app/components"
-
+import { ProductViewContainer, OrderOptions, Total, CartItem, CartItems } from "@/app/components"
+import CartSection from "@/app/components/Cart"
 export default function Cart() {
   
   return (
     <ProductViewContainer>
       <div className="flex flex-col gap-8">
-        <div className="cart-items flex flex-col items-end gap-4">
-          <CartItem />
-          <CartItem />
-          <CartItem />
-          <CartItem />
-          <CartItem />
-          <OrderOptions />
-        </div>
-
-        <Total />
+        <CartSection />
       </div>
 
-
-      
-
-      
     </ProductViewContainer>
   )
 }
