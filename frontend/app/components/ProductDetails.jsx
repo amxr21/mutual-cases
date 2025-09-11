@@ -1,4 +1,5 @@
-import { LargeButton, ShippingFeatures, ProductDetailsHeader, ProductDetailsPrice, ProductDetailsCategory } from "."
+import Link from "next/link"
+import { LargeButton, ShippingFeatures, ProductDetailsHeader, ProductDetailsPrice, ProductDetailsCategory, AddToCart } from "."
 
 function ProductDetails({ details }) {
   return (
@@ -12,8 +13,12 @@ function ProductDetails({ details }) {
         <div className="flex flex-col gap-3">
             <ProductDetailsPrice details={details} />
             <div className="buttons flex gap-5">
-                <LargeButton key={'Add To Cart'} handleClick={() => {}} text="Add To Cart" color="blue" classes="w-full"  />
-                <LargeButton key={'Checkout'} handleClick={() => {}} text="Checkout" color="white" classes="w-full"  />
+
+                <AddToCart id={ details.id } />
+                
+                <Link href={'/cart'} className="w-full">
+                  <LargeButton key={'Checkout'} handleClick={() => {}} text="Checkout" color="white" classes="w-full"  />
+                </Link>
             </div>
         </div>
 

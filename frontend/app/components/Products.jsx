@@ -15,7 +15,7 @@ function Products() {
   const { filters, selectedFilter } = useContext(FilterContext) 
 
   useEffect(() => {
-    console.log(filters);
+    // console.log(filters);
 
   }, [])
   
@@ -26,9 +26,9 @@ function Products() {
       setIsLoading(true);
       const data = await fetch(link)
       const response = await data.json();
-      console.log(data);
+      // console.log(data);
       
-      console.log(response);
+      // console.log(response);
       
       setProducts(response);
     } catch (error) {
@@ -54,7 +54,7 @@ function Products() {
         }
         else {
           if(product.category == 'iphone'){
-            console.log(filters, filters.includes(`iphone ${product.model.split(' ')[0]}`) ,`iphone ${product.model.split(' ')[0]}`);
+            // console.log(filters, filters.includes(`iphone ${product.model.split(' ')[0]}`) ,`iphone ${product.model.split(' ')[0]}`);
             return filters.includes(`iphone ${product.model.split(' ')[0]}`) 
           }
           else if(product.category == 'ipad'){
