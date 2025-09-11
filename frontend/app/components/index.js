@@ -53,6 +53,12 @@ export { default as CartItemImage } from "./CartItemImage.jsx";
 export { default as CartItemHeader } from "./CartItemHeader.jsx";
 export { default as CaretItemPrice } from "./CaretItemPrice.jsx";
 export { default as CartItemQuantity } from "./CartItemQuantity.jsx";
+export { default as CartItems } from "./CartItems.jsx";
+export { default as SparkBanner } from "./SparkBanner.jsx";
+export { default as ProductView } from "./ProductView.jsx";
+export { default as AddToCart } from "./AddToCart.jsx";
+export { default as CartBtn } from "./CartBtn.jsx";
+export { default as RemoveItemBtn } from "./RemoveItemBtn.jsx";
 
 
 
