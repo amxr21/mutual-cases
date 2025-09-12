@@ -93,12 +93,12 @@ function Products() {
 
 
   return (
-    <div className='col-span-8 flex flex-col gap-6 '>
+    <div className='col-span-10 xl:col-span-8 flex flex-col gap-6 '>
 
       <ProductsBar textHeader={filters.length == 0 ? `Showing ${products? products.length : 0}` : `Filtered: ${filteredProducts ? filteredProducts.length : 0}`} />
 
 
-      <div className="products grid grid-cols-3 gap-x-6 gap-y-10">
+      <div className="products grid grid-cols-1 xl:grid-cols-3 gap-x-6 gap-y-20 xl:gap-y-10">
         {
           filteredProducts 
           ? filteredProducts?.length > 0 && filteredProducts.map((product, indx) => {
