@@ -38,7 +38,7 @@ export default function ProductView({ params }) {
   return (
     <div className="flex flex-col gap-6 h-fit">
 
-      <ProductViewContainer classes='product grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-16 xl:h-[28rem]'>
+      <ProductViewContainer classes='product grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-16 xl:h-[28rem]'>
         <ProductImages images={[product.image_url_1, product.image_url_2, product.image_url_3]} />
         <ProductDetails details={product} />
       </ProductViewContainer>
