@@ -59,6 +59,7 @@ export { default as ProductView } from "./ProductView.jsx";
 export { default as AddToCart } from "./AddToCart.jsx";
 export { default as CartBtn } from "./CartBtn.jsx";
 export { default as RemoveItemBtn } from "./RemoveItemBtn.jsx";
+export { default as DiscoverProducts } from "./DiscoverProducts.jsx";
 
 
 
