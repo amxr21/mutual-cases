@@ -5,7 +5,7 @@ import { emiratiBadge } from "../constants/imags"
 
 function EmiratiBadge() {
   return (
-    <div className='absolute top-8 -left-[4rem] -rotate-12 z-50'>
+    <div className='absolute left-[-6%] top-[20%] xl:w-fit xl:top-8 xl:-left-[4rem] -rotate-12 z-50'>
         <Image alt='proudly made by Emirati talents' src={emiratiBadge}  />
     </div>
   )
