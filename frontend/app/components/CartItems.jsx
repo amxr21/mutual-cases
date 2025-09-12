@@ -32,7 +32,6 @@ function CartItems() {
         
         getCartItems()
         if(items){
-
             console.log(items);
         }
         

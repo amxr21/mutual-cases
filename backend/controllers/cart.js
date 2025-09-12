@@ -9,7 +9,7 @@ const addToCart = async (req, res) => {
     try {
         const { user_id, product_id, quantity } = req.body
 
-        const [ exisiting ] = await pool.query(`SELECT * FROM cart_items WHERE user_id = ${user_id} AND product_id = ${product_id}`)
+        const [ exisiting ] = await pool.query(`SELECT * FROM cart_items WHERE user_id = ? AND product_id = ?`, [user_id, product_id])
         
         if(exisiting.length > 0){
             return res.json({message: "Item already in cart", itemStatus: "exists"})
@@ -72,8 +72,6 @@ const updateCart = async (req, res) => {
     }
 }
 
-
-
 const viewCart = async (req, res) => {
     try {
         const { id } = req.params
@@ -90,8 +88,6 @@ const viewCart = async (req, res) => {
             `
 
         )
-        
-
 
         res.json(rows)
 
