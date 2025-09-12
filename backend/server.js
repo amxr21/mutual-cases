@@ -7,6 +7,7 @@ const authRouter = require("./routes/googleRoutes.js");
 
 const app = express()
 const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "https://mutual-cases.vercel.app", "https://mutual-cases.onrender.com"];
+
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
