@@ -20,8 +20,8 @@ function Products() {
       setIsLoading(true);
       const data = await fetch(`${API_ENDPOINT}/products`)
       const response = await data.json();
-      console.log(response); 
-      setProducts(response.data);
+      // console.log(response);
+      setProducts(response);
       
     } catch (error) {
       console.log(error);
@@ -58,7 +58,7 @@ function Products() {
         )
               
       )
-     console.log(filteredProducts);
+    //  console.log(filteredProducts);
     }
   }, [products, filters])
 
@@ -110,7 +110,7 @@ function Products() {
         }
 
         {
-          !products || products.length == 0 ? <h3>no products</h3> : ''  
+          products?.length == 0 ? <h3>no products</h3>  : ''
         }
       </div>
     </div>
