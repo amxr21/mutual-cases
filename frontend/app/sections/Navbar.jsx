@@ -33,7 +33,7 @@ function Navbar() {
                 }
             </NavContainer>
 
-            <div className="flex w-full xl:w-fit justify-between -mt-8 md:mt-0">
+            <div className="flex  xl:flex-row-reverse flex-row w-full xl:w-fit justify-between -mt-8 md:mt-0">
                 <GoogleLoginButton />
                 <NavContainer type='icon' classes="">
                     {

@@ -67,7 +67,7 @@ export default function GoogleLoginButton(){
     }
 
     return user ? <>
-            <div className="grow top-0 left-0 flex items-center gap-4">
+            <div className="grow top-0 left-0 flex items-center gap-4 mx-4">
                 <div className="relative min-w-10 w-10 min-h-10 h-10 overflow-hidden rounded-2xl ">
                     <Image fill src={`${String(user?.picture)}`} alt="profile image" className=" object-cover" />
                 </div>
