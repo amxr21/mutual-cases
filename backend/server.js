@@ -4,17 +4,18 @@ const cors = require('cors')
 // routes 
 const productsRoutes = require("./routes/productsRoutes.js");
 const authRouter = require("./routes/googleRoutes.js");
+const cartRouter = require("./routes/cartRoutes.js")
 
 const app = express()
 const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "https://mutual-cases.vercel.app", "https://mutual-cases.onrender.com"];
 
-app.use(cors({
+const corsOptions = {
     origin: allowedOrigins,
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-}));
+}
 
-// app.use(cors(corsOptions))
+app.use(cors(corsOptions));
 
 // middleware to accept json-format files
 app.use(express.json());
@@ -32,7 +33,10 @@ app.get("/", async (req, res) => {
 // products routes 
 app.use("/products", productsRoutes)
 
+// cart routes 
+app.use("/cart", cartRouter)
 
+// auth routes 
 app.use("/", authRouter);
 
 
