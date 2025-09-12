@@ -6,7 +6,7 @@ import { ImageCaption } from './index'
 
 function AboutImage() {
   return (
-    <div className="about-image flex gap-18 min-w-fit">
+    <div className="about-image flex gap-8 xl:gap-18 min-w-fit">
         <ImageCaption caseType="iphone" />
         <ImageCaption caseType="ipad" />
     </div>

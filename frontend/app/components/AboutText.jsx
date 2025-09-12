@@ -5,7 +5,7 @@ import { BoldText, Header, Mark } from '.'
 function AboutText() {
   return (
     <div className="about-text flex flex-col gap-5">
-      <Header headerText='About Mutual' subheader={false} textAlignment='left' mark={true} markClasses='-top-6 left-25 w-42'/>
+      <Header headerText='About Mutual' subheader={false} textAlignment='left' mark={true} markClasses='-top-8 left-0 w-40'/>
 
       <div>
         <p className='para'>
