@@ -6,6 +6,7 @@ let sql =
         `
 
 const addToCart = async (req, res) => {
+    console.log("addToCart called", req.body);
     try {
         const { user_id, product_id, quantity } = req.body
 
@@ -73,6 +74,8 @@ const updateCart = async (req, res) => {
 }
 
 const viewCart = async (req, res) => {
+    console.log("viewCart called", req.body);
+
     try {
         const { id } = req.params
         console.log(id);
