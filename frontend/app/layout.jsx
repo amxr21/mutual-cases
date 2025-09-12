@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={fraunces.className}>
       <body className={`font-default`}>
-        <div className="mx-20 my-6 font-bold">
+        <div className="mx-8 xl:mx-20 my-3 xl:my-6 font-bold">
           <Navbar />
           {children}
         </div>
