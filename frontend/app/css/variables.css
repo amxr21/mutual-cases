@@ -14,12 +14,12 @@
 
 @layer components{
   .heading{
-    @apply text-6xl font-bold;
+    @apply text-5xl xl:text-6xl font-bold;
     color: var(--color-black);
   }
 
   .header{
-    @apply text-3xl font-semibold;
+    @apply text-2xl xl:text-3xl font-semibold;
     color: var(--color-off-black); 
   }
 
@@ -28,7 +28,7 @@
   }
 
   .para{
-    @apply text-xl font-light text-justify;
+    @apply text-base xl:text-xl font-light text-center xl:text-justify;
   }
   .para-small{
     @apply text-lg font-light text-justify;
