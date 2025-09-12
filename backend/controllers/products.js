@@ -13,7 +13,7 @@ const _ = require("lodash");
 let sql = 
 `
     SELECT p.id,  p.trend, p.edition, p.category, p.model, t.type, p.price, p.stock_quantity_id, sq.quantity, p.image_url_1, p.image_url_2, p.image_url_3,  p.created_at, p.updated_at FROM products p 
-    JOIN CATEGORY c
+    JOIN category c
         ON p.category = c.category_title
     JOIN stock_quantity sq
         ON p.stock_quantity_id = sq.stock_id
@@ -24,7 +24,7 @@ const getProducts = async (req, res) => {
 
     try {
         const [ rows, fields ] = await pool.query(sql);
-        // console.log(rows);
+        console.log(rows);
         
         res.json(rows)
 
