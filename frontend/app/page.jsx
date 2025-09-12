@@ -2,7 +2,7 @@ import { Hero, About, Discover, Features, Steps, Unique } from "./sections/index
 
 const Home = () => {
   return (
-    <main className="flex flex-col gap-40">
+    <main className="flex flex-col gap-20 xl:gap-40">
       <Hero />
       <About />
       <Discover />
