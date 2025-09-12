@@ -20,12 +20,12 @@ function CartItem({ itemDetails }) {
     }, [])
 
   return (
-    count != 0 ? <div className='flex justify-between gap-5 border rounded-lg p-2 h-32 min-w-full items-center'>
-        <div className="details flex items-center gap-4 grow h-full ">
+    count != 0 ? <div className='flex flex-col xl:flex-row justify-between gap-5 border rounded-lg p-2 xl:h-32 min-w-full items-center'>
+        <div className="details flex flex-col xl:flex-row items-center gap-2 xl:gap-4 grow h-full xl:h-fit w-full xl:w-fit">
             <CartItemImage imageSrc={item.image_url_1} />
             <CartItemHeader item={item} />            
         </div>
-        <div className='flex items-center gap-4 '>
+        <div className='flex justify-between w-full xl:items-center xl:gap-4 '>
             <CaretItemPrice item={item} />
             <CartItemQuantity count={count} countFunc={setCount} itemId ={itemDetails.id} />
         </div>
