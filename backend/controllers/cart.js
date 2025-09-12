@@ -84,8 +84,8 @@ const viewCart = async (req, res) => {
             JOIN products p ON p.id = ci.product_id
             JOIN types t ON t.id = p.type_id
             JOIN stock_quantity sq ON sq.stock_id = p.stock_quantity_id
-            WHERE ci.user_id = ${id}
-            `
+            WHERE ci.user_id = ?
+            `, [id]
 
         )
 

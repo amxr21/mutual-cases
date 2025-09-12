@@ -6,7 +6,6 @@ const router = express.Router()
 
 router.get("/test", test);
 
-
 router.get("/", getProducts)
 
 router.get("/:id", getProduct);

@@ -1,8 +1,6 @@
 const express = require("express")
-
-const { addToCart, viewCart, removeFromCart, updateCart } = require("../controllers/cart");
-
 const router = express.Router();
+const { addToCart, viewCart, removeFromCart, updateCart } = require("../controllers/cart");
 
 
 router.get("/:id", viewCart)
