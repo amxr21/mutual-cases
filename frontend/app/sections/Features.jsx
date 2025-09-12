@@ -13,9 +13,9 @@ function Features() {
 
 
   return (
-    <MainSection Id="Features" classes="banner items-center bg-blue py-16 px-20 -mx-20 text-white">
+    <MainSection Id="Features" classes="banner items-center bg-blue gap-8 xl:gap-0 px-8 xl:px-20 py-8 xl:py-16 -mx-8 xl:-mx-20 text-white">
         <Header textColor="white" textAlignment="center" headerText="We offer three types of cases" subheaderText="Each has specific functions to match your needs!" subheader={true} mark={false} />
-        <ul className="features-details grid grid-cols-3 w-full justify-between">
+        <ul className="features-details grid grid-cols-1 gap-5 xl:grid-cols-3 w-full justify-between">
             {
                 text['en'].map((feature, indx) => {
                     let a = Object.entries(feature)[0]
