@@ -2,6 +2,9 @@
 import { useEffect, useState } from 'react'
 import { Product } from '.'
 
+const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+
+
 function DiscoverProducts( ) {
 
     const [ productsList, setProductsList ] = useState([])
@@ -9,7 +12,7 @@ function DiscoverProducts( ) {
     useEffect(() =>{
         const fetchProducts = async () => {
             try {
-                const res = await fetch("http://localhost:3000/products")
+                const res = await fetch(`${API_ENDPOINT}/products`)
                 const data = await res.json();
 
                 
