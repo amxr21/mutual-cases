@@ -8,7 +8,7 @@ function ShippingFeatures() {
         {icon: Truck, text: 'Premium Quality & Service'},
     ]
     return (
-        <div className='flex   justify-between w-full mt-4'>
+        <div className='flex flex-col xl:flex-row gap-3 justify-between w-full mt-4'>
             {
                 features.map((feature, indx) => {
                     return <ShippingFeature key={indx} icon={feature.icon} text={feature.text} />
