@@ -18,14 +18,14 @@ const text = {
 
 function Steps() {
   return (
-    <MainSection>
+    <MainSection classes={'gap-8 xl:gap-0'}>
         <Header headerText='How We Make Your Order' subheader={true} subheaderText='From concept to your doorstep — every cover goes through a thoughtful, hands-on process.' textAlignment='center' mark={true} markClasses='grow w-40 flex justify-center -top-6 right-[35%]' textColor='' />
 
-        <div className='flex flex-col gap-15'>
+        <div className='flex flex-col gap-8 xl:gap-15'>
             {
                 text['en'].map((step, index) => {
                     return (
-                        <Step key={index} classes={index % 2 ? '' : 'flex-row-reverse'} header={step.text.h} paragraph={step.text.p} imageSrc={step.image} />
+                        <Step key={index} classes={index % 2 ? '' : 'xl:flex-row-reverse'} header={step.text.h} paragraph={step.text.p} imageSrc={step.image} />
                     )
                 })
             }
