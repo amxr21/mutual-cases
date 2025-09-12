@@ -25,7 +25,7 @@ function OrderOption({ icon, text }) {
     }
 
     return (
-    <button onClick={handleClick} className={`flex items-center gap-3 text-blue ${!isClicked? 'bg-white  border border-blue' : 'bg-blue-200 border border-white'} rounded-lg w-48 px-3 py-1 cursor-pointer`}>
+    <button onClick={handleClick} className={`flex items-center justify-center xl:justify-baseline gap-3 text-blue ${!isClicked? 'bg-white  border border-blue' : 'bg-blue-200 border border-white'} rounded-lg w-full xl:w-48 px-3 py-1 cursor-pointer`}>
         <div className="icon ">
             <Image src={icon == 'gift' ? Gift : Note} alt={text} />
 

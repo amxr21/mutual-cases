@@ -21,8 +21,8 @@ function Total() {
   }, [cartDetails])
 
   return (
-      <div className="total flex gap-4">
-        <h2 className="text-4xl pt-2 font-semibold border-t grow">Total: {total}AED</h2>
+      <div className="total flex flex-col xl:flex-row gap-4">
+        <h2 className="text-2xl xl:text-4xl pt-2 font-semibold border-t grow">Total: {total}AED</h2>
         <LargeButton text="Continue to Payment" color="blue" handleClick={() => {}} classes="text-xl" />
       </div>
   )

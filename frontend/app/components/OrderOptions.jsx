@@ -8,7 +8,7 @@ function OrderOptions() {
 
 
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-col xl:flex-row w-full gap-2 xl:gap-3">
         {
             text.map((t, indx) => {
                 return <OrderOption key={indx} icon={t.i} text={t.p} />
