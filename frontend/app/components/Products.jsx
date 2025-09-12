@@ -12,15 +12,7 @@ function Products() {
   const [ isLoading, setIsLoading ] = useState(false);
 
   const [ filteredProducts, setFilteredProducts ] = useState([])
-
   const { filters, selectedFilter } = useContext(FilterContext) 
-
-  useEffect(() => {
-   console.log(filters);
-    console.log(API_ENDPOINT);
-    
-  }, [])
-  
 
 
   const fetchData = async () => {
@@ -29,8 +21,8 @@ function Products() {
       const data = await fetch(`${API_ENDPOINT}/products`)
       const response = await data.json();
       console.log(response); 
-      
       setProducts(response.data);
+      
     } catch (error) {
       console.log(error);
       
@@ -47,24 +39,27 @@ function Products() {
   }, [])
 
   useEffect(() => {
-    setFilteredProducts(
-      products.filter((product) => {
-        if( filters.length == 0 ){
-          return product
-        }
-        else {
-          if(product.category == 'iphone'){
-           console.log(filters, filters.includes(`iphone ${product.model.split(' ')[0]}`) ,`iphone ${product.model.split(' ')[0]}`);
-            return filters.includes(`iphone ${product.model.split(' ')[0]}`) 
+    if(products){
+      setFilteredProducts(
+        products.filter((product) => {
+            if( filters.length == 0 ){
+              return product
+            }
+            else {
+              if(product.category == 'iphone'){
+              console.log(filters, filters.includes(`iphone ${product.model.split(' ')[0]}`) ,`iphone ${product.model.split(' ')[0]}`);
+                return filters.includes(`iphone ${product.model.split(' ')[0]}`) 
+              }
+              else if(product.category == 'ipad'){
+                return filters.includes(product.type.split(' ')[0].toLowerCase()) 
+              }
+            }
           }
-          else if(product.category == 'ipad'){
-            return filters.includes(product.type.split(' ')[0].toLowerCase()) 
-          }
-        }
-      })
-            
-    )
-   console.log(filteredProducts);
+        )
+              
+      )
+     console.log(filteredProducts);
+    }
   }, [products, filters])
 
 
@@ -72,20 +67,25 @@ function Products() {
    console.log(products);
    console.log('====================================================');
    console.log(products.sort((a, b) => b.id - a.id));
-    if(selectedFilter?.name == 'Trend'){
-      setFilteredProducts([...products].filter( p => p.trend == true))
+
+   if(products){
+     if(selectedFilter?.name == 'Trend'){
+       setFilteredProducts([...products].filter( p => p.trend == true))
+     }
+     else if(selectedFilter?.name == 'Price'){
+      console.log(selectedFilter.name, selectedFilter.name == 'Price');
+       
+       setFilteredProducts([...products].sort((a, b) => b.price - a.price))
+     }
+    else if(selectedFilter?.name == 'Recent'){
+      setFilteredProducts([...products].sort((a, b) => b.updated_at - b.updated_at))
     }
-    else if(selectedFilter?.name == 'Price'){
-     console.log(selectedFilter.name, selectedFilter.name == 'Price');
-      
-      setFilteredProducts([...products].sort((a, b) => b.price - a.price))
-    }
-   else if(selectedFilter?.name == 'Recent'){
-     setFilteredProducts([...products].sort((a, b) => b.updated_at - b.updated_at))
+     else{
+       setFilteredProducts([...products].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)))
+     }
+
    }
-    else{
-      setFilteredProducts([...products].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)))
-    }
+
     
     
   }, [selectedFilter])
@@ -95,20 +95,22 @@ function Products() {
   return (
     <div className='col-span-8 flex flex-col gap-6 '>
 
-      <ProductsBar textHeader={filters.length == 0 ? `Showing ${products?.length}` : `Filtered: ${filteredProducts.length}`} />
+      <ProductsBar textHeader={filters.length == 0 ? `Showing ${products? products.length : 0}` : `Filtered: ${filteredProducts ? filteredProducts.length : 0}`} />
 
 
       <div className="products grid grid-cols-3 gap-x-6 gap-y-10">
         {
-          filteredProducts?.length > 0 && filteredProducts.map((product, indx) => {
+          filteredProducts 
+          ? filteredProducts?.length > 0 && filteredProducts.map((product, indx) => {
             return (
               <Product key={indx} details={product} />
             )
-          })  
+          })
+          : ''
         }
 
         {
-          products.length == 0 ? <h3>no products</h3> : ''
+          !products || products.length == 0 ? <h3>no products</h3> : ''  
         }
       </div>
     </div>
