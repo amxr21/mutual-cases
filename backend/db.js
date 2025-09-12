@@ -12,6 +12,7 @@ const pool = mysql.createPool({
     decimalNumbers: true,
     multipleStatements: true,
     queueLimit: 100,
+    ssl: { rejectUnauthorized: false },
     typeCast: ( field, next ) => {
         if(field.type == 'TINY' && field.length == 1){
             return field.string() == '1';
