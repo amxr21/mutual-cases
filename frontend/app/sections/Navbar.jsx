@@ -19,12 +19,13 @@ function Navbar() {
 
 
   return (
-    <nav className='flex w-full justify-between items-center my-8 overflow-hidden'>
+    <nav className='flex flex-col xl:flex-row w-full justify-between items-center my-8 overflow-hidden'>
         <div className="logo h-8">
             <Image className='h-full w-auto' src={Logo} alt='test' quality={100} />
         </div>
-        <div className="links w-fit flex gap-x-8">
-            <NavContainer type='text'>
+
+        <div className="links w-full items-end justify-baseline xl:w-fit flex xl:flex-row flex-col-reverse gap-4 xl:gap-x-8">
+            <NavContainer type='text' classes="w-full">
                 {
                     links['en'].filter(l => l.type === 'text').map(link => {
                         return <NavLink key={link.link} text={link.text} link={link.link} type={link.type} />
@@ -32,14 +33,18 @@ function Navbar() {
                 }
             </NavContainer>
 
-            <NavContainer type='icon'>
-                {
-                    links['en'].filter(l => l.type === 'icon').map(link => {
-                        return <NavLink key={link.link} text={link.text} link={link.link} type={link.type} />
-                    })
-                }
-            </NavContainer>
-            <GoogleLoginButton />
+            <div className="flex w-full xl:w-fit justify-between -mt-8 md:mt-0">
+                <GoogleLoginButton />
+                <NavContainer type='icon' classes="">
+                    {
+                        links['en'].filter(l => l.type === 'icon').map(link => {
+                            return <NavLink key={link.link} text={link.text} link={link.link} type={link.type} />
+                        })
+                    }
+                </NavContainer>
+
+            </div>
+
         </div>
     </nav>
   )
