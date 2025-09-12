@@ -28,11 +28,9 @@ function Products() {
       setIsLoading(true);
       const data = await fetch(`${API_ENDPOINT}/products`)
       const response = await data.json();
-     console.log(data);
+      console.log(response); 
       
-     console.log(response);
-      
-      setProducts(response);
+      setProducts(response.data);
     } catch (error) {
       console.log(error);
       
