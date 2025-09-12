@@ -14,10 +14,10 @@ function Unique() {
 
 
   return (
-    <MainSection Id={"Unique"} classes="banner -mx-20 px-20 py-12 mb-40">
+    <MainSection Id={"Unique"} classes="banner gap-8 xl:gap-0 -mx-8 xl:-mx-20 px-10 xl:px-20 py-6 py-12 mb-20 xl:mb-40">
         <Header headerText='What Sets Us Apart' subheader={true} subheaderText='We don’t just sell covers — we create everyday essentials designed to move with you. Here’s what makes Mutual different:' textAlignment='center' textColor='white' />
 
-        <div className="info's grid grid-cols-3 gap-2">
+        <div className="info's grid xl:grid-cols-3 gap-10 xl:gap-2">
             {
                 text['en'].map((info, indx) => {
                     return (
