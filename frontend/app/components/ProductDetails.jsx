@@ -12,7 +12,7 @@ function ProductDetails({ details }) {
 
         <div className="flex flex-col gap-3">
             <ProductDetailsPrice details={details} />
-            <div className="buttons flex gap-5">
+            <div className="buttons flex flex-col xl:flex-row gap-2 xl:gap-5">
 
                 <AddToCart id={ details.id } />
                 
