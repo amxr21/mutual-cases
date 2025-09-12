@@ -7,7 +7,7 @@ function WarrantyBanner() {
     { h: '24/7 Customer Support', p: 'available around the clock to assist you — anytime, any day.' },
   ]
   return (
-    <div className="grid grid-cols-3 -mx-20 px-20 py-6 gap-2 bg-blue opacity-70 text-off-white mt-20 mb-28">
+    <div className="grid grid-cols-1 xl:grid-cols-3 -mx-8 xl:-mx-20 px-10 xl:px-20 py-6 gap-4 text-center xl:text-left xl:gap-2 bg-blue opacity-70 text-off-white mt-20 mb-28">
       {
         text.map((f, indx) => {
           return  <WarrantyFeature key={indx} header={f.h} para={f.p} />
