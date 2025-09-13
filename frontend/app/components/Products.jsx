@@ -25,7 +25,7 @@ function Products() {
       
     } catch (error) {
       console.log(error);
-      
+      setIsLoading(false);
       setProducts([]);
     }
 
@@ -98,6 +98,9 @@ function Products() {
       <ProductsBar textHeader={filters.length == 0 ? `Showing ${products? products.length : 0}` : `Filtered: ${filteredProducts ? filteredProducts.length : 0}`} />
 
 
+      {
+        isLoading && <h2>loading</h2>
+      }
       <div className="products grid grid-cols-1 xl:grid-cols-3 gap-x-6 gap-y-20 xl:gap-y-10">
         {
           filteredProducts 
@@ -110,7 +113,7 @@ function Products() {
         }
 
         {
-          products?.length == 0 ? <h3>no products</h3>  : ''
+          filteredProducts?.length == 0 && !isLoading ? <h3>no products</h3>  : ''
         }
       </div>
     </div>
