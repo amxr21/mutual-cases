@@ -42,7 +42,7 @@ function CartItemQuantity({ count, countFunc, remove = true, itemId }) {
   }, [cartDetails])
 
   return (
-    <div className="up quantity flex flex-col gap-1 justify-between">
+    <div className="up quantity flex flex-col gap-1 justify-between min-w-28">
         <Dropdown 
             value={count}
             
