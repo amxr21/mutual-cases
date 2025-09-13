@@ -25,7 +25,7 @@ function Steps() {
             {
                 text['en'].map((step, index) => {
                     return (
-                        <Step key={index} classes={index % 2 ? '' : 'xl:flex-row-reverse'} header={step.text.h} paragraph={step.text.p} imageSrc={step.image} />
+                        <Step key={index} classes={index % 2 ? 'xl:flex-row' : 'xl:flex-row-reverse'} header={step.text.h} paragraph={step.text.p} imageSrc={step.image} />
                     )
                 })
             }
