@@ -1,54 +1,62 @@
 'use client'
-
 import { useContext, useEffect, useState } from "react"
 import { CartItem } from "."
 import { CartContext } from "../Context/CartContext"
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+import { getJSON } from "../lib/safeFetch"
 
-
+/**
+ * Fetches and renders the signed-in user's cart items. Uses safeFetch and only
+ * ever stores an array into state, so .map can't throw. Shows empty/error text
+ * instead of crashing when there's no user or the request fails.
+ */
 function CartItems() {
-    const { cartDetails, setCartDetails  } = useContext(CartContext)
+    const { setCartDetails } = useContext(CartContext)
 
-    
-    const [ items, setItems ] = useState([])
-    useEffect(() => {
-        // console.log(cartDetails);
-
-    }, [items, cartDetails])
+    const [items, setItems] = useState([])
+    const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'error' | 'empty'
 
     useEffect(() => {
+        let active = true
         const userId = localStorage.getItem('userId')
-        
+
+        if (!userId) {
+            setStatus('empty')
+            return
+        }
+
         const getCartItems = async () => {
-            const response = await fetch(`${API_ENDPOINT}/cart/${userId}`);
-            const items = await response.json();
-            
-            if(items){
-                setItems(items)
-                setCartDetails((prev) => ({...prev, cartItems: items}))
+            const result = await getJSON(`/cart/${userId}`)
+            if (!active) return
+
+            if (result.ok && Array.isArray(result.data)) {
+                setItems(result.data)
+                setCartDetails((prev) => ({ ...prev, cartItems: result.data }))
+                setStatus(result.data.length ? 'ready' : 'empty')
+            } else {
+                setItems([])
+                setStatus('error')
             }
-            // console.log(items);
         }
-        
+
         getCartItems()
-        if(items){
-            console.log(items);
+        return () => {
+            active = false
         }
-        
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-    
 
+    if (status === 'loading') return <p className="font-light w-full">Loading your cart…</p>
+    if (status === 'error')
+        return <p className="font-light w-full text-blue">We couldn&apos;t load your cart. Please refresh.</p>
+    if (status === 'empty') return <p className="font-light w-full">Your cart is empty.</p>
 
-  return (
-    <>
-        {
-            items?.map((item, indx) => {
-                return <CartItem key={indx} itemDetails={item} />
-            })
-        }
-    </>
-  )
+    return (
+        <>
+            {items.map((item, indx) => (
+                <CartItem key={item?.id ?? indx} itemDetails={item} />
+            ))}
+        </>
+    )
 }
 
 export default CartItems

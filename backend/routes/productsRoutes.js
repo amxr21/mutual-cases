@@ -1,20 +1,34 @@
-const express = require('express');
+const express = require("express");
 
-// controllers
-const { getProducts, getProduct, postProduct, updateProduct, deleteProduct, test } = require('../controllers/products')
-const router = express.Router()
+const {
+    getProducts,
+    getProduct,
+    getFilters,
+    postProduct,
+    updateProduct,
+    deleteProduct,
+} = require("../controllers/products");
+const asyncHandler = require("../middleware/asyncHandler");
+const validate = require("../middleware/validate");
+const { idParam, productCreateSchema, productUpdateSchema } = require("../validation/schemas");
 
-router.get("/test", test);
+const router = express.Router();
 
-router.get("/", getProducts)
+router.get("/", asyncHandler(getProducts));
 
-router.get("/:id", getProduct);
+// Must be registered before "/:id" so "filters" isn't matched as an id.
+router.get("/filters", asyncHandler(getFilters));
 
-router.patch("/:id", updateProduct)
+router.get("/:id", validate({ params: idParam }), asyncHandler(getProduct));
 
-router.delete("/:id", deleteProduct)
+router.post("/", validate({ body: productCreateSchema }), asyncHandler(postProduct));
 
-router.post("/", postProduct)
+router.patch(
+    "/:id",
+    validate({ params: idParam, body: productUpdateSchema }),
+    asyncHandler(updateProduct)
+);
 
+router.delete("/:id", validate({ params: idParam }), asyncHandler(deleteProduct));
 
-module.exports = router 
+module.exports = router;

@@ -1,13 +1,13 @@
 'use client'
 
 import { Dropdown } from 'primereact/dropdown';
-import React, { useContext, useState } from "react";
-import { FilterContext } from '../Context/FilterContext';
+import React from "react";
+import { useFilters } from '../Context/FilterContext';
 
 
 function ProductsBar({ textHeader }) {
-    
-    const { selectedFilter, setSelectedFilter } = useContext(FilterContext);
+
+    const { selectedFilter, setSelectedFilter } = useFilters();
     const filters = [
         { name: 'Recent' },
         { name: 'Price' },

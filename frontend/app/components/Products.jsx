@@ -1,121 +1,111 @@
 'use client'
-import { useContext, useEffect, useState } from "react"
-import { Product, ProductHeader } from "."
-import { FilterContext } from "../Context/FilterContext";
+import { useEffect, useMemo, useState } from "react"
+import { Product } from "."
+import { useFilters } from "../Context/FilterContext";
 import ProductsBar from "./ProductsBar";
+import { getJSON } from "../lib/safeFetch";
 
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
-
+/**
+ * Products listing with DB-driven, multi-dimensional filtering.
+ *
+ * Filter tokens are namespaced ("category:iphone", "model:13 pro", ...). A
+ * product matches when, for every dimension that has any selection, its value
+ * is among that dimension's selected values (AND across dimensions, OR within).
+ * Sorting (Recent/Price/Trend) is applied after filtering on a copy.
+ */
 function Products() {
+  const [products, setProducts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
-  const [ products, setProducts ] = useState([]);
-  const [ isLoading, setIsLoading ] = useState(false);
-
-  const [ filteredProducts, setFilteredProducts ] = useState([])
-  const { filters, selectedFilter } = useContext(FilterContext) 
-
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetch(`${API_ENDPOINT}/products`)
-      const response = await data.json();
-      // console.log(response);
-      setProducts(response);
-      
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-      setProducts([]);
-    }
-
-    finally{
-      setIsLoading(false)
-    }
-  }
+  const { selected, selectedFilter } = useFilters()
 
   useEffect(() => {
-    fetchData();
+    let active = true
+    ;(async () => {
+      setIsLoading(true)
+      setLoadError(false)
+      const result = await getJSON('/products')
+      if (!active) return
+      if (result.ok && Array.isArray(result.data)) {
+        setProducts(result.data)
+      } else {
+        setProducts([])
+        setLoadError(true)
+      }
+      setIsLoading(false)
+    })()
+    return () => {
+      active = false
+    }
   }, [])
 
-  useEffect(() => {
-    if(products){
-      setFilteredProducts(
-        products.filter((product) => {
-            if( filters.length == 0 ){
-              return product
-            }
-            else {
-              if(product.category == 'iphone'){
-              console.log(filters, filters.includes(`iphone ${product.model.split(' ')[0]}`) ,`iphone ${product.model.split(' ')[0]}`);
-                return filters.includes(`iphone ${product.model.split(' ')[0]}`) 
-              }
-              else if(product.category == 'ipad'){
-                return filters.includes(product.type.split(' ')[0].toLowerCase()) 
-              }
-            }
-          }
-        )
-              
-      )
-    //  console.log(filteredProducts);
+  // Group selected tokens by dimension.
+  const selectedByDimension = useMemo(() => {
+    const groups = {}
+    for (const token of selected) {
+      const idx = token.indexOf(':')
+      if (idx === -1) continue
+      const dim = token.slice(0, idx)
+      const val = token.slice(idx + 1)
+      ;(groups[dim] ||= new Set()).add(val)
     }
-  }, [products, filters])
+    return groups
+  }, [selected])
 
-
-  useEffect(() => {
-   console.log(products);
-   console.log('====================================================');
-   console.log(products.sort((a, b) => b.id - a.id));
-
-   if(products){
-     if(selectedFilter?.name == 'Trend'){
-       setFilteredProducts([...products].filter( p => p.trend == true))
-     }
-     else if(selectedFilter?.name == 'Price'){
-      console.log(selectedFilter.name, selectedFilter.name == 'Price');
-       
-       setFilteredProducts([...products].sort((a, b) => b.price - a.price))
-     }
-    else if(selectedFilter?.name == 'Recent'){
-      setFilteredProducts([...products].sort((a, b) => b.updated_at - b.updated_at))
+  const matchesFilters = (product) => {
+    for (const [dim, values] of Object.entries(selectedByDimension)) {
+      const field =
+        dim === 'category' ? product?.category
+        : dim === 'model' ? product?.model
+        : dim === 'type' ? product?.type
+        : dim === 'edition' ? product?.edition
+        : null
+      if (field == null) return false
+      if (!values.has(String(field).toLowerCase())) return false
     }
-     else{
-       setFilteredProducts([...products].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)))
-     }
+    return true
+  }
 
-   }
+  const sortProducts = (list) => {
+    const copy = [...list]
+    if (selectedFilter?.name === 'Trend') return copy.filter((p) => p.trend === true)
+    if (selectedFilter?.name === 'Price') return copy.sort((a, b) => b.price - a.price)
+    // Recent / default: newest first.
+    return copy.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+  }
 
-    
-    
-  }, [selectedFilter])
-  
+  const filtered = useMemo(() => {
+    const base = Array.isArray(products) ? products.filter(matchesFilters) : []
+    return sortProducts(base)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, selectedByDimension, selectedFilter])
 
+  const hasFilters = selected.size > 0
 
   return (
     <div className='col-span-10 xl:col-span-8 flex flex-col gap-6 '>
+      <ProductsBar
+        textHeader={hasFilters ? `Filtered: ${filtered.length}` : `Showing ${products.length}`}
+      />
 
-      <ProductsBar textHeader={filters.length == 0 ? `Showing ${products? products.length : 0}` : `Filtered: ${filteredProducts ? filteredProducts.length : 0}`} />
+      {isLoading ? <p className="font-light">Loading products…</p> : null}
 
+      {loadError && !isLoading ? (
+        <p className="font-light text-blue">
+          We couldn&apos;t load the products right now. Please refresh to try again.
+        </p>
+      ) : null}
 
-      {
-        isLoading && <h2>loading</h2>
-      }
       <div className="products grid grid-cols-1 xl:grid-cols-3 gap-x-6 gap-y-20 xl:gap-y-10">
-        {
-          filteredProducts 
-          ? filteredProducts?.length > 0 && filteredProducts.map((product, indx) => {
-            return (
-              <Product key={indx} details={product} />
-            )
-          })
-          : ''
-        }
-
-        {
-          filteredProducts?.length == 0 && !isLoading ? <h3>no products</h3>  : ''
-        }
+        {filtered.map((product, indx) => (
+          <Product key={product?.id ?? indx} details={product} />
+        ))}
       </div>
+
+      {!isLoading && !loadError && filtered.length === 0 ? (
+        <p className="font-light">No products match your filters.</p>
+      ) : null}
     </div>
   )
 }

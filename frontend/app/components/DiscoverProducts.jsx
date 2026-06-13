@@ -1,44 +1,39 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Product } from '.'
+import { getJSON } from '../lib/safeFetch'
 
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+/**
+ * "Discover" strip — shows the first few products on the homepage.
+ * Fixed: the effect had no dependency array (refetched on every render); now
+ * runs once. Uses safeFetch and always renders from a guaranteed array.
+ */
+function DiscoverProducts() {
+  const [productsList, setProductsList] = useState([])
 
+  useEffect(() => {
+    let active = true
+    const fetchProducts = async () => {
+      const result = await getJSON('/products')
+      if (!active) return
+      setProductsList(result.ok && Array.isArray(result.data) ? result.data : [])
+    }
 
-function DiscoverProducts( ) {
+    fetchProducts()
+    return () => {
+      active = false
+    }
+  }, [])
 
-    const [ productsList, setProductsList ] = useState([])
+  if (productsList.length === 0) {
+    return <div className="font-light">No products to show right now.</div>
+  }
 
-    useEffect(() =>{
-        const fetchProducts = async () => {
-            try {
-                const res = await fetch(`${API_ENDPOINT}/products`)
-                const data = await res.json();
-
-                
-                if(data) setProductsList(data)
-                else throw Error("No data has been found")
-
-                
-            } catch (error) {
-                return { error: error.message }
-            }
-        }
-
-        fetchProducts()
-
- 
-    })
-
-
-
-    return (
+  return (
     <>
-        {
-            Array.isArray(productsList)
-                ? productsList.slice(0,3).map((p, indx) => <Product key={indx} details={p} />)
-                : <div>No products found</div>
-        }
+      {productsList.slice(0, 3).map((p, indx) => (
+        <Product key={p?.id ?? indx} details={p} />
+      ))}
     </>
   )
 }

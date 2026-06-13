@@ -1,75 +1,60 @@
 'use client'
 import { Dropdown } from 'primereact/dropdown';
-import { Button, RemoveItemBtn, } from '.';
-import { useContext, useEffect } from 'react';
+import { RemoveItemBtn } from '.';
+import { useContext, useEffect, useRef } from 'react';
 import { CartContext } from '../Context/CartContext';
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+import { patchJSON } from '../lib/safeFetch';
 
+/**
+ * Quantity selector for a cart line. Hardened:
+ *  - the PATCH now runs through safeFetch with its try/catch INSIDE the async
+ *    fn (the original wrapped the inner async call, so it never caught
+ *    rejections), and is skipped on the initial mount so we don't fire a
+ *    needless update when the row first renders.
+ *  - cart context update guards that cartItems is an array before mapping.
+ */
 function CartItemQuantity({ count, countFunc, remove = true, itemId }) {
-  const { cartDetails, setCartDetails } = useContext(CartContext)
-
+  const { setCartDetails } = useContext(CartContext)
+  const isFirstRun = useRef(true)
 
   useEffect(() => {
-    console.log(cartDetails);
-    
-    try {
-      const updateCartItem = async () => {
-        const response = await fetch(`${API_ENDPOINT}/cart`, {
-          method: 'PATCH',
-          headers: {'Content-Type' : 'application/json'},
-          body: JSON.stringify({
-            id: itemId,
-            quantity: count,
-          }),
-        })
-        
-        const data = await response.json();
-
-        console.log(data);
-        if(!response.ok){
-          throw Error("There's an issue with the request")
-        }
-
-      }
-
-      updateCartItem()
-
-
-    } catch (error) {
-      console.log(error);
-      
+    // Skip the update request on initial mount.
+    if (isFirstRun.current) {
+      isFirstRun.current = false
+      return
     }
-  }, [cartDetails])
+
+    const updateCartItem = async () => {
+      // safeFetch never throws; errors are reported centrally.
+      await patchJSON('/cart', { id: itemId, quantity: count })
+    }
+
+    updateCartItem()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count])
+
+  const handleChange = (e) => {
+    const value = e.target.value
+    countFunc(value)
+    setCartDetails((prev) => ({
+      ...prev,
+      cartItems: Array.isArray(prev.cartItems)
+        ? prev.cartItems.map((item) => (item.id == itemId ? { ...item, quantity: value } : item))
+        : prev.cartItems,
+    }))
+  }
 
   return (
     <div className="up quantity flex flex-col gap-1 justify-between min-w-28">
-        <Dropdown 
-            value={count}
-            
-            onChange=
-            {
-                (e) => {
-                    countFunc(e.target.value);  setCartDetails((prev) => ({
-                      ...prev,
-                      cartItems: prev.cartItems.map((item) => {
-                        return item.id == itemId ? { ...item, quantity: e.target.value } : item
-                      })
-                    }
-                  ))
-                }
-            }
-            
-            className="w-full bg-off-white text-off-black py-1 px-2 rounded-md flex gap-4 h-full items-center up" 
-            options={[1,2,3,4,5,6,7,8,9,10]}
-            optionLabel="name" 
-            panelClassName='px-2 py-1 bg-off-white text-off-black mt-1 border-off-black rounded-md up'
-            placeholder="1"
-        />
-        {
-          remove && <RemoveItemBtn itemId={itemId} func={() => {countFunc(0)}} />
-          // <Button type='text' buttonContent='X | Remove' classes={'bg-transparent h-full px-2 py-1'} handleClick={() => {countFunc(0)}} />
-
-        }
+      <Dropdown
+        value={count}
+        onChange={handleChange}
+        className="w-full bg-off-white text-off-black py-1 px-2 rounded-md flex gap-4 h-full items-center up"
+        options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+        panelClassName='px-2 py-1 bg-off-white text-off-black mt-1 border-off-black rounded-md up'
+        placeholder="1"
+      />
+      {remove ? <RemoveItemBtn itemId={itemId} func={() => countFunc(0)} /> : null}
     </div>
   )
 }

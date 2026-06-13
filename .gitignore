@@ -23,8 +23,10 @@ out/
 .DS_Store
 Thumbs.db
 
-# Logs
-logs/
+# Logs — keep the per-project logs/ folders tracked (via .gitkeep) but never
+# commit their contents. Applies at any depth (backend/logs, frontend/logs).
+**/logs/*
+!**/logs/.gitkeep
 *.log
 *.out
 

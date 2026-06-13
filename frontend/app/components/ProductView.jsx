@@ -1,48 +1,66 @@
 'use client'
-import React from "react";
-import { ProductDetails, ProductImages, ProductViewContainer } from "@/app/components"; 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { ProductDetails, ProductImages, ProductViewContainer } from "@/app/components";
+import { getJSON } from "../lib/safeFetch";
 
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
-
-
+/**
+ * Product detail view. Hardened:
+ *  - data via safeFetch; tracks loading / not-found / error explicitly.
+ *  - never feeds undefined image URLs to the image grid (ProductImages +
+ *    ImageContainer also guard).
+ *  - `product` defaults to an empty object so child accessors stay safe.
+ */
 export default function ProductView({ params }) {
     const { id } = React.use(params)
-    
-    const [ product, setProduct ] = useState({})
-    
+
+    const [product, setProduct] = useState({})
+    const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'notfound' | 'error'
+
     useEffect(() => {
-        if(id){
+        if (!id) return
+        let active = true
 
         const getData = async () => {
-            const response = await fetch(`${API_ENDPOINT}/products/${id}`)
-            
-            if(response.ok){
-                const productDetails = await response.json()
-                setProduct(productDetails);
-                // return productDetails;
-            }
-            else{
-                setProduct({});
+            setStatus('loading')
+            const result = await getJSON(`/products/${id}`)
+            if (!active) return
+
+            if (result.ok && result.data && typeof result.data === 'object' && result.data.id) {
+                setProduct(result.data)
+                setStatus('ready')
+            } else if (result.status === 404) {
+                setProduct({})
+                setStatus('notfound')
+            } else {
+                setProduct({})
+                setStatus('error')
             }
         }
-        
-        getData();
-        console.log(product);
+
+        getData()
+        return () => {
+            active = false
         }
-    
-      
-  }, [id])
+    }, [id])
 
+    if (status === 'loading') {
+        return <p className="font-light py-10">Loading product…</p>
+    }
+    if (status === 'notfound') {
+        return <p className="font-light py-10 text-blue">This product could not be found.</p>
+    }
+    if (status === 'error') {
+        return <p className="font-light py-10 text-blue">We couldn&apos;t load this product. Please try again.</p>
+    }
 
-  return (
-    <div className="flex flex-col gap-6 h-fit">
+    const images = [product.image_url_1, product.image_url_2, product.image_url_3]
 
-      <ProductViewContainer classes='product grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-16 xl:h-[28rem]'>
-        <ProductImages images={[product.image_url_1, product.image_url_2, product.image_url_3]} />
-        <ProductDetails details={product} />
-      </ProductViewContainer>
-
-    </div>
-  )
+    return (
+        <div className="flex flex-col gap-6 h-fit">
+            <ProductViewContainer classes='product grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-16 xl:h-[28rem]'>
+                <ProductImages images={images} />
+                <ProductDetails details={product} />
+            </ProductViewContainer>
+        </div>
+    )
 }

@@ -1,19 +1,26 @@
 import Image from 'next/image'
-import Link from 'next/link'
-import React from 'react'
 import { Scratches } from './constants/imags'
+import ErrorState from './components/ErrorState'
 
+/**
+ * 404 page. Rendered by Next.js for unmatched routes and explicit notFound()
+ * calls. Uses the shared ErrorState for consistent messaging + recovery, with
+ * the brand scratches backdrop.
+ */
 export default function NotFound() {
-  return (
-    <div className='text-blue flex flex-col items-center py-30 text-center relative'>
-        <p className='text-[14rem] leading-40 mb-12'>404</p>
-        <p className='text-5xl font-semibold'>Oops... something wrong happened</p>
-        
-        <p className='my-4 font-light z-50'>Go Back to <Link className='underline cursor-pointer' href={'/'}>Homepage</Link></p>
-        <Image src={Scratches} alt='scratches' className='absolute w-[50%] top-0' />
-
-    </div>
-  )
+    return (
+        <div className="relative">
+            <ErrorState
+                code="404"
+                title="We couldn't find that page"
+                message="The page you're looking for doesn't exist or may have moved. Let's get you back on track."
+            />
+            <Image
+                src={Scratches}
+                alt=""
+                aria-hidden="true"
+                className="absolute w-[50%] top-0 left-1/2 -translate-x-1/2 -z-10 pointer-events-none"
+            />
+        </div>
+    )
 }
-
-// export default NotFound;

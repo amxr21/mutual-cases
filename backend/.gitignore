@@ -1,0 +1,16 @@
+# dependencies
+/node_modules
+
+# env files (secrets — never commit)
+.env
+.env.*
+!.env.example
+
+# logs — keep the folder tracked but never commit log contents
+/logs/*
+!/logs/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp

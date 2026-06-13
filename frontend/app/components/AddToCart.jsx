@@ -1,64 +1,66 @@
 'use client'
-import { useEffect } from "react"
+import { useState } from "react"
 import { LargeButton } from "."
+import { postJSON } from "../lib/safeFetch"
+import { useToast } from "./Toast/ToastProvider"
 
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
+/**
+ * Add-to-cart button. Interactive states (idle → adding → added) with themed
+ * toasts instead of alert(). Guards the optimistic cart-badge DOM update.
+ */
+function AddToCart({ id }) {
+    const toast = useToast()
+    const [state, setState] = useState('idle') // 'idle' | 'loading' | 'added'
 
-// const { user_id, product_id, quantity } = req.body
+    const cartRequest = async () => {
+        if (state === 'loading') return
 
-function AddToCart( {id} ) {
-    
-    const cartRequest = async (e) => {
-        try {
-            const userId = localStorage.getItem('userId')
-            if(!userId) return alert("Please login first")
-
-            const response = await fetch(`${API_ENDPOINT}/cart`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: userId,
-                    product_id: id,
-                    quantity: 1
-                }),
-            })
-            
-            console.log(response);
-            
-
-            if (!response.ok) {
-                return alert("Failed to add item to cart")
-            }
-
-            const data = await response.json()
-            console.log(data.itemStatus);
-            
-
-            // e.target.textContent = '...'
-            if(data.itemStatus == 'added'){
-                document.getElementById('Cart').lastElementChild.innerText = parseInt(document.getElementById('Cart').lastElementChild.innerText) + 1;
-                // alert("Item added")
-            }
-
-        } catch (error) {
-            // console.log(error);
-            e.target.textContent = "Try"
-            console.log(error);
-
-            
+        const userId = localStorage.getItem('userId')
+        if (!userId) {
+            toast.info("Please log in first to add items to your cart")
+            return
         }
-        // finally{
-        //     e.target.textContent = 'Added !'
-        // }
 
-    }     
-        
+        setState('loading')
+        const result = await postJSON('/cart', {
+            user_id: userId,
+            product_id: id,
+            quantity: 1,
+        })
 
-  return (
-    <LargeButton key={'Add To Cart'} handleClick={cartRequest} text="Add To Cart" color="blue" classes="w-full"  />
-  )
+        if (!result.ok) {
+            setState('idle')
+            toast.error(result.error?.message || "Couldn't add the item to your cart")
+            return
+        }
+
+        if (result.data?.itemStatus === 'added') {
+            const badge = document.getElementById('Cart')?.lastElementChild
+            if (badge) {
+                const current = parseInt(badge.innerText, 10)
+                badge.innerText = String((Number.isFinite(current) ? current : 0) + 1)
+            }
+            setState('added')
+            toast.success("Added to your cart")
+            // Return to idle after the success state has been shown.
+            setTimeout(() => setState('idle'), 1800)
+        } else if (result.data?.itemStatus === 'exists') {
+            setState('idle')
+            toast.info("This item is already in your cart")
+        }
+    }
+
+    const text = state === 'loading' ? 'Adding…' : state === 'added' ? '✓ Added!' : 'Add To Cart'
+
+    return (
+        <LargeButton
+            key={'Add To Cart'}
+            handleClick={cartRequest}
+            text={text}
+            color="blue"
+            classes={`w-full transition-all duration-300 ${state === 'added' ? 'scale-[1.02]' : ''}`}
+        />
+    )
 }
 
 export default AddToCart

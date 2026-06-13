@@ -1,34 +1,23 @@
 import React from 'react'
 import { ProductHeader, ProductPrice, ProductRate } from './index'
-import product from '../(main)/products/[id]/page'
 
-// {
-//     "id": 10,
-//     "trend": true,
-//     "edition": "uaq edition",
-//     "category": "ipad",
-//     "model": "m1",
-//     "type": "magnet",
-//     "price": 110,
-//     "stock_quantity_id": 46888,
-//     "quantity": 10,
-//     "image_url_1": null,
-//     "image_url_2": null,
-//     "image_url_3": null,
-//     "created_at": "2025-08-17T18:16:39.000Z",
-//     "updated_at": "2025-08-17T18:16:39.000Z"
-//   },
+/**
+ * Card body for a product. Guards against missing fields so a partial/empty
+ * product object (e.g. mid-fetch) renders placeholders instead of "undefined".
+ */
+function ProductCardDetails({ data }) {
+  const edition = data?.edition ? String(data.edition).toUpperCase() : ''
+  const category = data?.category ?? ''
+  const model = data?.model ?? ''
 
-function ProductCardDetails( { data }) {
   return (
     <div className='flex flex-col gap-3'>
       <div className='flex gap-4'>
-          <ProductHeader header={`${String(data.edition).toUpperCase()}`} subheader={`${data.category} ${data.model}`} />
-          <ProductRate />
+        <ProductHeader header={edition} subheader={`${category} ${model}`.trim()} />
+        <ProductRate />
       </div>
 
-      <ProductPrice price={data.price} />
-
+      <ProductPrice price={data?.price} />
     </div>
   )
 }

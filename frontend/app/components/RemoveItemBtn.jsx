@@ -1,60 +1,48 @@
 'use client'
-import { useEffect, useState } from 'react';
-import { Button, } from '.';
+import { Button } from '.';
+import { deleteJSON } from '../lib/safeFetch';
+import { useToast } from './Toast/ToastProvider';
 
-const API_ENDPOINT = process.env.NEXT_PUBLIC_API_BASE_URL
-
+/**
+ * Remove-from-cart button. Hardened:
+ *  - request via safeFetch (timeout + consistent result); the optimistic UI
+ *    removal (func()) only runs after a successful delete, so a failed request
+ *    no longer hides an item that's still in the cart.
+ *  - the cart-badge decrement DOM access is null-guarded.
+ *  - uses themed toasts instead of alert().
+ */
 function RemoveItemBtn({ func, itemId }) {
-    const link = `${API_ENDPOINT}/cart/${itemId}`;
+    const toast = useToast()
 
-    const [ res, setRes ] = useState()
-    
+    const removeItem = async () => {
+        const result = await deleteJSON(`/cart/${itemId}`, { product_id: itemId })
 
-    // useEffect(() => {
-
-        const removeItem = async () => {
-            func();
-            try{
-                const res = await fetch(link, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': "application/json"
-                    },
-                    body: JSON.stringify({
-                        product_id: itemId
-                    })
-                })
-    
-                const data = await res.json()
-    
-                setRes(data)
-                let a = parseInt(document.getElementById("Cart").lastElementChild.innerText);
-                if(a > 1){document.getElementById("Cart").lastElementChild.innerText = a - 1}
-
-            } catch(error){
-                console.log('an error occured');
-                
-            }
-
+        if (!result.ok) {
+            toast.error(result.error?.message || "Couldn't remove the item. Please try again.")
+            return
         }
 
+        // Optimistically clear this line in the parent.
+        if (typeof func === 'function') func()
 
-    // }, [])
+        // Best-effort badge decrement — guard the DOM nodes.
+        const badge = document.getElementById("Cart")?.lastElementChild
+        if (badge) {
+            const current = parseInt(badge.innerText, 10)
+            if (Number.isFinite(current) && current > 1) {
+                badge.innerText = String(current - 1)
+            }
+        }
+    }
 
-    // const da = () => {
-    //     func()
-    // }
-
-    useEffect(() => {
-        console.log(res);
-        
-    }, [])
-
-
-    
     return (
-        <Button type='text' buttonContent='X | Remove' classes={'bg-transparent h-full px-2 py-1 down'} handleClick={removeItem} />
-  )
+        <Button
+            type='text'
+            buttonContent='X | Remove'
+            classes={'bg-transparent h-full px-2 py-1 down'}
+            handleClick={removeItem}
+        />
+    )
 }
 
 export default RemoveItemBtn

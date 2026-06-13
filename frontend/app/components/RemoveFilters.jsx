@@ -1,21 +1,13 @@
 'use client'
-
-import { useContext } from "react"
-import { FilterContext } from "../Context/FilterContext"
-
+import { useFilters } from "../Context/FilterContext"
 import { Button } from ".";
 
 function RemoveFilters() {
-    const { filters, setFilters } = useContext(FilterContext);
+    const { count, clear } = useFilters()
 
-
-    const removeFilters = () => {
-        setFilters([])
-    }
-
-  return (
-    filters.length != 0 && <Button classes='p-1' handleClick={removeFilters} buttonContent={'Remove Filters'} />
-  )
+    return count !== 0 ? (
+        <Button classes='p-1' handleClick={clear} buttonContent={'Remove Filters'} />
+    ) : null
 }
 
 export default RemoveFilters

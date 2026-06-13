@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# logs — keep the folder tracked (.gitkeep) but never commit log contents
+/logs/*
+!/logs/.gitkeep
+
 # vercel
 .vercel
 

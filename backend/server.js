@@ -1,48 +1,73 @@
-require("dotenv").config()
-const express = require('express');
-const cors = require('cors')
-// routes 
+const express = require("express");
+const cors = require("cors");
+
+const config = require("./config");
+const logger = require("./logger");
+const { ping } = require("./dbClient");
+const requestLogger = require("./middleware/requestLogger");
+const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
+const registerProcessHandlers = require("./process/handlers");
+
+// Routes
 const productsRoutes = require("./routes/productsRoutes.js");
 const authRouter = require("./routes/googleRoutes.js");
-const cartRouter = require("./routes/cartRoutes.js")
+const cartRouter = require("./routes/cartRoutes.js");
+const likedRouter = require("./routes/likedRoutes.js");
+const customRouter = require("./routes/customRoutes.js");
 
-const app = express()
-const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "https://mutual-cases.vercel.app", "https://mutual-cases.onrender.com"];
-
-const corsOptions = {
-    origin: allowedOrigins,
-    credentials: true,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+// --- Fail fast on missing critical configuration --------------------------
+const missingEnv = config.validate();
+if (missingEnv.length) {
+    logger.error("Missing required environment variables", { missing: missingEnv });
+    // Without DB creds / JWT secret the app can't function; refuse to start.
+    process.exit(1);
 }
 
+const app = express();
+
+const corsOptions = {
+    origin: config.server.allowedOrigins,
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+};
 app.use(cors(corsOptions));
 
-// middleware to accept json-format files
 app.use(express.json());
 
-// to keep following on req method and path taken
-app.use((req, res, next) => {
-    console.log(req.method, req.path); 
-    next();
-})
+// Structured request/response logging -> api-*.log.
+app.use(requestLogger);
 
-app.get("/", async (req, res) => {
-    res.json({'test': "this is just a test"})
-})
+// Health check (also verifies DB connectivity).
+app.get("/health", async (_req, res) => {
+    try {
+        await ping();
+        res.json({ status: "ok", db: "up" });
+    } catch {
+        res.status(503).json({ status: "degraded", db: "down" });
+    }
+});
 
-// products routes 
-app.use("/products", productsRoutes)
+app.get("/", (_req, res) => {
+    res.json({ status: "ok", service: "mutual-backend" });
+});
 
-// cart routes 
-app.use("/cart", cartRouter)
-
-// auth routes 
+// Feature routes.
+app.use("/products", productsRoutes);
+app.use("/cart", cartRouter);
+app.use("/liked", likedRouter);
+app.use("/custom", customRouter);
 app.use("/", authRouter);
 
+// 404 for anything unmatched, then the centralized error handler. Order matters:
+// these must be registered AFTER all routes.
+app.use(notFoundHandler);
+app.use(errorHandler);
 
+const server = app.listen(config.server.port, () => {
+    logger.info(`Server listening on port ${config.server.port}`, { env: config.env });
+});
 
+// Process-level safety net + graceful shutdown (drains server + DB pool).
+registerProcessHandlers({ server, pool: require("./db") });
 
-app.listen(process.env.PORT, () => {
-    console.log("Server works fine on", process.env.PORT);
-    
-})
+module.exports = app;

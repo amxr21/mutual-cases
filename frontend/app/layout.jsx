@@ -2,6 +2,10 @@ import "./css/globals.css";
 import localFont from "next/font/local"
 
 import { Navbar, Footer } from './sections/index'
+import GlobalErrorListeners from './components/GlobalErrorListeners'
+import { ToastProvider } from './components/Toast/ToastProvider'
+import { LikeProvider } from './Context/LikeContext'
+import PageTransition from './components/PageTransition'
 
 const fraunces = localFont({
   src: '../public/fonts/FRAUNCES-REGULAR.woff2'
@@ -16,17 +20,20 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={fraunces.className}>
       <body className={`font-default`}>
-        <div className="mx-8 xl:mx-20 my-3 xl:my-6 font-bold">
-          <Navbar />
-          {children}
-        </div>
-          <script
-          src="https://accounts.google.com/gsi/client"
-          strategy="afterInteractive"
-        />
-        <Footer />
-
-        
+        <GlobalErrorListeners />
+        <ToastProvider>
+          <LikeProvider>
+            <div className="mx-8 xl:mx-20 my-3 xl:my-6 font-bold">
+              <Navbar />
+              <PageTransition>{children}</PageTransition>
+            </div>
+            <script
+              src="https://accounts.google.com/gsi/client"
+              strategy="afterInteractive"
+            />
+            <Footer />
+          </LikeProvider>
+        </ToastProvider>
       </body>
     </html>
   );
