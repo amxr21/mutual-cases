@@ -2,22 +2,25 @@ const express = require("express");
 
 const { addToCart, viewCart, removeFromCart, updateCart } = require("../controllers/cart");
 const asyncHandler = require("../middleware/asyncHandler");
+const requireAuth = require("../middleware/auth");
 const validate = require("../middleware/validate");
-const { idParam, cartAddSchema, cartUpdateSchema, cartRemoveSchema } = require("../validation/schemas");
+const { cartAddSchema, cartUpdateSchema, cartRemoveSchema } = require("../validation/schemas");
 
 const router = express.Router();
 
-// View a user's cart by user id.
-router.get("/:id", validate({ params: idParam }), asyncHandler(viewCart));
+// All cart routes require auth; the user is taken from the JWT, never the body/URL.
+
+// View the authenticated user's cart. (:id kept for URL back-compat but ignored.)
+router.get("/:id", requireAuth, asyncHandler(viewCart));
+router.get("/", requireAuth, asyncHandler(viewCart));
 
 // Add an item.
-router.post("/", validate({ body: cartAddSchema }), asyncHandler(addToCart));
+router.post("/", requireAuth, validate({ body: cartAddSchema }), asyncHandler(addToCart));
 
-// Remove an item. The client sends product_id in the body (URL :id is the same
-// value for backward-compat); we validate the body as the source of truth.
-router.delete("/:id", validate({ body: cartRemoveSchema }), asyncHandler(removeFromCart));
+// Remove an item (by product_id in the body).
+router.delete("/:id", requireAuth, validate({ body: cartRemoveSchema }), asyncHandler(removeFromCart));
 
 // Update quantity (0 removes the line).
-router.patch("/", validate({ body: cartUpdateSchema }), asyncHandler(updateCart));
+router.patch("/", requireAuth, validate({ body: cartUpdateSchema }), asyncHandler(updateCart));
 
 module.exports = router;

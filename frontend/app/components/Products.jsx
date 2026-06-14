@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from "react"
-import { Product } from "."
+import { Product, ProductsGridSkeleton } from "."
 import { useFilters } from "../Context/FilterContext";
 import ProductsBar from "./ProductsBar";
 import { getJSON } from "../lib/safeFetch";
@@ -89,7 +89,7 @@ function Products() {
         textHeader={hasFilters ? `Filtered: ${filtered.length}` : `Showing ${products.length}`}
       />
 
-      {isLoading ? <p className="font-light">Loading products…</p> : null}
+      {isLoading ? <ProductsGridSkeleton count={6} /> : null}
 
       {loadError && !isLoading ? (
         <p className="font-light text-blue">
@@ -97,11 +97,24 @@ function Products() {
         </p>
       ) : null}
 
-      <div className="products grid grid-cols-1 xl:grid-cols-3 gap-x-6 gap-y-20 xl:gap-y-10">
-        {filtered.map((product, indx) => (
-          <Product key={product?.id ?? indx} details={product} />
-        ))}
-      </div>
+      {/* Keyed on the active filter/sort signature so cards re-animate (fade +
+          rise, lightly staggered) every time the result set changes. */}
+      {!isLoading && !loadError ? (
+        <div
+          key={`${[...selected].sort().join('|')}::${selectedFilter?.name || 'default'}`}
+          className="products grid grid-cols-1 xl:grid-cols-3 gap-x-6 gap-y-20 xl:gap-y-10"
+        >
+          {filtered.map((product, indx) => (
+            <div
+              key={product?.id ?? indx}
+              className="reveal"
+              style={{ animationDelay: `${Math.min(indx * 45, 400)}ms` }}
+            >
+              <Product details={product} />
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {!isLoading && !loadError && filtered.length === 0 ? (
         <p className="font-light">No products match your filters.</p>

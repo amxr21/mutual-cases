@@ -61,16 +61,20 @@ router.post(
                 [googleId, name, email, picture],
                 { op: "auth.createUser" }
             );
-            user = { id: result.insertId, google_id: googleId, email, name, picture };
+            user = { id: result.insertId, google_id: googleId, email, name, picture, role: "customer" };
         } else {
             user = existing[0];
         }
 
-        const token = jwt.sign({ id: user.id, email: user.email }, config.auth.jwtSecret, {
+        const role = user.role || "customer";
+
+        // Role is included in the signed token so the server can authorize admin
+        // routes from a verified claim (and we re-check the DB on admin actions).
+        const token = jwt.sign({ id: user.id, email: user.email, role }, config.auth.jwtSecret, {
             expiresIn: config.auth.jwtExpiresIn,
         });
 
-        res.json({ success: true, token, name, email, picture, userId: user.id });
+        res.json({ success: true, token, name, email, picture, userId: user.id, role });
     })
 );
 

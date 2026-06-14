@@ -14,6 +14,8 @@ const authRouter = require("./routes/googleRoutes.js");
 const cartRouter = require("./routes/cartRoutes.js");
 const likedRouter = require("./routes/likedRoutes.js");
 const customRouter = require("./routes/customRoutes.js");
+const ordersRouter = require("./routes/ordersRoutes.js");
+const adminRouter = require("./routes/adminRoutes.js");
 
 // --- Fail fast on missing critical configuration --------------------------
 const missingEnv = config.validate();
@@ -56,6 +58,8 @@ app.use("/products", productsRoutes);
 app.use("/cart", cartRouter);
 app.use("/liked", likedRouter);
 app.use("/custom", customRouter);
+app.use("/orders", ordersRouter);
+app.use("/admin", adminRouter);
 app.use("/", authRouter);
 
 // 404 for anything unmatched, then the centralized error handler. Order matters:

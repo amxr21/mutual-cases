@@ -34,8 +34,14 @@ export async function safeFetch(path, options = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+    // Attach the auth token (set at login) so protected routes can identify the
+    // user from the JWT rather than a client-supplied id.
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const headers = { ...(init.headers || {}) };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
     try {
-        const res = await fetch(url, { ...init, signal: controller.signal });
+        const res = await fetch(url, { ...init, headers, signal: controller.signal });
 
         // Parse body defensively — it may be empty or non-JSON.
         let body = null;

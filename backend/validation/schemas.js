@@ -52,8 +52,8 @@ const productUpdateSchema = z
         message: "Provide at least one field to update",
     });
 
+// user_id is derived from the JWT, not the body.
 const cartAddSchema = z.object({
-    user_id: z.coerce.number().int().positive(),
     product_id: z.coerce.number().int().positive(),
     quantity: z.coerce.number().int().min(1).max(1000).default(1),
 });
@@ -71,14 +71,12 @@ const authSchema = z.object({
     id_token: z.string().min(10),
 });
 
-// --- Liked / wishlist ---
+// --- Liked / wishlist (user_id from JWT) ---
 const likeAddSchema = z.object({
-    user_id: z.coerce.number().int().positive(),
     product_id: z.coerce.number().int().positive(),
 });
 
 const likeRemoveSchema = z.object({
-    user_id: z.coerce.number().int().positive(),
     product_id: z.coerce.number().int().positive(),
 });
 
@@ -92,6 +90,35 @@ const customOrderSchema = z.object({
     comments: z.string().trim().max(1000).optional().default(""),
 });
 
+// --- Checkout / orders ---
+const addressSchema = z.object({
+    country: nonEmptyStr(255),
+    city: nonEmptyStr(100),
+    area: nonEmptyStr(255),
+    address: z.string().trim().max(255).optional().default(""),
+});
+
+const orderCreateSchema = z.object({
+    // user_id is derived from the JWT, not the body.
+    address: addressSchema,
+    items: z
+        .array(
+            z.object({
+                product_id: z.coerce.number().int().positive(),
+                quantity: z.coerce.number().int().min(1).max(1000),
+            })
+        )
+        .min(1),
+    note: z.string().trim().max(500).optional().default(""),
+    gift: z.coerce.boolean().optional().default(false),
+    gift_message: z.string().trim().max(300).optional().default(""),
+    payment_method: z.enum(["cod", "card_on_delivery"]).optional().default("cod"),
+});
+
+const orderNumberParam = z.object({
+    orderNumber: z.string().trim().min(4).max(40),
+});
+
 module.exports = {
     idParam,
     productCreateSchema,
@@ -103,4 +130,6 @@ module.exports = {
     likeAddSchema,
     likeRemoveSchema,
     customOrderSchema,
+    orderCreateSchema,
+    orderNumberParam,
 };

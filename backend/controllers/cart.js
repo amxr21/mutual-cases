@@ -19,48 +19,65 @@ const CART_SELECT = `
 `;
 
 const addToCart = async (req, res) => {
-    const { user_id, product_id, quantity } = req.body;
+    const user_id = req.user.id; // from JWT, not the body
+    const { product_id, quantity } = req.body;
+    const qty = quantity || 1;
 
     const existing = await query(
-        "SELECT id FROM cart_items WHERE user_id = ? AND product_id = ?",
+        "SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_id = ?",
         [user_id, product_id],
         { op: "addToCart.check" }
     );
+
     if (existing.length) {
-        // Already present — not an error to the user, but signal it clearly.
-        return res.status(200).json({ message: "Item already in cart", itemStatus: "exists" });
+        // Already in the cart — increment the quantity instead of blocking.
+        const newQty = Number(existing[0].quantity) + qty;
+        await query(
+            "UPDATE cart_items SET quantity = ? WHERE id = ?",
+            [newQty, existing[0].id],
+            { op: "addToCart.increment" }
+        );
+        return res
+            .status(200)
+            .json({ message: "Cart updated", itemStatus: "incremented", quantity: newQty });
     }
 
     const result = await query(
         "INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)",
-        [user_id, product_id, quantity],
+        [user_id, product_id, qty],
         { op: "addToCart.insert" }
     );
 
-    res.status(201).json({ message: "Item added to cart", itemStatus: "added", id: result.insertId });
+    res
+        .status(201)
+        .json({ message: "Item added to cart", itemStatus: "added", id: result.insertId, quantity: qty });
 };
 
 const viewCart = async (req, res) => {
-    const { id } = req.params; // user id, validated
-    const rows = await query(CART_SELECT, [id], { op: "viewCart" });
+    // Always the authenticated user's own cart (URL param is ignored for safety).
+    const userId = req.user.id;
+    const rows = await query(CART_SELECT, [userId], { op: "viewCart" });
     res.json(rows);
 };
 
 const updateCart = async (req, res) => {
+    const userId = req.user.id;
     const { id, quantity } = req.body; // id = product_id
 
-    // quantity 0 == remove the line item.
+    // quantity 0 == remove the line item (scoped to this user).
     if (quantity === 0) {
-        const del = await query("DELETE FROM cart_items WHERE product_id = ?", [id], {
-            op: "updateCart.delete",
-        });
+        const del = await query(
+            "DELETE FROM cart_items WHERE product_id = ? AND user_id = ?",
+            [id, userId],
+            { op: "updateCart.delete" }
+        );
         if (!del.affectedRows) throw notFound("Item not in cart");
         return res.json({ message: "Item removed", itemStatus: "removed" });
     }
 
     const result = await query(
-        "UPDATE cart_items SET quantity = ? WHERE product_id = ?",
-        [quantity, id],
+        "UPDATE cart_items SET quantity = ? WHERE product_id = ? AND user_id = ?",
+        [quantity, id, userId],
         { op: "updateCart" }
     );
     if (!result.affectedRows) {
@@ -70,10 +87,13 @@ const updateCart = async (req, res) => {
 };
 
 const removeFromCart = async (req, res) => {
+    const userId = req.user.id;
     const { product_id } = req.body;
-    const result = await query("DELETE FROM cart_items WHERE product_id = ?", [product_id], {
-        op: "removeFromCart",
-    });
+    const result = await query(
+        "DELETE FROM cart_items WHERE product_id = ? AND user_id = ?",
+        [product_id, userId],
+        { op: "removeFromCart" }
+    );
     if (!result.affectedRows) {
         throw notFound("Item not in cart");
     }

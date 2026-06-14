@@ -19,7 +19,7 @@ function Navbar() {
 
 
   return (
-    <nav className='flex flex-col xl:flex-row w-full justify-between items-center my-8 overflow-hidden'>
+    <nav className='flex flex-col xl:flex-row w-full justify-between items-center my-8'>
         <div className="logo h-8">
             <Image className='h-full w-auto' src={Logo} alt='test' quality={100} />
         </div>

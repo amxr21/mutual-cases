@@ -13,6 +13,7 @@ const { notFound } = require("../errors/AppError");
 const PRODUCT_SELECT = `
     SELECT p.id, p.trend, p.edition, p.category, p.model, t.type, p.price,
            p.stock_quantity_id, sq.quantity, p.image_url_1, p.image_url_2, p.image_url_3,
+           p.description, p.material, p.approach, p.features,
            p.created_at, p.updated_at
     FROM products p
     JOIN category c ON p.category = c.category_title
