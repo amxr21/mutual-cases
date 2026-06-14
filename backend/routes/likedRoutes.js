@@ -2,19 +2,20 @@ const express = require("express");
 
 const { addLike, removeLike, viewLiked, likedIds } = require("../controllers/liked");
 const asyncHandler = require("../middleware/asyncHandler");
+const requireAuth = require("../middleware/auth");
 const validate = require("../middleware/validate");
-const { idParam, likeAddSchema, likeRemoveSchema } = require("../validation/schemas");
+const { likeAddSchema, likeRemoveSchema } = require("../validation/schemas");
 
 const router = express.Router();
 
-// Liked product ids only (for hydrating UI heart state) — before "/:id".
-router.get("/ids/:id", validate({ params: idParam }), asyncHandler(likedIds));
+// All liked routes require auth; user comes from the JWT (URL :id ignored).
+router.get("/ids/:id", requireAuth, asyncHandler(likedIds));
+router.get("/ids", requireAuth, asyncHandler(likedIds));
 
-// Full liked list for a user.
-router.get("/:id", validate({ params: idParam }), asyncHandler(viewLiked));
+router.get("/:id", requireAuth, asyncHandler(viewLiked));
+router.get("/", requireAuth, asyncHandler(viewLiked));
 
-// Add / remove a like.
-router.post("/", validate({ body: likeAddSchema }), asyncHandler(addLike));
-router.delete("/", validate({ body: likeRemoveSchema }), asyncHandler(removeLike));
+router.post("/", requireAuth, validate({ body: likeAddSchema }), asyncHandler(addLike));
+router.delete("/", requireAuth, validate({ body: likeRemoveSchema }), asyncHandler(removeLike));
 
 module.exports = router;

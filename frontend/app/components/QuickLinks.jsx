@@ -8,18 +8,18 @@ function QuickLinks() {
     const links = {
         'en': [
             [
-                {link: "/", text: 'What is Mutual?'},
-                {link: "/", text: 'Order Journey'},
-                {link: "/", text: 'Privacy Policy'},
-                {link: "/", text: 'Terms & Conditions'},
-                {link: "/", text: 'Why Us?'},
+                {link: "/about", text: 'What is Mutual?'},
+                {link: "/order-journey", text: 'Order Journey'},
+                {link: "/privacy-policy", text: 'Privacy Policy'},
+                {link: "/terms", text: 'Terms & Conditions'},
+                {link: "/why-us", text: 'Why Us?'},
             ],
             [
-                {link: "/", text: 'iPad Cases'},
-                {link: "/", text: 'iPhone Cases'},
-                {link: "/", text: 'Special Items'},
-                {link: "/", text: 'Customize It'},
-                {link: "/", text: "Where's my Order?"},
+                {link: "/products", text: 'iPad Cases'},
+                {link: "/products", text: 'iPhone Cases'},
+                {link: "/products", text: 'Special Items'},
+                {link: "/custom-it", text: 'Customize It'},
+                {link: "/cart", text: "Where's my Order?"},
             ],
         ]
     }

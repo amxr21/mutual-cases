@@ -22,7 +22,8 @@ const LIKED_SELECT = `
 `;
 
 const addLike = async (req, res) => {
-    const { user_id, product_id } = req.body;
+    const user_id = req.user.id;
+    const { product_id } = req.body;
 
     const existing = await query(
         "SELECT id FROM liked_items WHERE user_id = ? AND product_id = ?",
@@ -42,7 +43,8 @@ const addLike = async (req, res) => {
 };
 
 const removeLike = async (req, res) => {
-    const { user_id, product_id } = req.body;
+    const user_id = req.user.id;
+    const { product_id } = req.body;
     const result = await query(
         "DELETE FROM liked_items WHERE user_id = ? AND product_id = ?",
         [user_id, product_id],
@@ -55,17 +57,17 @@ const removeLike = async (req, res) => {
 };
 
 const viewLiked = async (req, res) => {
-    const { id } = req.params; // user id
-    const rows = await query(LIKED_SELECT, [id], { op: "viewLiked" });
+    const userId = req.user.id;
+    const rows = await query(LIKED_SELECT, [userId], { op: "viewLiked" });
     res.json(rows);
 };
 
-/** Return just the set of liked product ids for a user (for hydrating UI state). */
+/** Return just the set of liked product ids for the authenticated user. */
 const likedIds = async (req, res) => {
-    const { id } = req.params; // user id
+    const userId = req.user.id;
     const rows = await query(
         "SELECT product_id FROM liked_items WHERE user_id = ?",
-        [id],
+        [userId],
         { op: "likedIds" }
     );
     res.json(rows.map((r) => r.product_id));

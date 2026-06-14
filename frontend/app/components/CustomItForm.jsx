@@ -1,9 +1,9 @@
 'use client'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { Dropdown } from 'primereact/dropdown'
 import { getJSON, postJSON } from '../lib/safeFetch'
 import { useToast } from './Toast/ToastProvider'
+import SmoothSelect from './SmoothSelect'
 
 import BagImg from '../../public/images/custom-it/bag.jpg'
 import DesignerImg from '../../public/images/custom-it/designer.jpg'
@@ -12,19 +12,38 @@ import DesignerImg from '../../public/images/custom-it/designer.jpg'
  * Custom-it form (per the design): Model / Sentence / Type / Design / Comments
  * with the two brand illustrations and a full-width Submit Order button.
  *
- * Dropdown options are pulled from /products/filters so Model/Type/Design always
- * reflect real catalogue values. Submits to /custom; feedback via themed toasts.
+ * Uses native <select> elements (styled to match the design) rather than
+ * PrimeReact dropdowns — the app has no PrimeReact theme CSS loaded, which left
+ * those dropdowns unstyled/broken. Options come from /products/filters so
+ * Model/Type/Design reflect real catalogue values. Submits to /custom.
  */
 
 const cap = (s) => String(s ?? '').replace(/\b\w/g, (c) => c.toUpperCase())
-const toOptions = (rows) =>
-    (rows || []).map((r) => ({ label: cap(r.value), value: String(r.value) }))
+
+const dedupe = (arr) => {
+    const seen = new Set()
+    const out = []
+    for (const row of arr || []) {
+        const key = String(row.value).toLowerCase()
+        if (seen.has(key)) continue
+        seen.add(key)
+        out.push(String(row.value))
+    }
+    return out
+}
+
+// Fallbacks so the form is usable even if the filters request fails.
+const FALLBACK = {
+    models: ['13', '13 pro', '14', '15 pro', '16 pro'],
+    types: ['normal', '3d design', 'simple', 'light', 'magnet'],
+    editions: ['abu dhabi edition', 'dubai edition', 'sharjah edition'],
+}
 
 export default function CustomItForm() {
     const toast = useToast()
 
-    const [opts, setOpts] = useState({ models: [], types: [], editions: [] })
-    const [form, setForm] = useState({ model: null, sentence: '', type: null, design: null, comments: '' })
+    const [opts, setOpts] = useState(FALLBACK)
+    const [form, setForm] = useState({ model: '', sentence: '', type: '', design: '', comments: '' })
     const [submitting, setSubmitting] = useState(false)
 
     useEffect(() => {
@@ -32,21 +51,10 @@ export default function CustomItForm() {
         ;(async () => {
             const result = await getJSON('/products/filters')
             if (!active || !result.ok || !result.data) return
-            const dedupe = (arr) => {
-                const seen = new Set()
-                const out = []
-                for (const row of arr || []) {
-                    const key = String(row.value).toLowerCase()
-                    if (seen.has(key)) continue
-                    seen.add(key)
-                    out.push(row)
-                }
-                return out
-            }
             setOpts({
-                models: toOptions(dedupe(result.data.models)),
-                types: toOptions(dedupe(result.data.types)),
-                editions: toOptions(dedupe(result.data.editions)),
+                models: dedupe(result.data.models).length ? dedupe(result.data.models) : FALLBACK.models,
+                types: dedupe(result.data.types).length ? dedupe(result.data.types) : FALLBACK.types,
+                editions: dedupe(result.data.editions).length ? dedupe(result.data.editions) : FALLBACK.editions,
             })
         })()
         return () => {
@@ -54,10 +62,8 @@ export default function CustomItForm() {
         }
     }, [])
 
-    const setField = (key) => (eOrValue) => {
-        const value = eOrValue?.target ? eOrValue.target.value : eOrValue?.value ?? eOrValue
-        setForm((prev) => ({ ...prev, [key]: value }))
-    }
+    const setField = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))
+    const setVal = (key) => (val) => setForm((prev) => ({ ...prev, [key]: val }))
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -89,37 +95,36 @@ export default function CustomItForm() {
         }
 
         toast.success('Your custom request has been submitted!')
-        setForm({ model: null, sentence: '', type: null, design: null, comments: '' })
+        setForm({ model: '', sentence: '', type: '', design: '', comments: '' })
     }
 
-    const dropdownClass =
-        'w-full bg-off-white border border-gray-300 text-off-black py-1.5 px-3 rounded-md flex items-center'
-    const panelClass = 'px-2 py-1 bg-off-white text-off-black mt-1 border border-gray-200 rounded-md'
-    const inputClass =
-        'w-full bg-off-white border border-gray-300 text-off-black py-2 px-3 rounded-md outline-none focus:border-blue transition-colors'
+    const fieldBase =
+        'w-full bg-off-white border border-gray-300 text-off-black rounded-md py-2.5 px-3 outline-none focus:border-blue transition-colors'
+
+    // Animated, on-brand select (SmoothSelect) — passes the chosen value directly.
+    const Select = ({ label, value, onValue, options, placeholder }) => (
+        <label className="flex flex-col gap-1.5">
+            <span className="text-off-black font-medium">{label}</span>
+            <SmoothSelect value={value} onChange={onValue} options={options} placeholder={placeholder} />
+        </label>
+    )
 
     return (
         <form
             onSubmit={handleSubmit}
-            className="bg-off-white rounded-2xl shadow-xl p-5 xl:p-8 flex flex-col gap-6 -mt-16 xl:-mt-24 relative z-10"
+            className="bg-off-white rounded-2xl shadow-xl p-5 xl:p-8 flex flex-col gap-6 -mt-14 xl:-mt-20 relative z-10 mx-auto max-w-6xl"
         >
-            <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-6 xl:gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-6 xl:gap-8">
                 {/* Left: form fields */}
                 <div className="flex flex-col gap-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label className="flex flex-col gap-1.5">
-                            <span className="text-off-black font-medium">Model</span>
-                            <Dropdown
-                                value={form.model}
-                                onChange={setField('model')}
-                                options={opts.models}
-                                optionLabel="label"
-                                placeholder="Model"
-                                className={dropdownClass}
-                                panelClassName={panelClass}
-                                filter
-                            />
-                        </label>
+                        <Select
+                            label="Model"
+                            value={form.model}
+                            onValue={setVal('model')}
+                            options={opts.models}
+                            placeholder="Model"
+                        />
 
                         <label className="flex flex-col gap-1.5">
                             <span className="text-off-black font-medium">Sentence</span>
@@ -129,36 +134,25 @@ export default function CustomItForm() {
                                 onChange={setField('sentence')}
                                 placeholder="unleash your creativity…"
                                 maxLength={255}
-                                className={inputClass}
+                                className={fieldBase}
                             />
                         </label>
 
-                        <label className="flex flex-col gap-1.5">
-                            <span className="text-off-black font-medium">Type</span>
-                            <Dropdown
-                                value={form.type}
-                                onChange={setField('type')}
-                                options={opts.types}
-                                optionLabel="label"
-                                placeholder="Choose your type"
-                                className={dropdownClass}
-                                panelClassName={panelClass}
-                            />
-                        </label>
+                        <Select
+                            label="Type"
+                            value={form.type}
+                            onValue={setVal('type')}
+                            options={opts.types}
+                            placeholder="Choose your type"
+                        />
 
-                        <label className="flex flex-col gap-1.5">
-                            <span className="text-off-black font-medium">Design</span>
-                            <Dropdown
-                                value={form.design}
-                                onChange={setField('design')}
-                                options={opts.editions}
-                                optionLabel="label"
-                                placeholder="Choose Style"
-                                className={dropdownClass}
-                                panelClassName={panelClass}
-                                filter
-                            />
-                        </label>
+                        <Select
+                            label="Design"
+                            value={form.design}
+                            onValue={setVal('design')}
+                            options={opts.editions}
+                            placeholder="Choose Style"
+                        />
                     </div>
 
                     <label className="flex flex-col gap-1.5">
@@ -169,17 +163,17 @@ export default function CustomItForm() {
                             rows={4}
                             maxLength={1000}
                             placeholder="…"
-                            className={`${inputClass} resize-none`}
+                            className={`${fieldBase} resize-none`}
                         />
                     </label>
                 </div>
 
                 {/* Right: illustrations */}
-                <div className="flex gap-3 h-full">
-                    <div className="relative w-full xl:w-72 h-56 xl:h-full rounded-xl overflow-hidden">
+                <div className="flex gap-3 h-full min-h-[16rem]">
+                    <div className="relative grow h-64 xl:h-full rounded-xl overflow-hidden">
                         <Image src={BagImg} alt="Mutual gift bag" fill className="object-cover" />
                     </div>
-                    <div className="relative hidden xl:block w-40 h-full rounded-xl overflow-hidden">
+                    <div className="relative hidden md:block w-32 xl:w-40 h-64 xl:h-full rounded-xl overflow-hidden">
                         <Image src={DesignerImg} alt="Designing a custom cover" fill className="object-cover" />
                     </div>
                 </div>

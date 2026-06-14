@@ -8,7 +8,10 @@ import { usePathname } from "next/navigation"
 
 
 // Routes that render their own dedicated hero — the generic banner is skipped.
-const SKIP_BANNER = new Set(['custom-it'])
+const SKIP_BANNER = new Set([
+    'custom-it', 'about',
+    'order-journey', 'privacy-policy', 'terms', 'why-us',
+])
 
 function PageBanner() {
 

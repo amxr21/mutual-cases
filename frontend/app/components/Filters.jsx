@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { getJSON } from '../lib/safeFetch'
 import { makeToken, useFilters } from '../Context/FilterContext'
-import { Checkbox, RemoveFilters } from '.'
+import { Checkbox, RemoveFilters, FilterTags, FiltersSkeleton } from '.'
 
 /**
  * Dynamic product filters, sourced entirely from the DB via /products/filters.
@@ -20,7 +20,7 @@ const TITLES = {
 
 const cap = (s) => String(s ?? '').replace(/\b\w/g, (c) => c.toUpperCase())
 
-function FilterGroup({ dimension, title, options }) {
+function FilterGroup({ dimension, title, options, as = 'checkbox' }) {
     const { isSelected, toggle } = useFilters()
     const [open, setOpen] = useState(true)
 
@@ -49,17 +49,21 @@ function FilterGroup({ dimension, title, options }) {
                     open ? 'max-h-[40rem] opacity-100' : 'max-h-0 opacity-0'
                 }`}
             >
-                {options.map((opt, indx) => {
-                    const token = makeToken(dimension, opt.value)
-                    return (
-                        <Checkbox
-                            key={`${token}-${indx}`}
-                            text={`${cap(opt.value)}${opt.count != null ? ` (${opt.count})` : ''}`}
-                            checked={isSelected(token)}
-                            onToggle={() => toggle(token)}
-                        />
-                    )
-                })}
+                {as === 'tags' ? (
+                    <FilterTags dimension={dimension} options={options} />
+                ) : (
+                    options.map((opt, indx) => {
+                        const token = makeToken(dimension, opt.value)
+                        return (
+                            <Checkbox
+                                key={`${token}-${indx}`}
+                                text={`${cap(opt.value)}${opt.count != null ? ` (${opt.count})` : ''}`}
+                                checked={isSelected(token)}
+                                onToggle={() => toggle(token)}
+                            />
+                        )
+                    })
+                )}
             </div>
         </div>
     )
@@ -101,6 +105,8 @@ function Filters() {
         }
     }, [])
 
+    if (status === 'loading') return <FiltersSkeleton />
+
     return (
         <div className="col-span-0 xl:col-span-2 hidden xl:flex flex-col gap-6">
             <div className="flex pb-2 border-b border-gray-500 h-10 items-center justify-between">
@@ -108,14 +114,13 @@ function Filters() {
                 <RemoveFilters />
             </div>
 
-            {status === 'loading' ? <p className="font-light text-sm">Loading filters…</p> : null}
             {status === 'error' ? <p className="font-light text-sm text-blue">Couldn&apos;t load filters.</p> : null}
 
             {status === 'ready' ? (
                 <div className="flex flex-col gap-6">
                     <FilterGroup dimension="category" title={TITLES.categories} options={data.categories} />
                     <FilterGroup dimension="type" title={TITLES.types} options={data.types} />
-                    <FilterGroup dimension="model" title={TITLES.models} options={data.models} />
+                    <FilterGroup dimension="model" title={TITLES.models} options={data.models} as="tags" />
                     <FilterGroup dimension="edition" title={TITLES.editions} options={data.editions} />
                 </div>
             ) : null}

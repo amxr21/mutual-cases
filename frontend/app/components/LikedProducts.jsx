@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Product } from '.'
+import { Product, AddToCart } from '.'
 import { getJSON } from '../lib/safeFetch'
 import { useLike } from '../Context/LikeContext'
 
@@ -71,10 +71,16 @@ function LikedProducts() {
 
     return (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-x-6 gap-y-16 xl:gap-y-10">
-            {visible.map((p, indx) => (
-                // Normalize so Product gets an `id` field (liked rows expose product_id).
-                <Product key={p.id ?? indx} details={{ ...p, id: p.product_id ?? p.id }} />
-            ))}
+            {visible.map((p, indx) => {
+                // Normalize so Product/AddToCart get an `id` field (liked rows expose product_id).
+                const normalized = { ...p, id: p.product_id ?? p.id }
+                return (
+                    <div key={normalized.id ?? indx} className="flex flex-col gap-3">
+                        <Product details={normalized} />
+                        <AddToCart id={normalized.id} />
+                    </div>
+                )
+            })}
         </div>
     )
 }

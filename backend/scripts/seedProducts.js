@@ -38,6 +38,46 @@ const CATEGORY_IDS = { ipad: 1, iphone: 2, "special items": 3 };
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
+// Category/type-aware product detail copy (kept in sync with backfillProductDetails.js).
+const MATERIAL_BY_TYPE = {
+    normal: "Impact-resistant polycarbonate with a soft-touch matte finish",
+    "3d design": "Layered resin over polycarbonate with a raised 3D textured print",
+    simple: "Slim flexible TPU with an anti-fingerprint coating",
+    light: "Ultra-light aramid-fiber composite, barely-there feel",
+    magnet: "Polycarbonate shell with built-in MagSafe-compatible magnet array",
+};
+const APPROACH_BY_CATEGORY = {
+    iphone: "Precision-molded to the exact iPhone chassis, with raised camera and screen lips for drop protection and tactile button covers.",
+    ipad: "Engineered for iPad with a fold-to-stand cover, precise port cutouts, and reinforced corners.",
+    "special items": "A limited, handcrafted-feel piece designed around a seasonal theme, produced in small batches.",
+};
+const FEATURES_BASE = [
+    "Raised edges protect screen & camera",
+    "Slim, pocket-friendly profile",
+    "Wireless-charging compatible",
+    "Scratch- & fade-resistant print",
+];
+const EXTRA_FEATURE_BY_TYPE = {
+    magnet: "Snaps securely to MagSafe chargers & mounts",
+    light: "Among the lightest cases we make",
+    "3d design": "Tactile 3D artwork you can feel",
+    simple: "Minimal bulk, maximum grip",
+    normal: "All-day everyday durability",
+};
+const titleCase = (s) => String(s || "").replace(/\b\w/g, (c) => c.toUpperCase());
+
+const buildDetails = (category, type, edition) => {
+    const t = String(type || "normal").toLowerCase();
+    const cat = category === "iphone" ? "iPhone" : category === "ipad" ? "iPad" : "Mutual";
+    const noun = category === "special items" ? "piece" : "case";
+    return {
+        material: MATERIAL_BY_TYPE[t] || MATERIAL_BY_TYPE.normal,
+        approach: APPROACH_BY_CATEGORY[category] || APPROACH_BY_CATEGORY.iphone,
+        description: `The ${titleCase(edition)} ${cat} ${noun} blends ${t} styling with everyday durability. Designed in the UAE for a clean look and reliable, slim protection.`,
+        features: [...FEATURES_BASE, EXTRA_FEATURE_BY_TYPE[t]].filter(Boolean).join(" | "),
+    };
+};
+
 /** Resolve (or create) a lookup id, parameterized. */
 const resolveId = async (tx, table, column, value, staticMap) => {
     const val = String(value).toLowerCase();
@@ -56,11 +96,15 @@ const seedOne = async (category, model, type, edition, price, trend) =>
         const seed = `${category}-${model}-${edition}-${type}`.replace(/\s+/g, "-");
         const img = (n) => `https://picsum.photos/seed/${encodeURIComponent(seed + "-" + n)}/600/600`;
 
+        const { material, approach, description, features } = buildDetails(category, type, edition);
+
         const result = await tx(
             `INSERT INTO products
-                (trend, price, model, edition, category, stock_quantity_id, type_id, image_url_1, image_url_2, image_url_3)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [trend, price, model, edition, category, stockId, typeId, img(1), img(2), img(3)]
+                (trend, price, model, edition, category, stock_quantity_id, type_id, image_url_1, image_url_2, image_url_3,
+                 material, approach, description, features)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [trend, price, model, edition, category, stockId, typeId, img(1), img(2), img(3),
+             material, approach, description, features]
         );
 
         const editionId = await resolveId(tx, "edition", "edition_design", edition);
