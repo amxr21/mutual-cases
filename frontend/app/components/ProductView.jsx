@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from "react";
-import { ProductDetails, ProductImages, ProductViewContainer } from "@/app/components";
+import { ProductDetails, ProductImages, ProductViewContainer, ProductSpecs } from "@/app/components";
 import { getJSON } from "../lib/safeFetch";
 
 /**
@@ -57,9 +57,15 @@ export default function ProductView({ params }) {
 
     return (
         <div className="flex flex-col gap-6 h-fit">
-            <ProductViewContainer classes='product grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-16 xl:h-[28rem]'>
+            {/* Top card: images + buy box. Height fits content (no fixed height). */}
+            <ProductViewContainer classes='product grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-16'>
                 <ProductImages images={images} />
                 <ProductDetails details={product} />
+            </ProductViewContainer>
+
+            {/* Full-width specifications below the buy card. */}
+            <ProductViewContainer classes='product' overlap={false}>
+                <ProductSpecs details={product} />
             </ProductViewContainer>
         </div>
     )

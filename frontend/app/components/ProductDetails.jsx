@@ -3,7 +3,7 @@ import { LargeButton, ShippingFeatures, ProductDetailsHeader, ProductDetailsPric
 
 function ProductDetails({ details }) {
   return (
-    <div className="flex flex-col gap-8 h-full overflow-hidden">
+    <div className="flex flex-col gap-8 h-fit">
 
         <div className="flex items-start justify-between gap-3">
             <div className="flex flex-col gap-3">
