@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "15.4.6",
+    "next": "15.4.10",
     "primereact": "^10.9.7",
     "react": "19.1.0",
     "react-alice-carousel": "^2.9.1",
