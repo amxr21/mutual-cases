@@ -17,7 +17,7 @@ function ProductCardDetails({ data }) {
         <ProductRate />
       </div>
 
-      <ProductPrice price={data?.price} />
+      <ProductPrice price={data?.price} id={data?.id} />
     </div>
   )
 }

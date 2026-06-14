@@ -1,11 +1,11 @@
 "use client"
-import { Button } from '.'
+import MiniAddToCart from './MiniAddToCart'
 
-function ProductPrice({ price = 0 }) {
+function ProductPrice({ price = 0, id }) {
   return (
-    <div className='flex w-full justify-between pt-0.5 border-t border-black'>
+    <div className='flex w-full justify-between items-center gap-2 pt-0.5 border-t border-black'>
         <div className="price product-price">{price} AED</div>
-        {/* <Button classes="add-to-cart" buttonContent='add to card' handleClick={() => {}} type='text' /> */}
+        {id ? <MiniAddToCart id={id} /> : null}
     </div>
   )
 }

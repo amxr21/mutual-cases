@@ -1,30 +1,24 @@
 'use client'
-import { useContext, useEffect, useState } from "react"
+import Link from "next/link"
 import { LargeButton } from "."
-import { CartContext } from "../Context/CartContext"
+import { useCart } from "../Context/CartContext"
 
+/**
+ * Cart total + checkout CTA. Reads the live total from the global cart, so it
+ * stays in sync as quantities change anywhere.
+ */
 function Total() {
-  
-  const { cartDetails } = useContext(CartContext)
-  const [ total, setTotal ] = useState(0);
-
-  useEffect(() => {
-    if (Array.isArray(cartDetails.cartItems)) {
-    const totalPrice = cartDetails.cartItems.reduce(
-      (sum, item) => sum + item?.price * item?.quantity, 
-      0
-    );
-      setTotal(totalPrice);
-    } else {
-      setTotal(0); // fallback when cartItems isn't an array
-    }
-  }, [cartDetails])
+  const { totals, items } = useCart()
 
   return (
-      <div className="total flex flex-col xl:flex-row gap-4">
-        <h2 className="text-2xl xl:text-4xl pt-2 font-semibold border-t grow">Total: {total}AED</h2>
+    <div className="total flex flex-col xl:flex-row gap-4 w-full">
+      <h2 className="text-2xl xl:text-4xl pt-2 font-semibold border-t grow">
+        Total: {totals.price} AED
+      </h2>
+      <Link href="/checkout" className={items.length === 0 ? 'pointer-events-none opacity-50' : ''}>
         <LargeButton text="Continue to Payment" color="blue" handleClick={() => {}} classes="text-xl" />
-      </div>
+      </Link>
+    </div>
   )
 }
 

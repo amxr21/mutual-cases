@@ -1,64 +1,76 @@
 'use client'
 import { useState } from "react"
-import { LargeButton } from "."
-import { postJSON } from "../lib/safeFetch"
-import { useToast } from "./Toast/ToastProvider"
+import { LargeButton, QuantityCounter } from "."
+import { useCart } from "../Context/CartContext"
 
 /**
- * Add-to-cart button. Interactive states (idle → adding → added) with themed
- * toasts instead of alert(). Guards the optimistic cart-badge DOM update.
+ * Add-to-cart control (Task 1).
+ *
+ * - If the product isn't in the cart: shows an "Add to Cart" button that adds 1.
+ * - Once in the cart: shows a synced – / + counter. Clicking + (or Add to Cart
+ *   repeatedly) increments the quantity; the value reflects the global cart, so
+ *   it stays in sync on the card, the detail page, the nav badge, and the cart.
+ *
+ * Setting the counter to 0 removes the line.
  */
 function AddToCart({ id }) {
-    const toast = useToast()
-    const [state, setState] = useState('idle') // 'idle' | 'loading' | 'added'
+    const { quantityOf, addToCart, setQuantity } = useCart()
+    const [busy, setBusy] = useState(false)
 
-    const cartRequest = async () => {
-        if (state === 'loading') return
+    const qty = quantityOf(id)
 
-        const userId = localStorage.getItem('userId')
-        if (!userId) {
-            toast.info("Please log in first to add items to your cart")
-            return
-        }
-
-        setState('loading')
-        const result = await postJSON('/cart', {
-            user_id: userId,
-            product_id: id,
-            quantity: 1,
-        })
-
-        if (!result.ok) {
-            setState('idle')
-            toast.error(result.error?.message || "Couldn't add the item to your cart")
-            return
-        }
-
-        if (result.data?.itemStatus === 'added') {
-            const badge = document.getElementById('Cart')?.lastElementChild
-            if (badge) {
-                const current = parseInt(badge.innerText, 10)
-                badge.innerText = String((Number.isFinite(current) ? current : 0) + 1)
-            }
-            setState('added')
-            toast.success("Added to your cart")
-            // Return to idle after the success state has been shown.
-            setTimeout(() => setState('idle'), 1800)
-        } else if (result.data?.itemStatus === 'exists') {
-            setState('idle')
-            toast.info("This item is already in your cart")
-        }
+    const handleAdd = async () => {
+        if (busy || !id) return
+        setBusy(true)
+        await addToCart(id, 1)
+        setBusy(false)
     }
 
-    const text = state === 'loading' ? 'Adding…' : state === 'added' ? '✓ Added!' : 'Add To Cart'
+    const handleChange = async (next) => {
+        if (busy || !id) return
+        setBusy(true)
+        await setQuantity(id, next)
+        setBusy(false)
+    }
+
+    if (qty > 0) {
+        // Match the LargeButton footprint exactly: same width, padding, radius,
+        // and font sizing so it occupies the identical space as "Add To Cart".
+        return (
+            <div className="w-full flex items-center justify-between rounded-xl border border-blue bg-blue/5 px-2 xl:px-3 py-1 xl:py-2">
+                <span className="text-lg xl:text-2xl font-semibold text-blue">In cart</span>
+                <div className="flex items-center gap-1">
+                    <button
+                        type="button"
+                        onClick={() => handleChange(qty - 1)}
+                        disabled={busy}
+                        aria-label="Decrease quantity"
+                        className="w-8 h-8 xl:w-9 xl:h-9 rounded-lg flex items-center justify-center text-blue hover:bg-blue hover:text-off-white transition-colors active:scale-90 text-xl cursor-pointer disabled:opacity-40"
+                    >
+                        –
+                    </button>
+                    <span className="min-w-8 text-center text-lg xl:text-2xl font-semibold text-blue tabular-nums">{qty}</span>
+                    <button
+                        type="button"
+                        onClick={() => handleChange(qty + 1)}
+                        disabled={busy}
+                        aria-label="Increase quantity"
+                        className="w-8 h-8 xl:w-9 xl:h-9 rounded-lg flex items-center justify-center text-blue hover:bg-blue hover:text-off-white transition-colors active:scale-90 text-xl cursor-pointer disabled:opacity-40"
+                    >
+                        +
+                    </button>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <LargeButton
             key={'Add To Cart'}
-            handleClick={cartRequest}
-            text={text}
+            handleClick={handleAdd}
+            text={busy ? 'Adding…' : 'Add To Cart'}
             color="blue"
-            classes={`w-full transition-all duration-300 ${state === 'added' ? 'scale-[1.02]' : ''}`}
+            classes="w-full transition-all duration-300"
         />
     )
 }

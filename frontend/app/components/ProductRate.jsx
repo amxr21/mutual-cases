@@ -1,13 +1,16 @@
-"use client"
-import { Button } from "./index"
+import { Star } from "../constants/icons";
+import Image from "next/image";
 
-import { Heart } from "../constants/icons";
-
+/**
+ * Compact rating badge shown on product cards. The old non-functional heart
+ * button here was removed — liking is handled by the LikeButton overlay on the
+ * card image, so this just shows the average rating.
+ */
 function ProductRate() {
   return (
-    <div className="flex flex-col items-end product-rate w-2/12 overflow-hidden">
-        <div className="average-rating font-semibold">4.5</div>
-        <Button handleClick={() => {console.log('f');}} buttonContent={<Heart />} type="icon" classes="rounded-xl" />
+    <div className="flex items-center gap-1 product-rate shrink-0">
+      <Image src={Star} alt="" className="w-4 h-4" />
+      <span className="average-rating font-semibold text-sm">4.5</span>
     </div>
   )
 }

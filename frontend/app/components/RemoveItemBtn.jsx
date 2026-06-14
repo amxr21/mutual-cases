@@ -1,46 +1,25 @@
 'use client'
 import { Button } from '.';
-import { deleteJSON } from '../lib/safeFetch';
-import { useToast } from './Toast/ToastProvider';
+import { useCart } from '../Context/CartContext';
 
 /**
- * Remove-from-cart button. Hardened:
- *  - request via safeFetch (timeout + consistent result); the optimistic UI
- *    removal (func()) only runs after a successful delete, so a failed request
- *    no longer hides an item that's still in the cart.
- *  - the cart-badge decrement DOM access is null-guarded.
- *  - uses themed toasts instead of alert().
+ * Remove-from-cart button (Task 2 fix).
+ *
+ * Removes by product_id through the global cart — previously the UI passed the
+ * cart-line id (ci.id) as if it were product_id, so the backend's
+ * "DELETE ... WHERE product_id = ?" matched nothing and threw "item not in
+ * cart". Keying everything on product_id resolves it, and removal is optimistic
+ * + isolated to this one line.
  */
-function RemoveItemBtn({ func, itemId }) {
-    const toast = useToast()
-
-    const removeItem = async () => {
-        const result = await deleteJSON(`/cart/${itemId}`, { product_id: itemId })
-
-        if (!result.ok) {
-            toast.error(result.error?.message || "Couldn't remove the item. Please try again.")
-            return
-        }
-
-        // Optimistically clear this line in the parent.
-        if (typeof func === 'function') func()
-
-        // Best-effort badge decrement — guard the DOM nodes.
-        const badge = document.getElementById("Cart")?.lastElementChild
-        if (badge) {
-            const current = parseInt(badge.innerText, 10)
-            if (Number.isFinite(current) && current > 1) {
-                badge.innerText = String(current - 1)
-            }
-        }
-    }
+function RemoveItemBtn({ productId }) {
+    const { removeFromCart } = useCart()
 
     return (
         <Button
             type='text'
-            buttonContent='X | Remove'
-            classes={'bg-transparent h-full px-2 py-1 down'}
-            handleClick={removeItem}
+            buttonContent='✕ Remove'
+            classes={'bg-transparent h-full px-2 py-1 text-sm text-off-black/60 hover:text-blue transition-colors'}
+            handleClick={() => removeFromCart(productId)}
         />
     )
 }

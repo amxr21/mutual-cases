@@ -1,4 +1,4 @@
-import { ProductViewContainer, OrderOptions, Total, CartItem, CartItems } from "@/app/components"
+import { ProductViewContainer } from "@/app/components"
 import CartSection from "@/app/components/Cart"
 export default function Cart() {
   

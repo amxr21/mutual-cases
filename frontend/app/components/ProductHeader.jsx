@@ -1,25 +1,17 @@
 import React from 'react'
 
-// {
-//     "id": 10,
-//     "trend": true,
-//     "category": "ipad",
-//     "model": "m1",
-//     "type": "magnet",
-//     "price": 110,
-//     "stock_quantity_id": 46888,
-//     "quantity": 10,
-//     "created_at": "2025-08-17T18:16:39.000Z",
-//     "updated_at": "2025-08-17T18:16:39.000Z"
-//   }
-
+/**
+ * Product card title block. The subheader (category + model) is clamped to a
+ * single line (truncate) so every card keeps a consistent height regardless of
+ * name length.
+ */
 function ProductHeader({ header, subheader }) {
   return (
-    <div className='w-11/12 '>
+    <div className='w-11/12 min-w-0'>
       <div className='flex justify-between'>
-        <p className="product-category nav-link">{header}</p>
+        <p className="product-category nav-link truncate">{header}</p>
       </div>
-      <p className="product-header header">{subheader}</p>
+      <p className="product-header header truncate whitespace-nowrap" title={subheader}>{subheader}</p>
     </div>
   )
 }

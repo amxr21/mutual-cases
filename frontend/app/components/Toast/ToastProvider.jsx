@@ -46,13 +46,20 @@ const VARIANTS = {
 }
 
 function ToastItem({ toast, onDismiss }) {
+    const [entered, setEntered] = useState(false)
     const [leaving, setLeaving] = useState(false)
     const variant = VARIANTS[toast.variant] || VARIANTS.info
+
+    // Animate in on mount (next frame so the transition runs from the start state).
+    useEffect(() => {
+        const r = requestAnimationFrame(() => setEntered(true))
+        return () => cancelAnimationFrame(r)
+    }, [])
 
     const dismiss = useCallback(() => {
         setLeaving(true)
         // Allow the exit animation to play before unmount.
-        setTimeout(() => onDismiss(toast.id), 250)
+        setTimeout(() => onDismiss(toast.id), 400)
     }, [onDismiss, toast.id])
 
     useEffect(() => {
@@ -61,12 +68,18 @@ function ToastItem({ toast, onDismiss }) {
         return () => clearTimeout(t)
     }, [dismiss, toast.duration])
 
+    // Smooth, springy in/out: slide + fade + slight scale.
+    const visible = entered && !leaving
     return (
         <div
             role="status"
-            className={`pointer-events-auto flex items-stretch gap-0 overflow-hidden rounded-lg bg-off-white shadow-lg border border-black/5 min-w-[16rem] max-w-[22rem] transition-all duration-250 ease-out
-                ${leaving ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'}`}
-            style={{ fontFamily: 'var(--font-default), serif' }}
+            className="pointer-events-auto flex items-stretch gap-0 overflow-hidden rounded-lg bg-off-white shadow-lg border border-black/5 min-w-[15rem] max-w-[22rem]"
+            style={{
+                fontFamily: 'var(--font-default), serif',
+                transition: 'opacity 400ms cubic-bezier(0.22, 1, 0.36, 1), transform 400ms cubic-bezier(0.22, 1, 0.36, 1)',
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateX(0) scale(1)' : 'translateX(110%) scale(0.96)',
+            }}
         >
             <div className={`w-1.5 shrink-0 ${variant.bar}`} />
             <div className="flex items-center gap-3 px-4 py-3 grow">
@@ -125,8 +138,10 @@ export function ToastProvider({ children }) {
     return (
         <ToastContext.Provider value={api.current}>
             {children}
+            {/* Aligned to the navbar's line: matches the navbar's right margin
+                (mx-8 / xl:mx-20) and sits on the nav row near the top. */}
             <div
-                className="fixed top-4 right-4 z-[1000000] flex flex-col gap-2 pointer-events-none"
+                className="fixed top-6 xl:top-10 right-8 xl:right-20 z-[1000000] flex flex-col gap-2 pointer-events-none"
                 aria-live="polite"
                 aria-atomic="false"
             >

@@ -1,59 +1,24 @@
 'use client'
-import { useContext, useEffect, useState } from "react"
 import { CartItem } from "."
-import { CartContext } from "../Context/CartContext"
-import { getJSON } from "../lib/safeFetch"
+import { useCart } from "../Context/CartContext"
 
 /**
- * Fetches and renders the signed-in user's cart items. Uses safeFetch and only
- * ever stores an array into state, so .map can't throw. Shows empty/error text
- * instead of crashing when there's no user or the request fails.
+ * Renders the signed-in user's cart lines from the global cart context. No local
+ * fetch — the CartProvider owns hydration and keeps everything in sync.
  */
 function CartItems() {
-    const { setCartDetails } = useContext(CartContext)
+    const { items, hydrated } = useCart()
 
-    const [items, setItems] = useState([])
-    const [status, setStatus] = useState('loading') // 'loading' | 'ready' | 'error' | 'empty'
+    const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('userId')
 
-    useEffect(() => {
-        let active = true
-        const userId = localStorage.getItem('userId')
-
-        if (!userId) {
-            setStatus('empty')
-            return
-        }
-
-        const getCartItems = async () => {
-            const result = await getJSON(`/cart/${userId}`)
-            if (!active) return
-
-            if (result.ok && Array.isArray(result.data)) {
-                setItems(result.data)
-                setCartDetails((prev) => ({ ...prev, cartItems: result.data }))
-                setStatus(result.data.length ? 'ready' : 'empty')
-            } else {
-                setItems([])
-                setStatus('error')
-            }
-        }
-
-        getCartItems()
-        return () => {
-            active = false
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
-    if (status === 'loading') return <p className="font-light w-full">Loading your cart…</p>
-    if (status === 'error')
-        return <p className="font-light w-full text-blue">We couldn&apos;t load your cart. Please refresh.</p>
-    if (status === 'empty') return <p className="font-light w-full">Your cart is empty.</p>
+    if (!isLoggedIn) return <p className="font-light w-full">Please log in to view your cart.</p>
+    if (!hydrated) return <p className="font-light w-full">Loading your cart…</p>
+    if (items.length === 0) return <p className="font-light w-full">Your cart is empty.</p>
 
     return (
         <>
-            {items.map((item, indx) => (
-                <CartItem key={item?.id ?? indx} itemDetails={item} />
+            {items.map((item) => (
+                <CartItem key={item.product_id ?? item.id} itemDetails={item} />
             ))}
         </>
     )
