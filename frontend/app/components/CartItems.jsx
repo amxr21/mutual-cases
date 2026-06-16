@@ -1,5 +1,5 @@
 'use client'
-import { CartItem } from "."
+import { CartItem, EmptyState } from "."
 import { useCart } from "../Context/CartContext"
 
 /**
@@ -11,9 +11,25 @@ function CartItems() {
 
     const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('userId')
 
-    if (!isLoggedIn) return <p className="font-light w-full">Please log in to view your cart.</p>
+    if (!isLoggedIn)
+        return (
+            <EmptyState
+                icon="lock"
+                title="Please log in to view your cart"
+                message="Sign in to see the items you've added and continue to checkout."
+                action={{ label: 'Go to homepage', href: '/' }}
+            />
+        )
     if (!hydrated) return <p className="font-light w-full">Loading your cart…</p>
-    if (items.length === 0) return <p className="font-light w-full">Your cart is empty.</p>
+    if (items.length === 0)
+        return (
+            <EmptyState
+                icon="cart"
+                title="Your cart is empty"
+                message="Browse our cases and add something you love."
+                action={{ label: 'Shop cases', href: '/products' }}
+            />
+        )
 
     return (
         <>

@@ -1,7 +1,9 @@
 import Link from "next/link"
-import { LargeButton, ShippingFeatures, ProductDetailsHeader, ProductDetailsPrice, ProductDetailsCategory, AddToCart, LikeButton } from "."
+import { LargeButton, ShippingFeatures, ProductDetailsHeader, ProductDetailsPrice, ProductDetailsCategory, AddToCart, LikeButton, BackInStock } from "."
 
 function ProductDetails({ details }) {
+  const outOfStock = details && Number(details.quantity) <= 0
+
   return (
     <div className="flex flex-col gap-8 h-fit">
 
@@ -15,14 +17,16 @@ function ProductDetails({ details }) {
 
         <div className="flex flex-col gap-3">
             <ProductDetailsPrice details={details} />
-            <div className="buttons flex flex-col xl:flex-row gap-2 xl:gap-5">
-
-                <AddToCart id={ details?.id } />
-
-                <Link href={'/cart'} className="w-full">
-                  <LargeButton key={'Checkout'} handleClick={() => {}} text="Checkout" color="white" classes="w-full"  />
-                </Link>
-            </div>
+            {outOfStock ? (
+                <BackInStock productId={details.id} />
+            ) : (
+                <div className="buttons flex flex-col xl:flex-row gap-2 xl:gap-5">
+                    <AddToCart id={ details?.id } />
+                    <Link href={'/cart'} className="w-full">
+                      <LargeButton key={'Checkout'} handleClick={() => {}} text="Checkout" color="white" classes="w-full"  />
+                    </Link>
+                </div>
+            )}
         </div>
 
         <ShippingFeatures />

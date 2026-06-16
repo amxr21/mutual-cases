@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from "react"
-import { Product, ProductsGridSkeleton } from "."
+import { Product, ProductsGridSkeleton, EmptyState } from "."
 import { useFilters } from "../Context/FilterContext";
 import ProductsBar from "./ProductsBar";
 import { getJSON } from "../lib/safeFetch";
@@ -92,9 +92,11 @@ function Products() {
       {isLoading ? <ProductsGridSkeleton count={6} /> : null}
 
       {loadError && !isLoading ? (
-        <p className="font-light text-blue">
-          We couldn&apos;t load the products right now. Please refresh to try again.
-        </p>
+        <EmptyState
+          icon="alert"
+          title="We couldn't load the products"
+          message="Something went wrong fetching the catalogue. Please refresh to try again."
+        />
       ) : null}
 
       {/* Keyed on the active filter/sort signature so cards re-animate (fade +
@@ -117,7 +119,12 @@ function Products() {
       ) : null}
 
       {!isLoading && !loadError && filtered.length === 0 ? (
-        <p className="font-light">No products match your filters.</p>
+        <EmptyState
+          icon="search"
+          title="No products match your filters"
+          message="Try removing some filters to see more results."
+          size="sm"
+        />
       ) : null}
     </div>
   )

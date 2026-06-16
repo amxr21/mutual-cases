@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Product, AddToCart } from '.'
+import { Product, AddToCart, EmptyState } from '.'
 import { getJSON } from '../lib/safeFetch'
 import { useLike } from '../Context/LikeContext'
 
@@ -49,23 +48,33 @@ function LikedProducts() {
 
     if (status === 'guest') {
         return (
-            <div className="flex flex-col items-start gap-3 py-8">
-                <p className="font-light text-lg">Log in to start saving the cases you love.</p>
-                <Link href="/" className="text-blue underline font-medium">Go to homepage</Link>
-            </div>
+            <EmptyState
+                icon="heart"
+                title="Log in to start saving the cases you love"
+                message="Your liked items are saved to your account so you can find them anytime."
+                action={{ label: 'Go to homepage', href: '/' }}
+            />
         )
     }
 
     if (status === 'error') {
-        return <p className="font-light text-blue">We couldn&apos;t load your liked items. Please refresh.</p>
+        return (
+            <EmptyState
+                icon="alert"
+                title="We couldn't load your liked items"
+                message="Something went wrong. Please refresh the page to try again."
+            />
+        )
     }
 
     if (visible.length === 0) {
         return (
-            <div className="flex flex-col items-start gap-3 py-8">
-                <p className="font-light text-lg">You haven&apos;t liked anything yet.</p>
-                <Link href="/products" className="text-blue underline font-medium">Browse cases</Link>
-            </div>
+            <EmptyState
+                icon="heart"
+                title="You haven't liked anything yet"
+                message="Tap the heart on any product to save it here."
+                action={{ label: 'Browse cases', href: '/products' }}
+            />
         )
     }
 

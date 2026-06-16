@@ -14,7 +14,7 @@ function ProductCardDetails({ data }) {
     <div className='flex flex-col gap-3'>
       <div className='flex gap-4'>
         <ProductHeader header={edition} subheader={`${category} ${model}`.trim()} />
-        <ProductRate />
+        <ProductRate rating={data?.avg_rating} count={data?.review_count} />
       </div>
 
       <ProductPrice price={data?.price} id={data?.id} />

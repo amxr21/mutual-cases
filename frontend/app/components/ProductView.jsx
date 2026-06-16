@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from "react";
-import { ProductDetails, ProductImages, ProductViewContainer, ProductSpecs } from "@/app/components";
+import { ProductDetails, ProductImages, ProductViewContainer, ProductSpecs, ProductReviews, EmptyState } from "@/app/components";
 import { getJSON } from "../lib/safeFetch";
 
 /**
@@ -47,10 +47,28 @@ export default function ProductView({ params }) {
         return <p className="font-light py-10">Loading product…</p>
     }
     if (status === 'notfound') {
-        return <p className="font-light py-10 text-blue">This product could not be found.</p>
+        return (
+            <div className="py-10">
+                <EmptyState
+                    icon="search"
+                    title="Product not found"
+                    message="This product doesn't exist or may have been removed."
+                    action={{ label: 'Browse cases', href: '/products' }}
+                />
+            </div>
+        )
     }
     if (status === 'error') {
-        return <p className="font-light py-10 text-blue">We couldn&apos;t load this product. Please try again.</p>
+        return (
+            <div className="py-10">
+                <EmptyState
+                    icon="alert"
+                    title="We couldn't load this product"
+                    message="Something went wrong. Please try again in a moment."
+                    action={{ label: 'Back to products', href: '/products' }}
+                />
+            </div>
+        )
     }
 
     const images = [product.image_url_1, product.image_url_2, product.image_url_3]
@@ -66,6 +84,11 @@ export default function ProductView({ params }) {
             {/* Full-width specifications below the buy card. */}
             <ProductViewContainer classes='product' overlap={false}>
                 <ProductSpecs details={product} />
+            </ProductViewContainer>
+
+            {/* Reviews & ratings. */}
+            <ProductViewContainer classes='product' overlap={false}>
+                <ProductReviews productId={product.id} />
             </ProductViewContainer>
         </div>
     )

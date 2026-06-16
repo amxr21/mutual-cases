@@ -125,6 +125,13 @@ export default function GoogleLoginButton() {
         setUser({ name: data.name, picture: data.picture, userId: data.userId, role: data.role })
         toast.success(`Welcome${data.name ? `, ${String(data.name).split(' ')[0]}` : ''}!`)
         setSignInOpen(false)
+
+        // Force a full session refresh so every global context (cart, likes,
+        // role-gated UI) re-hydrates with the new auth state immediately —
+        // no stale logged-out view lingering after sign-in.
+        setTimeout(() => {
+            window.location.reload()
+        }, 400)
     }
 
     const hasPicture = typeof user?.picture === "string" && user.picture.trim().length > 0
@@ -188,7 +195,7 @@ export default function GoogleLoginButton() {
             <button
                 type="button"
                 onClick={() => setSignInOpen(true)}
-                className="flex items-center gap-2 bg-blue text-off-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:brightness-110 active:scale-95 cursor-pointer whitespace-nowrap"
+                className="flex items-center gap-2 bg-blue text-off-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:brightness-110 active:scale-95 cursor-pointer whitespace-nowrap md:mx-4"
             >
                 <svg viewBox="0 0 24 24" fill="none" className="size-4 stroke-current" strokeWidth={1.8}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
