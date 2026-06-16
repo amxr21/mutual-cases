@@ -1,14 +1,20 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../Context/CartContext'
 import { useToast } from './Toast/ToastProvider'
-import { postJSON } from '../lib/safeFetch'
+import { getJSON, postJSON } from '../lib/safeFetch'
+import SmoothSelect from './SmoothSelect'
+import { GCC_COUNTRIES, citiesFor } from '../constants/gcc'
 
 /**
- * Checkout (Task 6): shipping address form with validation + live order summary
+ * Checkout: shipping address form with validation + live order summary
  * (items, note, gift) + a clearly-marked payment placeholder. On submit it
  * creates the order in the backend and routes to the success page.
+ *
+ * Country and City are a dependent relationship: choosing a (GCC) country
+ * filters the available cities; an "Other" city option reveals a free-text
+ * field so unlisted cities still work.
  */
 const REQUIRED = ['country', 'city', 'area']
 
@@ -18,13 +24,68 @@ export default function CheckoutForm() {
     const { items, requests, totals, clearCart } = useCart()
 
     const [form, setForm] = useState({ country: 'United Arab Emirates', city: '', area: '', address: '' })
+    const [cityChoice, setCityChoice] = useState('') // the selected dropdown value ('' | a city | 'Other')
     const [errors, setErrors] = useState({})
     const [submitting, setSubmitting] = useState(false)
     const [payment, setPayment] = useState('cod') // 'cod' | 'card_on_delivery'
+    const [geoEnabled, setGeoEnabled] = useState(false)
+    const [locating, setLocating] = useState(false)
+
+    // Whether autodetect is enabled is an admin setting; default off.
+    useEffect(() => {
+        ;(async () => {
+            const r = await getJSON('/settings/public')
+            if (r.ok && r.data) setGeoEnabled(!!r.data.locationAutodetect)
+        })()
+    }, [])
 
     const setField = (k) => (e) => {
         setForm((f) => ({ ...f, [k]: e.target.value }))
         setErrors((er) => ({ ...er, [k]: undefined }))
+    }
+
+    // Country change resets the city (the old city may not exist in the new country).
+    const onCountry = (country) => {
+        setForm((f) => ({ ...f, country, city: '' }))
+        setCityChoice('')
+        setErrors((er) => ({ ...er, country: undefined, city: undefined }))
+    }
+
+    // City dropdown: a real city sets form.city directly; 'Other' clears it so
+    // the free-text input takes over.
+    const onCity = (choice) => {
+        setCityChoice(choice)
+        setForm((f) => ({ ...f, city: choice === 'Other' ? '' : choice }))
+        setErrors((er) => ({ ...er, city: undefined }))
+    }
+
+    // Browser geolocation -> reverse geocode -> prefill country/city/area.
+    // Only available when the admin has enabled autodetect.
+    const detectLocation = () => {
+        if (!navigator.geolocation) { toast.error('Geolocation is not supported on this device'); return }
+        setLocating(true)
+        navigator.geolocation.getCurrentPosition(
+            async ({ coords }) => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}`, { headers: { Accept: 'application/json' } })
+                    const data = await res.json()
+                    const a = data.address || {}
+                    const country = a.country || ''
+                    const city = a.city || a.town || a.state || ''
+                    const area = a.suburb || a.neighbourhood || a.county || ''
+                    const matchedCountry = GCC_COUNTRIES.find((c) => c.toLowerCase() === country.toLowerCase()) || country
+                    setForm((f) => ({ ...f, country: matchedCountry || f.country, city: city || f.city, area: area || f.area }))
+                    setCityChoice(citiesFor(matchedCountry).includes(city) ? city : (city ? 'Other' : ''))
+                    toast.success('Location detected')
+                } catch {
+                    toast.error("Couldn't detect your location")
+                } finally {
+                    setLocating(false)
+                }
+            },
+            () => { setLocating(false); toast.error('Location permission denied') },
+            { timeout: 10000 }
+        )
     }
 
     const validate = () => {
@@ -83,17 +144,37 @@ export default function CheckoutForm() {
         <div className="grid grid-cols-1 xl:grid-cols-[1.3fr_1fr] gap-6 xl:gap-10">
             {/* Address form */}
             <div className="bg-off-white rounded-2xl shadow-lg p-6 xl:p-8 flex flex-col gap-5">
-                <h2 className="text-2xl font-semibold">Shipping Address</h2>
+                <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-2xl font-semibold">Shipping Address</h2>
+                    {geoEnabled ? (
+                        <button
+                            type="button"
+                            onClick={detectLocation}
+                            disabled={locating}
+                            className="flex items-center gap-2 text-sm font-medium text-blue border border-blue/30 rounded-lg px-3 py-1.5 transition-colors hover:bg-blue/5 disabled:opacity-60"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" className="size-4 stroke-current" strokeWidth={1.8}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                            </svg>
+                            {locating ? 'Detecting…' : 'Use my location'}
+                        </button>
+                    ) : null}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label className="flex flex-col gap-1.5">
                         <span className="font-medium">Country <span className="text-gold">*</span></span>
-                        <input value={form.country} onChange={setField('country')} className={inputClass('country')} />
+                        <SmoothSelect value={form.country} onChange={onCountry} options={GCC_COUNTRIES} placeholder="Select country" />
                         {errors.country ? <span className="text-gold text-sm">{errors.country}</span> : null}
                     </label>
                     <label className="flex flex-col gap-1.5">
                         <span className="font-medium">City <span className="text-gold">*</span></span>
-                        <input value={form.city} onChange={setField('city')} placeholder="e.g. Abu Dhabi" className={inputClass('city')} />
+                        <SmoothSelect value={cityChoice} onChange={onCity} options={citiesFor(form.country)} placeholder="Select city" />
+                        {/* 'Other' city -> free-text input. */}
+                        {cityChoice === 'Other' ? (
+                            <input value={form.city} onChange={setField('city')} placeholder="Enter your city" className={`${inputClass('city')} mt-1`} />
+                        ) : null}
                         {errors.city ? <span className="text-gold text-sm">{errors.city}</span> : null}
                     </label>
                     <label className="flex flex-col gap-1.5">

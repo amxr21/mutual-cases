@@ -1,8 +1,8 @@
 import Image from "next/image"
 
-import BagImg from "../../../public/images/custom-it/bag.jpg"
-import DesignerImg from "../../../public/images/custom-it/designer.jpg"
-import CasesImg from "../../../public/images/cases.jpg"
+import AboutImg1 from "../../../public/images/about/image 30.jpg"
+import AboutImg2 from "../../../public/images/about/image 31.jpg"
+import AboutImg3 from "../../../public/images/about/image 32.jpg"
 
 export const metadata = {
   title: "Mutual - About Us",
@@ -22,8 +22,8 @@ export default function About() {
       </section>
 
       {/* Overlapping story card */}
-      <section className="mx-auto max-w-6xl">
-        <div className="bg-off-white rounded-2xl shadow-xl p-6 xl:p-10 -mt-20 xl:-mt-28 relative z-10 grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-12 items-center">
+      <section className="mx-auto ">
+        <div className="bg-off-white rounded-2xl shadow-xl p-6 xl:p-10 -mt-20 xl:-mt-28 relative z-0 grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-12 items-center">
           <h2 className="text-3xl xl:text-5xl font-bold leading-tight text-off-black">
             From An Idea To Impact — A Journey Into Entrepreneurship
           </h2>
@@ -35,26 +35,26 @@ export default function About() {
             something that lasts.
           </p>
         </div>
+        {/* Three-image row */}
+        <section className="mx-auto  rounded-2xl overflow-hidden z-[99999] -mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 ">
+            {[
+              { src: AboutImg1, alt: "The Mutual story" },
+              { src: AboutImg2, alt: "Building the brand" },
+              { src: AboutImg3, alt: "Mutual products" },
+            ].map((img, i) => (
+              <div
+                key={i}
+                className="reveal relative h-56 xl:h-72  overflow-hidden shadow-md"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                <Image src={img.src} alt={img.alt} fill className="object-cover" />
+              </div>
+            ))}
+          </div>
+        </section>
       </section>
 
-      {/* Three-image row */}
-      <section className="mx-auto max-w-6xl mt-6 xl:mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 xl:gap-4">
-          {[
-            { src: BagImg, alt: "Mutual case and notebook" },
-            { src: DesignerImg, alt: "Designing a custom cover" },
-            { src: CasesImg, alt: "Mutual cases" },
-          ].map((img, i) => (
-            <div
-              key={i}
-              className="reveal relative h-56 xl:h-72 rounded-xl overflow-hidden shadow-md"
-              style={{ animationDelay: `${i * 100}ms` }}
-            >
-              <Image src={img.src} alt={img.alt} fill className="object-cover" />
-            </div>
-          ))}
-        </div>
-      </section>
     </main>
   )
 }

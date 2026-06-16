@@ -38,7 +38,10 @@ export async function safeFetch(path, options = {}) {
     // user from the JWT rather than a client-supplied id.
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     const headers = { ...(init.headers || {}) };
-    if (token) headers.Authorization = `Bearer ${token}`;
+    // Attach the default session token only if the caller didn't already supply
+    // an Authorization header (e.g. the delivery portal passes its own token).
+    const hasAuth = Object.keys(headers).some((k) => k.toLowerCase() === "authorization");
+    if (token && !hasAuth) headers.Authorization = `Bearer ${token}`;
 
     try {
         const res = await fetch(url, { ...init, headers, signal: controller.signal });
@@ -104,6 +107,14 @@ export const patchJSON = (path, body, options) =>
     safeFetch(path, {
         ...options,
         method: "PATCH",
+        headers: { "Content-Type": "application/json", ...(options?.headers || {}) },
+        body: JSON.stringify(body),
+    });
+
+export const putJSON = (path, body, options) =>
+    safeFetch(path, {
+        ...options,
+        method: "PUT",
         headers: { "Content-Type": "application/json", ...(options?.headers || {}) },
         body: JSON.stringify(body),
     });

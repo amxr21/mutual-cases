@@ -10,9 +10,10 @@ import PageTransition from './PageTransition'
  */
 export default function Chrome({ children }) {
     const pathname = usePathname()
-    const isAdmin = pathname?.startsWith('/admin')
+    // Admin and the delivery portal render bare (their own full-screen shells).
+    const isBare = pathname?.startsWith('/admin') || pathname?.startsWith('/delivery')
 
-    if (isAdmin) return <>{children}</>
+    if (isBare) return <>{children}</>
 
     return (
         <>

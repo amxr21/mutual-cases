@@ -1,5 +1,10 @@
 @import url('./variables.css');
 
+/* Smooth scrolling site-wide (anchor jumps + programmatic scrolls glide). */
+html{
+    scroll-behavior: smooth;
+}
+
 body{
     margin: 0 !important;
     /* Pattern background with only a light wash so it stays clearly visible
@@ -61,6 +66,7 @@ a, button{
 }
 
 @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
     .page-enter, .reveal { animation: none; }
     *, *::before, *::after { transition-duration: 0.01ms !important; }
 }
