@@ -2,87 +2,127 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getJSON } from '../lib/safeFetch'
+import { EmptyState, ReviewForm } from '.'
 
 /**
- * Logged-in user's order history. Lists all of the user's orders (status, date,
- * total, items) with a link into the existing order tracker. Distinct from the
- * public /track-order quick-lookup.
+ * Logged-in order history with Current / Previous tabs.
+ *   Current  = Pending, Confirmed, Shipped (status_id 1,2,3)
+ *   Previous = Delivered, Canceled, Returned (status_id 4,5,6)
+ * Each order lists its items; delivered orders expose a review form per product
+ * (server enforces purchase-gating). Reviews already left are prefilled.
  */
+const CURRENT_STATUS = new Set([1, 2, 3])
 const STATUS_COLOR = {
-    Pending: 'bg-gold/15 text-gold',
-    Confirmed: 'bg-blue/15 text-blue',
-    Shipped: 'bg-blue/15 text-blue',
-    Delivered: 'bg-green-600/15 text-green-700',
-    Canceled: 'bg-red-500/15 text-red-600',
-    Returned: 'bg-gray-400/20 text-gray-600',
+    Pending: 'bg-gold/15 text-gold', Confirmed: 'bg-blue/15 text-blue', Shipped: 'bg-blue/15 text-blue',
+    Delivered: 'bg-green-600/15 text-green-700', Canceled: 'bg-red-500/15 text-red-600', Returned: 'bg-gray-400/20 text-gray-600',
 }
 
 export default function MyOrders() {
     const [orders, setOrders] = useState([])
+    const [myReviews, setMyReviews] = useState({}) // product_id -> {rating, comment}
+    const [tab, setTab] = useState('current')
     const [status, setStatus] = useState('loading') // loading | ready | empty | guest | error
 
     useEffect(() => {
         const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null
-        if (!userId) {
-            setStatus('guest')
-            return
-        }
+        if (!userId) { setStatus('guest'); return }
         let active = true
         ;(async () => {
-            const result = await getJSON('/orders')
+            const [ordersRes, reviewsRes] = await Promise.all([getJSON('/orders'), getJSON('/reviews/mine')])
             if (!active) return
-            if (result.ok && Array.isArray(result.data)) {
-                setOrders(result.data)
-                setStatus(result.data.length ? 'ready' : 'empty')
-            } else {
-                setStatus('error')
+            if (ordersRes.ok && Array.isArray(ordersRes.data)) {
+                setOrders(ordersRes.data)
+                setStatus(ordersRes.data.length ? 'ready' : 'empty')
+            } else setStatus('error')
+            if (reviewsRes.ok && Array.isArray(reviewsRes.data)) {
+                const map = {}
+                for (const r of reviewsRes.data) map[r.product_id] = r
+                setMyReviews(map)
             }
         })()
-        return () => {
-            active = false
-        }
+        return () => { active = false }
     }, [])
+
+    const onReviewed = (rev) => setMyReviews((prev) => ({ ...prev, [rev.product_id]: rev }))
 
     if (status === 'loading') return <p className="font-light py-8">Loading your orders…</p>
     if (status === 'guest')
-        return (
-            <div className="flex flex-col items-start gap-3 py-8">
-                <p className="font-light text-lg">Please log in to see your orders.</p>
-                <Link href="/" className="text-blue underline font-medium">Go to homepage</Link>
-            </div>
-        )
-    if (status === 'error') return <p className="font-light text-blue py-8">We couldn&apos;t load your orders. Please refresh.</p>
+        return <EmptyState icon="lock" title="Please log in to see your orders" message="Your order history is tied to your account." action={{ label: 'Go to homepage', href: '/' }} />
+    if (status === 'error')
+        return <EmptyState icon="alert" title="We couldn't load your orders" message="Please refresh the page to try again." />
     if (status === 'empty')
-        return (
-            <div className="flex flex-col items-start gap-3 py-8">
-                <p className="font-light text-lg">You have no orders yet.</p>
-                <Link href="/products" className="text-blue underline font-medium">Start shopping</Link>
-            </div>
-        )
+        return <EmptyState icon="box" title="You have no orders yet" message="When you place an order it'll show up here." action={{ label: 'Start shopping', href: '/products' }} />
+
+    const filtered = orders.filter((o) =>
+        tab === 'current' ? CURRENT_STATUS.has(o.status_id) : !CURRENT_STATUS.has(o.status_id)
+    )
 
     return (
-        <div className="flex flex-col gap-4">
-            {orders.map((o) => (
-                <Link
-                    key={o.order_number}
-                    href={`/track-order?order=${encodeURIComponent(o.order_number)}`}
-                    className="bg-off-white rounded-xl shadow-sm border border-black/5 p-4 xl:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-                >
-                    <div className="flex flex-col gap-1">
-                        <span className="font-semibold">{o.order_number}</span>
-                        <span className="text-sm font-light text-off-black/60">
-                            {new Date(o.order_date).toLocaleDateString()} · {o.item_count} item{o.item_count == 1 ? '' : 's'} · {o.payment_method === 'card_on_delivery' ? 'Card on delivery' : 'Cash on delivery'}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLOR[o.status] || 'bg-gray-200'}`}>{o.status}</span>
-                        <span className="font-semibold whitespace-nowrap">{o.total} AED</span>
-                        <svg viewBox="0 0 24 24" fill="none" className="size-5 stroke-off-black/40" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                        </svg>
-                    </div>
-                </Link>
-            ))}
+        <div className="flex flex-col gap-5">
+            {/* Tabs */}
+            <div className="flex gap-1 bg-blue/5 p-1 rounded-lg w-fit">
+                {[['current', 'Current'], ['previous', 'Previous']].map(([key, label]) => (
+                    <button
+                        key={key}
+                        onClick={() => setTab(key)}
+                        className={`px-5 py-2 rounded-md font-semibold text-sm transition-all duration-200 ${
+                            tab === key ? 'bg-blue text-off-white shadow-sm' : 'text-blue hover:bg-blue/10'
+                        }`}
+                    >
+                        {label}
+                    </button>
+                ))}
+            </div>
+
+            {filtered.length === 0 ? (
+                <EmptyState
+                    icon="box"
+                    size="sm"
+                    title={tab === 'current' ? 'No current orders' : 'No past orders'}
+                    message={tab === 'current' ? 'Orders in progress will appear here.' : 'Delivered and closed orders will appear here.'}
+                />
+            ) : (
+                <div className="flex flex-col gap-4">
+                    {filtered.map((o) => {
+                        const canReview = o.status_id === 4 // Delivered
+                        return (
+                            <div key={o.order_number} className="bg-off-white rounded-xl shadow-sm border border-black/5 p-4 xl:p-5 flex flex-col gap-3">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex flex-col">
+                                        <span className="font-semibold">{o.order_number}</span>
+                                        <span className="text-sm font-light text-off-black/60">
+                                            {new Date(o.order_date).toLocaleDateString()} · {o.item_count} item{o.item_count == 1 ? '' : 's'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLOR[o.status] || 'bg-gray-200'}`}>{o.status}</span>
+                                        <span className="font-semibold whitespace-nowrap">{o.total} AED</span>
+                                    </div>
+                                </div>
+
+                                {/* Items */}
+                                <div className="flex flex-col divide-y divide-black/5 border-t border-black/5 pt-2">
+                                    {o.items?.map((it) => (
+                                        <div key={it.product_id} className="py-2 flex flex-col gap-1">
+                                            <div className="flex justify-between gap-3">
+                                                <span className="capitalize font-light">{it.category} {it.model} <span className="opacity-60">×{it.quantity}</span></span>
+                                                <span className="font-semibold whitespace-nowrap">{Number(it.price) * Number(it.quantity)} AED</span>
+                                            </div>
+                                            {canReview ? (
+                                                <ReviewForm productId={it.product_id} existing={myReviews[it.product_id]} onSubmitted={onReviewed} />
+                                            ) : null}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <Link href={`/track-order?order=${encodeURIComponent(o.order_number)}`} className="text-sm text-blue underline self-start">
+                                    Track this order →
+                                </Link>
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
         </div>
     )
 }

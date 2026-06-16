@@ -83,22 +83,50 @@ const createOrder = async (req, res) => {
     });
 };
 
-/** GET /orders — list the authenticated user's orders (newest first). */
+/** GET /orders — list the authenticated user's orders (newest first), each with
+ *  its line items (so the My Orders page can offer per-product review forms). */
 const getMyOrders = async (req, res) => {
     const userId = req.user.id;
-    const rows = await query(
-        `SELECT o.order_number, o.order_date, o.status_id, s.status, o.total, o.payment_method,
-                COUNT(oi.id) AS item_count
+    const orders = await query(
+        `SELECT o.id, o.order_number, o.order_date, o.status_id, s.status, o.total, o.payment_method
          FROM orders o
          JOIN order_status s ON s.id = o.status_id
-         LEFT JOIN order_items oi ON oi.order_id = o.id
          WHERE o.user_id = ?
-         GROUP BY o.id
          ORDER BY o.order_date DESC`,
         [String(userId)],
         { op: "getMyOrders" }
     );
-    res.json(rows);
+
+    if (!orders.length) return res.json([]);
+
+    const ids = orders.map((o) => o.id);
+    const placeholders = ids.map(() => "?").join(",");
+    const items = await query(
+        `SELECT oi.order_id, oi.product_id, oi.quantity, oi.price, p.model, p.edition, p.category,
+                p.image_url_1, t.type
+         FROM order_items oi
+         JOIN products p ON p.id = oi.product_id
+         JOIN types t ON t.id = p.type_id
+         WHERE oi.order_id IN (${placeholders})`,
+        ids,
+        { op: "getMyOrders.items" }
+    );
+
+    const byOrder = {};
+    for (const it of items) (byOrder[it.order_id] ||= []).push(it);
+
+    res.json(
+        orders.map((o) => ({
+            order_number: o.order_number,
+            order_date: o.order_date,
+            status_id: o.status_id,
+            status: o.status,
+            total: o.total,
+            payment_method: o.payment_method,
+            item_count: (byOrder[o.id] || []).length,
+            items: byOrder[o.id] || [],
+        }))
+    );
 };
 
 /** GET /orders/:orderNumber — full order for the success + track pages.
@@ -109,8 +137,11 @@ const getOrder = async (req, res) => {
 
     const orders = await query(
         `SELECT o.id, o.order_number, o.order_date, o.status_id, s.status, o.note, o.gift,
-                o.gift_message, o.total, o.payment_method
+                o.gift_message, o.total, o.payment_method,
+                o.tracking_number, o.carrier, o.eta,
+                d.name AS driver_name, d.phone AS driver_phone
          FROM orders o JOIN order_status s ON s.id = o.status_id
+         LEFT JOIN users d ON d.id = o.delivery_user_id
          WHERE o.order_number = ? AND o.user_id = ?`,
         [orderNumber, String(userId)],
         { op: "getOrder" }

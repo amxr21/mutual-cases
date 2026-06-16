@@ -15,6 +15,9 @@ export default function TrackOrder() {
     const initial = params.get('order') || ''
     const [input, setInput] = useState(initial)
     const [tracking, setTracking] = useState(initial)
+    // Deep-linked from a success/journey link: the order number is fixed, so we
+    // don't show the "change order number" form inside the tracking view.
+    const deepLinked = !!initial
 
     useEffect(() => {
         setInput(initial)
@@ -53,7 +56,10 @@ export default function TrackOrder() {
 
     return (
         <div key={tracking} className="reveal">
-            <OrderView orderNumber={tracking} showTrackLink={false} layout="split" leftExtra={trackForm} />
+            {/* When deep-linked, the order number is fixed — hide the lookup form
+                so the user can't change it from inside the tracking view. When
+                the user searched manually, keep the form so they can look up another. */}
+            <OrderView orderNumber={tracking} showTrackLink={false} layout="split" leftExtra={deepLinked ? null : trackForm} />
         </div>
     )
 }

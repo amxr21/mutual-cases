@@ -92,6 +92,26 @@ export default function OrderView({ orderNumber, successMode = false, showTrackL
         </div>
     )
 
+    // Delivery info — shown (below the journey) once a driver is assigned or
+    // tracking is set in admin. Hidden entirely until then.
+    const hasDelivery = order.driver_name || order.tracking_number || order.carrier || order.eta
+    const deliveryCard = hasDelivery ? (
+        <div className="bg-off-white rounded-2xl shadow-lg p-6 xl:p-8 flex flex-col gap-2">
+            <div className="flex items-center gap-2 mb-1">
+                <svg viewBox="0 0 24 24" fill="none" className="size-5 stroke-blue" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                </svg>
+                <h3 className="text-lg font-semibold">Your delivery</h3>
+            </div>
+            {order.driver_name ? (
+                <DeliveryRow label="Driver" value={`${order.driver_name}${order.driver_phone ? ` · ${order.driver_phone}` : ''}`} />
+            ) : null}
+            {order.carrier ? <DeliveryRow label="Carrier" value={order.carrier} /> : null}
+            {order.tracking_number ? <DeliveryRow label="Tracking #" value={order.tracking_number} /> : null}
+            {order.eta ? <DeliveryRow label="Estimated delivery" value={new Date(order.eta).toLocaleDateString()} /> : null}
+        </div>
+    ) : null
+
     const detailsCard = (
         <div className="bg-off-white rounded-2xl shadow-lg p-6 xl:p-8 flex flex-col gap-4">
             <h3 className="text-xl font-semibold">Items</h3>
@@ -146,7 +166,10 @@ export default function OrderView({ orderNumber, successMode = false, showTrackL
                     {detailsCard}
                     {actions}
                 </div>
-                <div className="xl:sticky xl:top-6">{stepperCard}</div>
+                <div className="xl:sticky xl:top-6 flex flex-col gap-6">
+                    {stepperCard}
+                    {deliveryCard}
+                </div>
             </div>
         )
     }
@@ -156,8 +179,18 @@ export default function OrderView({ orderNumber, successMode = false, showTrackL
             {successHeader}
             {headerCard}
             {stepperCard}
+            {deliveryCard}
             {detailsCard}
             {actions}
+        </div>
+    )
+}
+
+function DeliveryRow({ label, value }) {
+    return (
+        <div className="flex justify-between gap-3 text-sm">
+            <span className="font-light text-off-black/70">{label}</span>
+            <span className="font-medium text-right">{value}</span>
         </div>
     )
 }
