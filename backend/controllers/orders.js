@@ -62,6 +62,15 @@ const createOrder = async (req, res) => {
                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [orderId, r.id, r.qty, r.price, r.edition_id, r.model_id, r.category_id]
             );
+            // Reserve the ordered units so storefront "available" (= quantity −
+            // reserved) reflects pending demand. Released on cancel/return.
+            await tx(
+                `UPDATE stock_quantity sq
+                 JOIN products p ON p.stock_quantity_id = sq.stock_id
+                 SET sq.reserved = sq.reserved + ?
+                 WHERE p.id = ?`,
+                [r.qty, r.id]
+            );
         }
 
         await tx(

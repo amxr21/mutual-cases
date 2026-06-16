@@ -13,6 +13,8 @@ const { orderStatusEmail } = require("../email/templates");
 const VALID_STATUS_IDS = new Set([1, 2, 3, 4, 5, 6]); // order_status table
 const STATUS_LABEL = { 1: "Pending", 2: "Confirmed", 3: "Shipped", 4: "Delivered", 5: "Canceled", 6: "Returned" };
 const STATUS_SHIPPED = 3;
+const STATUS_CANCELED = 5;
+const STATUS_RETURNED = 6;
 
 /**
  * Fire (best-effort) a status-change notification email to the order's owner.
@@ -440,7 +442,17 @@ const updateOrderStatus = async (req, res) => {
     );
     if (!existing.length) throw notFound("Order not found");
     const orderId = existing[0].id;
-    const changed = Number(existing[0].status_id) !== statusId;
+    const prevStatus = Number(existing[0].status_id);
+    const changed = prevStatus !== statusId;
+
+    // Releasing reserved stock when an order becomes Canceled/Returned — but only
+    // on the transition *into* that state (so it isn't released twice).
+    const RELEASED_STATES = new Set([STATUS_CANCELED, STATUS_RETURNED]);
+    const shouldRelease = changed && RELEASED_STATES.has(statusId) && !RELEASED_STATES.has(prevStatus);
+
+    if (shouldRelease) {
+        await releaseReservation(orderId);
+    }
 
     await query(
         "UPDATE orders SET status_id = ? WHERE order_number = ?",
@@ -460,6 +472,26 @@ const updateOrderStatus = async (req, res) => {
         notifyOrderStatus(orderNumber, statusId);
     }
 };
+
+/**
+ * Release the reserved stock for an order's items (on cancel/return). Caps the
+ * decrement at the current reserved so it can never go negative. Best-effort.
+ */
+async function releaseReservation(orderId) {
+    try {
+        await query(
+            `UPDATE stock_quantity sq
+             JOIN products p ON p.stock_quantity_id = sq.stock_id
+             JOIN order_items oi ON oi.product_id = p.id
+             SET sq.reserved = GREATEST(sq.reserved - oi.quantity, 0)
+             WHERE oi.order_id = ?`,
+            [orderId],
+            { op: "admin.releaseReservation" }
+        );
+    } catch (err) {
+        logger.error("releaseReservation failed", { orderId, message: err?.message });
+    }
+}
 
 /** Append a row to the order status-history timeline (best-effort, never throws). */
 async function recordStatusChange(orderId, statusId, changedBy, note = null) {
