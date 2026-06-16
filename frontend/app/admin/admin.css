@@ -1,0 +1,110 @@
+/**
+ * Admin dashboard theme tokens (Medusa-style: clean, light, minimal) with a
+ * dark variant. Scoped under .admin-root so the storefront is unaffected.
+ * Components consume these via the `ui-*` utility classes / inline vars.
+ */
+.admin-root {
+    --ui-bg: #f6f7f9;          /* app canvas */
+    --ui-surface: #ffffff;     /* cards, tables */
+    --ui-surface-2: #f3f4f6;   /* subtle fills, hovers */
+    --ui-border: #e6e8ec;
+    --ui-text: #1a1a1a;
+    --ui-text-muted: #6b7280;
+    --ui-primary: #055AB0;     /* brand blue */
+    --ui-primary-contrast: #ffffff;
+    --ui-accent: #DFA61D;      /* brand gold */
+    --ui-danger: #dc2626;
+    --ui-success: #16a34a;
+    --ui-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.04);
+    --ui-radius: 10px;
+    /* Light, subtle shadow for the floating chrome (sidebar/topbar). */
+    --ui-float-shadow: 0 2px 10px rgba(16,24,40,0.04), 0 1px 3px rgba(16,24,40,0.03);
+    /* Admin font (changeable in Settings > Customization). Prefers SF Pro on
+       Apple devices (via -apple-system / BlinkMacSystemFont), then self-hosted
+       Inter (--font-inter, loaded in admin/layout.jsx), then a generic fallback.
+       Overrides the storefront's Fraunces, but only inside .admin-root. */
+    --ui-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        var(--font-inter), "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    font-family: var(--ui-font);
+    min-height: 100vh;
+}
+
+/* Make sure everything inside admin inherits the generic font, overriding the
+   Fraunces face applied on <html> by the storefront root layout. */
+.admin-root, .admin-root * { font-family: var(--ui-font); }
+
+/* Floating chrome: detached from the viewport edges, rounded, with a soft
+   shadow so the sidebar and topbar read as cards rather than docked bars. */
+.ui-float {
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    border-radius: 16px;
+    box-shadow: var(--ui-float-shadow);
+}
+
+.admin-root.dark {
+    --ui-bg: #0f1115;
+    --ui-surface: #181b21;
+    --ui-surface-2: #21252d;
+    --ui-border: #2a2f3a;
+    --ui-text: #e7e9ee;
+    --ui-text-muted: #9aa3b2;
+    --ui-primary: #3b82f6;
+    --ui-primary-contrast: #ffffff;
+    --ui-accent: #e0b84a;
+    --ui-danger: #f87171;
+    --ui-success: #4ade80;
+    --ui-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    --ui-float-shadow: 0 2px 10px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Surfaces */
+.ui-surface { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius); box-shadow: var(--ui-shadow); }
+.ui-border { border-color: var(--ui-border) !important; }
+.ui-muted { color: var(--ui-text-muted); }
+
+/* Buttons */
+.ui-btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; font-weight:600; border-radius:8px; padding:.5rem .9rem; font-size:.875rem; transition:all .15s ease; cursor:pointer; white-space:nowrap; }
+.ui-btn-primary { background:var(--ui-primary); color:var(--ui-primary-contrast); }
+.ui-btn-primary:hover { filter:brightness(1.08); }
+.ui-btn-ghost { background:transparent; color:var(--ui-text); border:1px solid var(--ui-border); }
+.ui-btn-ghost:hover { background:var(--ui-surface-2); }
+.ui-btn-danger { background:transparent; color:var(--ui-danger); border:1px solid var(--ui-border); }
+.ui-btn-danger:hover { background:rgba(220,38,38,0.08); }
+.ui-btn:disabled { opacity:.55; cursor:not-allowed; }
+
+/* Inputs */
+.ui-input, .ui-select, .ui-textarea {
+    width:100%; background:var(--ui-surface); color:var(--ui-text);
+    border:1px solid var(--ui-border); border-radius:8px; padding:.55rem .75rem;
+    font-size:.875rem; outline:none; transition:border-color .15s ease, box-shadow .15s ease;
+}
+.ui-input:focus, .ui-select:focus, .ui-textarea:focus { border-color:var(--ui-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--ui-primary) 18%, transparent); }
+
+/* Table */
+.ui-table { width:100%; border-collapse:collapse; font-size:.875rem; }
+.ui-table thead th { text-align:left; padding:.7rem .9rem; color:var(--ui-text-muted); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; border-bottom:1px solid var(--ui-border); background:var(--ui-surface-2); }
+.ui-table tbody td { padding:.7rem .9rem; border-bottom:1px solid var(--ui-border); color:var(--ui-text); }
+.ui-table tbody tr:hover { background:var(--ui-surface-2); }
+.ui-table tbody tr:last-child td { border-bottom:none; }
+
+/* Badge */
+.ui-badge { display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .6rem; border-radius:999px; font-size:.75rem; font-weight:600; }
+
+/* Drawer + modal animation helpers */
+.ui-overlay { background:rgba(16,24,40,0.45); backdrop-filter:blur(2px); }
+
+/* Sortable header affordance */
+.ui-th-sort { cursor:pointer; user-select:none; }
+.ui-th-sort:hover { color:var(--ui-text); }
+
+/* When printing (e.g. the invoice page), hide the admin chrome so only the
+   document prints. The invoice page also sets its own print rules. */
+@media print {
+    .admin-root > aside,
+    .admin-root > div > header { display:none !important; }
+    .admin-root, .admin-root > div, .admin-root main { background:#fff !important; padding:0 !important; margin:0 !important; }
+}
