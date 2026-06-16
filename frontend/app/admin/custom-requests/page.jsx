@@ -2,18 +2,19 @@
 import { useEffect, useState } from 'react'
 import { getJSON, patchJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
+import { PageHeader, Badge } from '../ui/primitives'
+import DataTable from '../ui/DataTable'
+import Drawer from '../ui/Drawer'
+import Select from '../ui/Select'
 
 const STATUSES = ['pending', 'in_review', 'approved', 'rejected', 'completed']
-const COLOR = {
-    pending: 'bg-gold/15 text-gold', in_review: 'bg-blue/15 text-blue',
-    approved: 'bg-green-600/15 text-green-700', rejected: 'bg-red-500/15 text-red-600',
-    completed: 'bg-blue/15 text-blue',
-}
+const TONE = { pending: 'gold', in_review: 'blue', approved: 'green', rejected: 'red', completed: 'blue' }
 
 export default function AdminCustomRequests() {
     const toast = useToast()
     const [rows, setRows] = useState([])
     const [status, setStatus] = useState('loading')
+    const [detail, setDetail] = useState(null)
 
     const load = async () => {
         setStatus('loading')
@@ -28,39 +29,61 @@ export default function AdminCustomRequests() {
         if (!r.ok) { toast.error(r.error?.message || 'Update failed'); return }
         toast.success('Updated')
         setRows((prev) => prev.map((x) => x.id === id ? { ...x, status: newStatus } : x))
+        setDetail((d) => d && d.id === id ? { ...d, status: newStatus } : d)
     }
 
+    const columns = [
+        { key: 'id', header: 'ID', sortable: true, render: (c) => `#${c.id}` },
+        { key: 'customer_name', header: 'Customer', sortable: true, render: (c) => c.customer_name || 'Guest' },
+        { key: 'model', header: 'Model', sortable: true },
+        { key: 'type', header: 'Type', sortable: true },
+        { key: 'design', header: 'Design', sortable: true },
+        { key: 'created_at', header: 'Date', sortable: true, render: (c) => new Date(c.created_at).toLocaleDateString() },
+        { key: 'status', header: 'Status', sortable: true, render: (c) => <Badge tone={TONE[c.status] || 'neutral'}>{c.status}</Badge> },
+    ]
+
+    if (status === 'loading') return <p className="ui-muted">Loading…</p>
+    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load requests.</p>
+
     return (
-        <div className="flex flex-col gap-6">
-            <h1 className="text-3xl font-bold">Custom Requests</h1>
-            {status === 'loading' ? <p className="font-light">Loading…</p> : null}
-            {status === 'error' ? <p className="text-blue">Couldn&apos;t load requests.</p> : null}
-            {status === 'ready' ? (
-                <div className="flex flex-col gap-3">
-                    {rows.length === 0 ? <p className="font-light">No custom requests yet.</p> : null}
-                    {rows.map((c) => (
-                        <div key={c.id} className="bg-off-white rounded-xl shadow-sm border border-black/5 p-4 flex flex-col gap-2">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <span className="font-semibold">#{c.id} · {c.customer_name || 'Guest'} {c.customer_email ? `(${c.customer_email})` : ''}</span>
-                                <div className="flex items-center gap-2">
-                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${COLOR[c.status] || 'bg-gray-200'}`}>{c.status}</span>
-                                    <select value={c.status} onChange={(e) => change(c.id, e.target.value)} className="bg-blue/5 border border-blue/30 text-blue rounded-lg py-1 px-2 text-sm outline-none">
-                                        {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                </div>
+        <div>
+            <PageHeader title="Custom Requests" subtitle={`${rows.length} total`} />
+            <DataTable
+                columns={columns}
+                rows={rows}
+                searchKeys={['customer_name', 'customer_email', 'model', 'type', 'design', 'status']}
+                searchPlaceholder="Search requests…"
+                rowActions={(c) => <button className="ui-btn ui-btn-ghost !py-1 !px-3" onClick={() => setDetail(c)}>View</button>}
+            />
+
+            <Drawer open={!!detail} onClose={() => setDetail(null)} title={detail ? `Request #${detail.id}` : ''}>
+                {detail ? (
+                    <div className="flex flex-col gap-5">
+                        <div>
+                            <label className="ui-muted text-xs font-semibold uppercase">Status</label>
+                            <div className="mt-1">
+                                <Select value={detail.status} onChange={(v) => change(detail.id, v)} options={STATUSES} />
                             </div>
-                            <div className="text-sm font-light grid grid-cols-2 md:grid-cols-4 gap-2">
-                                <span><b>Model:</b> {c.model}</span>
-                                <span><b>Type:</b> {c.type}</span>
-                                <span><b>Design:</b> {c.design}</span>
-                                <span><b>Date:</b> {new Date(c.created_at).toLocaleDateString()}</span>
-                            </div>
-                            {c.sentence ? <div className="text-sm"><b>Sentence:</b> {c.sentence}</div> : null}
-                            {c.comments ? <div className="text-sm"><b>Comments:</b> {c.comments}</div> : null}
                         </div>
-                    ))}
-                </div>
-            ) : null}
+                        <Detail label="Customer" value={`${detail.customer_name || 'Guest'}${detail.customer_email ? ` · ${detail.customer_email}` : ''}`} />
+                        <Detail label="Model" value={detail.model} />
+                        <Detail label="Type" value={detail.type} />
+                        <Detail label="Design" value={detail.design} />
+                        {detail.sentence ? <Detail label="Sentence" value={detail.sentence} /> : null}
+                        {detail.comments ? <Detail label="Comments" value={detail.comments} /> : null}
+                        <Detail label="Submitted" value={new Date(detail.created_at).toLocaleString()} />
+                    </div>
+                ) : null}
+            </Drawer>
+        </div>
+    )
+}
+
+function Detail({ label, value }) {
+    return (
+        <div className="text-sm flex flex-col gap-1">
+            <span style={{ color: 'var(--ui-text)' }} className="font-semibold">{label}</span>
+            <span className="ui-muted">{value}</span>
         </div>
     )
 }

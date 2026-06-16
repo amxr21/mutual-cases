@@ -2,12 +2,13 @@
 import { useEffect, useState } from 'react'
 import { getJSON, postJSON, patchJSON, deleteJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
+import { PageHeader, Badge, FormField } from '../ui/primitives'
+import DataTable from '../ui/DataTable'
+import Drawer from '../ui/Drawer'
+import ConfirmDialog from '../ui/ConfirmDialog'
+import Select from '../ui/Select'
 
-const EMPTY = {
-    trend: 0, price: '', model: '', edition: '', category: 'iphone',
-    type: 'normal', quantity: 0, image_url_1: '', image_url_2: '', image_url_3: '',
-}
-
+const EMPTY = { trend: 0, price: '', model: '', edition: '', category: 'iphone', type: 'normal', quantity: 0, image_url_1: '', image_url_2: '', image_url_3: '' }
 const CATEGORIES = ['iphone', 'ipad', 'special items']
 const TYPES = ['normal', '3d design', 'simple', 'light', 'magnet']
 
@@ -17,8 +18,9 @@ export default function AdminProducts() {
     const [status, setStatus] = useState('loading')
     const [form, setForm] = useState(EMPTY)
     const [editingId, setEditingId] = useState(null)
+    const [drawerOpen, setDrawerOpen] = useState(false)
     const [saving, setSaving] = useState(false)
-    const [showForm, setShowForm] = useState(false)
+    const [confirm, setConfirm] = useState(null) // product pending delete
 
     const load = async () => {
         setStatus('loading')
@@ -30,116 +32,113 @@ export default function AdminProducts() {
 
     const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
-    const resetForm = () => { setForm(EMPTY); setEditingId(null); setShowForm(false) }
-
-    const startEdit = (p) => {
+    const openNew = () => { setForm(EMPTY); setEditingId(null); setDrawerOpen(true) }
+    const openEdit = (p) => {
         setEditingId(p.id)
-        setForm({
-            trend: p.trend ? 1 : 0, price: p.price, model: p.model, edition: p.edition,
-            category: p.category, type: p.type, quantity: p.quantity ?? 0,
-            image_url_1: p.image_url_1 || '', image_url_2: p.image_url_2 || '', image_url_3: p.image_url_3 || '',
-        })
-        setShowForm(true)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        setForm({ trend: p.trend ? 1 : 0, price: p.price, model: p.model, edition: p.edition, category: p.category, type: p.type, quantity: p.quantity ?? 0, image_url_1: p.image_url_1 || '', image_url_2: p.image_url_2 || '', image_url_3: p.image_url_3 || '' })
+        setDrawerOpen(true)
     }
 
-    const submit = async (e) => {
-        e.preventDefault()
-        if (saving) return
-        if (!form.model || !form.edition || form.price === '') {
-            toast.error('Model, edition, and price are required'); return
-        }
+    const submit = async () => {
+        if (!form.model || !form.edition || form.price === '') { toast.error('Model, edition, and price are required'); return }
         setSaving(true)
         const payload = { ...form, trend: Number(form.trend) ? 1 : 0, price: Number(form.price), quantity: Number(form.quantity) }
-        const r = editingId
-            ? await patchJSON(`/products/${editingId}`, payload)
-            : await postJSON('/products', payload)
+        const r = editingId ? await patchJSON(`/products/${editingId}`, payload) : await postJSON('/products', payload)
         setSaving(false)
         if (!r.ok) { toast.error(r.error?.message || 'Save failed'); return }
         toast.success(editingId ? 'Product updated' : 'Product created')
-        resetForm()
+        setDrawerOpen(false)
         load()
     }
 
-    const remove = async (id) => {
-        const r = await deleteJSON(`/products/${id}`)
+    const doDelete = async () => {
+        if (!confirm) return
+        setSaving(true)
+        const r = await deleteJSON(`/products/${confirm.id}`)
+        setSaving(false)
         if (!r.ok) { toast.error(r.error?.message || 'Delete failed'); return }
         toast.success('Product deleted')
-        setProducts((prev) => prev.filter((p) => p.id !== id))
+        setProducts((prev) => prev.filter((p) => p.id !== confirm.id))
+        setConfirm(null)
     }
 
-    const field = 'w-full bg-off-white border border-gray-300 rounded-md py-2 px-3 outline-none focus:border-blue transition-colors'
+    const columns = [
+        { key: 'id', header: 'ID', sortable: true },
+        { key: 'category', header: 'Category', sortable: true, render: (p) => <span className="capitalize">{p.category}</span> },
+        { key: 'model', header: 'Model', sortable: true },
+        { key: 'edition', header: 'Edition', sortable: true, render: (p) => <span className="capitalize">{p.edition}</span> },
+        { key: 'type', header: 'Type', sortable: true },
+        { key: 'price', header: 'Price', sortable: true, align: 'right', render: (p) => `${p.price} AED` },
+        { key: 'quantity', header: 'Qty', sortable: true, align: 'center' },
+        { key: 'trend', header: 'Trend', align: 'center', render: (p) => (p.trend ? <Badge tone="gold">Trending</Badge> : <span className="ui-muted">—</span>) },
+    ]
+
+    if (status === 'loading') return <p className="ui-muted">Loading…</p>
+    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load products.</p>
+
+    const field = 'ui-input'
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold">Products</h1>
-                <button onClick={() => (showForm ? resetForm() : setShowForm(true))} className="bg-blue text-off-white font-semibold px-4 py-2 rounded-lg hover:brightness-110 transition">
-                    {showForm ? 'Close' : '+ New product'}
-                </button>
-            </div>
+        <div>
+            <PageHeader
+                title="Products"
+                subtitle={`${products.length} total`}
+                actions={<button className="ui-btn ui-btn-primary" onClick={openNew}>+ New product</button>}
+            />
 
-            {/* Create / edit form */}
-            {showForm ? (
-                <form onSubmit={submit} className="bg-off-white rounded-xl shadow-sm border border-black/5 p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <h2 className="md:col-span-3 text-lg font-semibold">{editingId ? `Edit product #${editingId}` : 'New product'}</h2>
-                    <label className="flex flex-col gap-1 text-sm"><span>Category</span>
-                        <select value={form.category} onChange={set('category')} className={field}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select>
-                    </label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Type</span>
-                        <select value={form.type} onChange={set('type')} className={field}>{TYPES.map((t) => <option key={t} value={t}>{t}</option>)}</select>
-                    </label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Model</span><input value={form.model} onChange={set('model')} className={field} placeholder="e.g. 15 pro" /></label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Edition</span><input value={form.edition} onChange={set('edition')} className={field} placeholder="e.g. dubai edition" /></label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Price (AED)</span><input type="number" value={form.price} onChange={set('price')} className={field} /></label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Quantity</span><input type="number" value={form.quantity} onChange={set('quantity')} className={field} /></label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Image URL 1</span><input value={form.image_url_1} onChange={set('image_url_1')} className={field} /></label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Image URL 2</span><input value={form.image_url_2} onChange={set('image_url_2')} className={field} /></label>
-                    <label className="flex flex-col gap-1 text-sm"><span>Image URL 3</span><input value={form.image_url_3} onChange={set('image_url_3')} className={field} /></label>
-                    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!Number(form.trend)} onChange={(e) => setForm((f) => ({ ...f, trend: e.target.checked ? 1 : 0 }))} /> Trending</label>
-                    <div className="md:col-span-3 flex gap-3">
-                        <button type="submit" disabled={saving} className="bg-blue text-off-white font-semibold px-6 py-2.5 rounded-lg hover:brightness-110 transition disabled:opacity-60">
-                            {saving ? 'Saving…' : editingId ? 'Save changes' : 'Create product'}
-                        </button>
-                        <button type="button" onClick={resetForm} className="border border-gray-300 px-6 py-2.5 rounded-lg hover:bg-black/5 transition">Cancel</button>
+            <DataTable
+                columns={columns}
+                rows={products}
+                searchKeys={['model', 'edition', 'category', 'type']}
+                searchPlaceholder="Search products…"
+                rowActions={(p) => (
+                    <div className="flex gap-2 justify-end">
+                        <button className="ui-btn ui-btn-ghost !py-1 !px-3" onClick={() => openEdit(p)}>Edit</button>
+                        <button className="ui-btn ui-btn-danger !py-1 !px-3" onClick={() => setConfirm(p)}>Delete</button>
                     </div>
-                </form>
-            ) : null}
+                )}
+            />
 
-            {/* Product list */}
-            {status === 'loading' ? <p className="font-light">Loading…</p> : null}
-            {status === 'error' ? <p className="text-blue">Couldn&apos;t load products.</p> : null}
-            {status === 'ready' ? (
-                <div className="bg-off-white rounded-xl shadow-sm border border-black/5 overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead className="bg-blue/5 text-left">
-                            <tr>
-                                <th className="p-3">ID</th><th className="p-3">Category</th><th className="p-3">Model</th>
-                                <th className="p-3">Edition</th><th className="p-3">Type</th><th className="p-3">Price</th>
-                                <th className="p-3">Qty</th><th className="p-3">Trend</th><th className="p-3"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {products.map((p) => (
-                                <tr key={p.id} className="border-t border-black/5 hover:bg-blue/[0.02]">
-                                    <td className="p-3">{p.id}</td>
-                                    <td className="p-3 capitalize">{p.category}</td>
-                                    <td className="p-3">{p.model}</td>
-                                    <td className="p-3 capitalize">{p.edition}</td>
-                                    <td className="p-3">{p.type}</td>
-                                    <td className="p-3 font-semibold">{p.price}</td>
-                                    <td className="p-3">{p.quantity}</td>
-                                    <td className="p-3">{p.trend ? '⭐' : '—'}</td>
-                                    <td className="p-3 whitespace-nowrap">
-                                        <button onClick={() => startEdit(p)} className="text-blue underline mr-3">Edit</button>
-                                        <button onClick={() => remove(p.id)} className="text-red-600 underline">Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            <Drawer
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                title={editingId ? `Edit product #${editingId}` : 'New product'}
+                footer={
+                    <>
+                        <button className="ui-btn ui-btn-ghost" onClick={() => setDrawerOpen(false)}>Cancel</button>
+                        <button className="ui-btn ui-btn-primary" onClick={submit} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+                    </>
+                }
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <FormField label="Category"><Select value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} options={CATEGORIES} /></FormField>
+                        <FormField label="Type"><Select value={form.type} onChange={(v) => setForm((f) => ({ ...f, type: v }))} options={TYPES} /></FormField>
+                    </div>
+                    <FormField label="Model"><input value={form.model} onChange={set('model')} className={field} placeholder="e.g. 15 pro" /></FormField>
+                    <FormField label="Edition"><input value={form.edition} onChange={set('edition')} className={field} placeholder="e.g. dubai edition" /></FormField>
+                    <div className="grid grid-cols-2 gap-3">
+                        <FormField label="Price (AED)"><input type="number" value={form.price} onChange={set('price')} className={field} /></FormField>
+                        <FormField label="Quantity"><input type="number" value={form.quantity} onChange={set('quantity')} className={field} /></FormField>
+                    </div>
+                    <FormField label="Image URL 1"><input value={form.image_url_1} onChange={set('image_url_1')} className={field} /></FormField>
+                    <FormField label="Image URL 2"><input value={form.image_url_2} onChange={set('image_url_2')} className={field} /></FormField>
+                    <FormField label="Image URL 3"><input value={form.image_url_3} onChange={set('image_url_3')} className={field} /></FormField>
+                    <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--ui-text)' }}>
+                        <input type="checkbox" checked={!!Number(form.trend)} onChange={(e) => setForm((f) => ({ ...f, trend: e.target.checked ? 1 : 0 }))} /> Mark as trending
+                    </label>
                 </div>
-            ) : null}
+            </Drawer>
+
+            <ConfirmDialog
+                open={!!confirm}
+                onClose={() => setConfirm(null)}
+                onConfirm={doDelete}
+                busy={saving}
+                title="Delete product?"
+                message={confirm ? `This permanently removes "${confirm.category} ${confirm.model}". This can't be undone.` : ''}
+                confirmLabel="Delete"
+            />
         </div>
     )
 }
