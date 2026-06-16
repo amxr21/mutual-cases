@@ -54,6 +54,29 @@ const config = {
         multipleStatements: bool(process.env.DB_MULTIPLE_STATEMENTS, false),
     },
 
+    email: {
+        // Resend integration. When apiKey is absent the mailer logs "would send"
+        // instead of sending, so the app works in dev without a key.
+        resendApiKey: process.env.RESEND_API_KEY || "",
+        from: process.env.EMAIL_FROM || "Mutual <onboarding@resend.dev>",
+        // Public base URL of the storefront, for links inside emails.
+        siteUrl: process.env.PUBLIC_SITE_URL || "http://localhost:3001",
+        enabled: !!process.env.RESEND_API_KEY,
+    },
+
+    // Cloudinary image uploads (logo, later product images). When cloudName +
+    // apiKey + apiSecret are all set, the upload signing endpoint is active;
+    // otherwise the API reports "not configured" and the UI falls back to a URL.
+    cloudinary: {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+        apiKey: process.env.CLOUDINARY_API_KEY || "",
+        apiSecret: process.env.CLOUDINARY_API_SECRET || "",
+        uploadFolder: process.env.CLOUDINARY_UPLOAD_FOLDER || "mutual",
+        get enabled() {
+            return !!(this.cloudName && this.apiKey && this.apiSecret);
+        },
+    },
+
     auth: {
         googleClientId: process.env.GOOGLE_CLIENT_ID,
         jwtSecret: process.env.JWT_SECRET,

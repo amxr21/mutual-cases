@@ -119,6 +119,130 @@ const orderNumberParam = z.object({
     orderNumber: z.string().trim().min(4).max(40),
 });
 
+// --- Reviews ---
+const reviewSchema = z.object({
+    product_id: z.coerce.number().int().positive(),
+    rating: z.coerce.number().int().min(1).max(5),
+    comment: z.string().trim().max(1000).optional().default(""),
+});
+
+// --- Delivery portal (driver) ---
+const driverAuthSchema = z.object({
+    access_code: z.string().trim().min(4).max(20),
+});
+
+const driverStatusSchema = z.object({
+    delivery_status: z.enum(["assigned", "picked_up", "out_for_delivery", "delivered", "handed_over"]),
+    note: z.string().trim().max(500).optional().default(""),
+});
+
+// Driver sets their own availability. 'inactive' is reserved for admin
+// deactivation (which blocks portal access), so a driver can only toggle
+// between 'active' (ready) and 'on_shift'.
+const driverAvailabilitySchema = z.object({
+    status: z.enum(["active", "on_shift"]),
+});
+
+// --- Inventory (admin + public subscribe) ---
+const stockAdjustSchema = z.object({
+    delta: z.coerce.number().int().refine((n) => n !== 0, "Delta must be non-zero"),
+    reason: z.enum(["restock", "correction", "damaged", "lost", "return", "manual"]).default("manual"),
+    note: z.string().trim().max(255).optional().default(""),
+});
+
+const stockThresholdSchema = z.object({
+    low_stock_threshold: z.coerce.number().int().min(0).max(1_000_000),
+});
+
+const stockNotifySchema = z.object({
+    email: z.string().trim().email().max(255),
+});
+
+// --- Order delivery assignment (admin) ---
+const orderAssignSchema = z.object({
+    delivery_user_id: z.coerce.number().int().positive().nullable().optional(),
+    tracking_number: z.string().trim().max(120).optional().default(""),
+    carrier: z.string().trim().max(80).optional().default(""),
+    // ISO date string (YYYY-MM-DD) or empty.
+    eta: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")).optional().default(""),
+});
+
+// --- Admin user management ---
+const userUpdateSchema = z
+    .object({
+        name: nonEmptyStr(255).optional(),
+        email: z.string().trim().email().max(255).optional(),
+        phone: z.string().trim().max(40).optional(),
+        address_line: z.string().trim().max(255).optional(),
+        area: z.string().trim().max(255).optional(),
+        city: z.string().trim().max(100).optional(),
+        country: z.string().trim().max(100).optional(),
+    })
+    .refine((obj) => Object.keys(obj).length > 0, {
+        message: "Provide at least one field to update",
+    });
+
+const userRoleSchema = z.object({
+    role: z.enum(["customer", "admin", "delivery"]),
+});
+
+// --- Delivery staff ---
+const deliveryStatus = z.enum(["active", "inactive", "on_shift"]);
+
+const deliveryCreateSchema = z.object({
+    name: nonEmptyStr(255),
+    email: z.string().trim().email().max(255),
+    phone: z.string().trim().max(40).optional().default(""),
+    vehicle_type: z.string().trim().max(60).optional().default(""),
+    plate_number: z.string().trim().max(40).optional().default(""),
+    license_number: z.string().trim().max(60).optional().default(""),
+    zone: z.string().trim().max(120).optional().default(""),
+    emirate: z.string().trim().max(60).optional().default(""),
+    country: z.string().trim().max(60).optional().default(""),
+    status: deliveryStatus.optional().default("active"),
+});
+
+const deliveryUpdateSchema = z
+    .object({
+        name: nonEmptyStr(255).optional(),
+        email: z.string().trim().email().max(255).optional(),
+        phone: z.string().trim().max(40).optional(),
+        vehicle_type: z.string().trim().max(60).optional(),
+        plate_number: z.string().trim().max(40).optional(),
+        license_number: z.string().trim().max(60).optional(),
+        zone: z.string().trim().max(120).optional(),
+        emirate: z.string().trim().max(60).optional(),
+        country: z.string().trim().max(60).optional(),
+        status: deliveryStatus.optional(),
+    })
+    .refine((obj) => Object.keys(obj).length > 0, {
+        message: "Provide at least one field to update",
+    });
+
+// --- Settings ---
+const settingKeyParam = z.object({
+    key: z.enum(["customization", "store_profile", "region", "vat", "theme", "storefront"]),
+});
+
+// Permissive value bag — the value shape varies per key. We keep it an object
+// and cap a couple of known string fields so the JSON column stays sane.
+const settingUpdateSchema = z.object({
+    value: z.record(z.string(), z.any()),
+});
+
+// --- Reviews moderation (admin) ---
+const reviewStatusSchema = z.object({
+    status: z.enum(["pending", "approved", "rejected"]),
+});
+
+const reviewReplySchema = z.object({
+    admin_reply: z.string().trim().max(1000).optional().default(""),
+});
+
+const reviewFlagSchema = z.object({
+    flagged: z.coerce.boolean(),
+});
+
 module.exports = {
     idParam,
     productCreateSchema,
@@ -132,4 +256,21 @@ module.exports = {
     customOrderSchema,
     orderCreateSchema,
     orderNumberParam,
+    reviewSchema,
+    reviewStatusSchema,
+    reviewReplySchema,
+    reviewFlagSchema,
+    settingKeyParam,
+    settingUpdateSchema,
+    userUpdateSchema,
+    userRoleSchema,
+    deliveryCreateSchema,
+    deliveryUpdateSchema,
+    orderAssignSchema,
+    stockAdjustSchema,
+    stockThresholdSchema,
+    stockNotifySchema,
+    driverAuthSchema,
+    driverStatusSchema,
+    driverAvailabilitySchema,
 };

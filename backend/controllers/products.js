@@ -10,11 +10,14 @@ const { query, withTransaction } = require("../dbClient");
 const { notFound } = require("../errors/AppError");
 
 // Shared SELECT shape for products (joined with category/stock/type).
+// avg_rating / review_count come from the reviews table (NULL/0 when none).
 const PRODUCT_SELECT = `
     SELECT p.id, p.trend, p.edition, p.category, p.model, t.type, p.price,
            p.stock_quantity_id, sq.quantity, p.image_url_1, p.image_url_2, p.image_url_3,
            p.description, p.material, p.approach, p.features,
-           p.created_at, p.updated_at
+           p.created_at, p.updated_at,
+           ROUND(COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id), 0), 1) AS avg_rating,
+           (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) AS review_count
     FROM products p
     JOIN category c ON p.category = c.category_title
     JOIN stock_quantity sq ON p.stock_quantity_id = sq.stock_id

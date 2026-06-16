@@ -55,6 +55,38 @@ const requireAdmin = (req, res, next) => {
     });
 };
 
+/**
+ * Delivery gate. Like requireAdmin but for the delivery portal — re-checks the
+ * role against the DB so only current delivery staff can use driver routes.
+ */
+const requireDelivery = (req, res, next) => {
+    requireAuth(req, res, async (err) => {
+        if (err) return next(err);
+        try {
+            // Re-check role AND availability from the DB so a deactivated driver
+            // (status='inactive', set by admin) can't keep using their token.
+            const rows = await query(
+                `SELECT u.role, d.status
+                 FROM users u LEFT JOIN delivery_profiles d ON d.user_id = u.id
+                 WHERE u.id = ?`,
+                [req.user.id],
+                { op: "requireDelivery" }
+            );
+            if (!rows.length || rows[0].role !== "delivery") {
+                return next(forbidden("Delivery access required"));
+            }
+            if (rows[0].status === "inactive") {
+                return next(forbidden("Your delivery account is inactive. Contact your admin."));
+            }
+            req.user.role = "delivery";
+            return next();
+        } catch (e) {
+            return next(e);
+        }
+    });
+};
+
 module.exports = requireAuth;
 module.exports.requireAuth = requireAuth;
 module.exports.requireAdmin = requireAdmin;
+module.exports.requireDelivery = requireDelivery;
