@@ -6,6 +6,7 @@ const {
     setMyStatus,
     listMyDeliveries,
     updateMyDeliveryStatus,
+    undoLastDeliveryStatus,
 } = require("../controllers/deliveryPortal");
 const asyncHandler = require("../middleware/asyncHandler");
 const { requireDelivery } = require("../middleware/auth");
@@ -33,6 +34,12 @@ router.patch(
     requireDelivery,
     validate({ params: orderNumberParam, body: driverStatusSchema }),
     asyncHandler(updateMyDeliveryStatus)
+);
+router.patch(
+    "/orders/:orderNumber/undo",
+    requireDelivery,
+    validate({ params: orderNumberParam }),
+    asyncHandler(undoLastDeliveryStatus)
 );
 
 module.exports = router;

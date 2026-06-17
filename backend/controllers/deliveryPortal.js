@@ -99,7 +99,7 @@ const listMyDeliveries = async (req, res) => {
     const driverId = req.user.id;
     const orders = await query(
         `SELECT o.id, o.order_number, o.order_date, o.total, o.payment_method,
-                o.delivery_status, o.delivery_note, o.eta,
+                o.delivery_status, o.delivery_status_at, o.delivery_note, o.eta,
                 s.status AS order_status,
                 u.name AS customer_name, u.phone AS customer_phone,
                 a.country, a.city, a.area, a.address
@@ -156,7 +156,7 @@ const updateMyDeliveryStatus = async (req, res) => {
 
     await withTransaction(async (tx) => {
         await tx(
-            "UPDATE orders SET delivery_status = ?, delivery_note = COALESCE(?, delivery_note) WHERE id = ?",
+            "UPDATE orders SET delivery_status = ?, delivery_status_at = NOW(), delivery_note = COALESCE(?, delivery_note) WHERE id = ?",
             [next, note, order.id]
         );
         // Sync the main order status if this step implies one and it changed.
@@ -172,12 +172,59 @@ const updateMyDeliveryStatus = async (req, res) => {
     res.json({ message: "Delivery updated", delivery_status: next, delivery_status_label: SUB_LABEL[next] });
 };
 
+const UNDO_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+/**
+ * PATCH /delivery/orders/:orderNumber/undo — revert the LAST delivery step if it
+ * happened within the 2-hour window. Re-syncs the main order status to match the
+ * reverted sub-status and logs it.
+ */
+const undoLastDeliveryStatus = async (req, res) => {
+    const driverId = req.user.id;
+    const { orderNumber } = req.params;
+
+    const rows = await query(
+        "SELECT id, delivery_user_id, delivery_status, delivery_status_at FROM orders WHERE order_number = ?",
+        [orderNumber],
+        { op: "delivery.undo.find" }
+    );
+    if (!rows.length) throw notFound("Order not found");
+    const order = rows[0];
+
+    if (Number(order.delivery_user_id) !== Number(driverId)) {
+        throw forbidden("This delivery isn't assigned to you");
+    }
+
+    const curIdx = SUB_FLOW.indexOf(order.delivery_status || "assigned");
+    if (curIdx <= 0) throw badRequest("Nothing to undo");
+    if (!order.delivery_status_at) throw badRequest("This step can no longer be undone");
+    const age = Date.now() - new Date(order.delivery_status_at).getTime();
+    if (age > UNDO_WINDOW_MS) throw badRequest("The 2-hour undo window has passed");
+
+    const prev = SUB_FLOW[curIdx - 1];
+    const prevMain = SUB_TO_MAIN[prev] || 1; // 'assigned' has no main mapping → back to Pending(1)
+
+    await withTransaction(async (tx) => {
+        await tx(
+            "UPDATE orders SET delivery_status = ?, delivery_status_at = NOW(), status_id = ? WHERE id = ?",
+            [prev, prevMain, order.id]
+        );
+        await tx(
+            "INSERT INTO order_status_history (order_id, status_id, changed_by, note) VALUES (?, ?, ?, ?)",
+            [order.id, prevMain, driverId, `Driver undo → ${SUB_LABEL[prev]}`]
+        );
+    }, { op: "delivery.undo" });
+
+    res.json({ message: "Reverted", delivery_status: prev, delivery_status_label: SUB_LABEL[prev] });
+};
+
 module.exports = {
     driverAuth,
     getMyProfile,
     setMyStatus,
     listMyDeliveries,
     updateMyDeliveryStatus,
+    undoLastDeliveryStatus,
     SUB_FLOW,
     SUB_LABEL,
 };

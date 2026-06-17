@@ -82,12 +82,21 @@ export default function DeliveryPortal() {
         if (!r.ok) { toast.error(r.error?.message || 'Update failed'); return }
         toast.success(`Marked: ${LABEL[next]}`)
         setNoteFor(null); setNote('')
-        setOrders((prev) => prev.map((o) => o.order_number === order.order_number ? { ...o, delivery_status: next } : o))
+        setOrders((prev) => prev.map((o) => o.order_number === order.order_number ? { ...o, delivery_status: next, delivery_status_at: new Date().toISOString() } : o))
+    }
+
+    const undo = async (order) => {
+        setBusyId(order.order_number)
+        const r = await dPatch(`/delivery/orders/${order.order_number}/undo`, {})
+        setBusyId(null)
+        if (!r.ok) { toast.error(r.error?.message || 'Undo failed'); return }
+        toast.success(`Reverted to: ${r.data.delivery_status_label}`)
+        setOrders((prev) => prev.map((o) => o.order_number === order.order_number ? { ...o, delivery_status: r.data.delivery_status, delivery_status_at: new Date().toISOString() } : o))
     }
 
     const firstName = me?.name ? String(me.name).split(' ')[0] : ''
 
-    if (status === 'loading') return <Shell me={me} onLogout={logout}><p className="text-gray-500">Loading…</p></Shell>
+    if (status === 'loading') return <Shell me={me} onLogout={logout}><div className="flex items-center gap-3 text-gray-500 py-8"><span className="inline-block w-5 h-5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />Loading…</div></Shell>
     if (status === 'error') return <Shell me={me} onLogout={logout}><p className="text-red-600">Couldn&apos;t load your deliveries.</p></Shell>
 
     const active = orders.filter((o) => o.delivery_status !== 'handed_over')
@@ -127,6 +136,7 @@ export default function DeliveryPortal() {
                                     if (next === 'delivered' || next === 'handed_over') { setNoteFor(o.order_number); setNote('') }
                                     else advance(o)
                                 }}
+                                onUndo={() => undo(o)}
                                 noteOpen={noteFor === o.order_number}
                                 note={note} setNote={setNote}
                                 onConfirmNote={() => advance(o, note)}
@@ -236,9 +246,12 @@ function Section({ title, children }) {
 
 const STEP_TONE = { assigned: '#6b7280', picked_up: '#055AB0', out_for_delivery: '#055AB0', delivered: '#16a34a', handed_over: '#16a34a' }
 
-function DeliveryCard({ o, busy, onAdvance, completed, noteOpen, note, setNote, onConfirmNote, onCancelNote }) {
+function DeliveryCard({ o, busy, onAdvance, onUndo, completed, noteOpen, note, setNote, onConfirmNote, onCancelNote }) {
     const addr = [o.address, o.area, o.city, o.country].filter(Boolean).join(', ')
     const nextLabel = NEXT_ACTION[o.delivery_status]
+    // Undoable: past 'assigned' and the last step was within 2 hours.
+    const canUndo = !completed && o.delivery_status !== 'assigned' && o.delivery_status_at &&
+        (Date.now() - new Date(o.delivery_status_at).getTime()) < 2 * 60 * 60 * 1000
     return (
         <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -266,6 +279,12 @@ function DeliveryCard({ o, busy, onAdvance, completed, noteOpen, note, setNote, 
                         {busy ? '…' : nextLabel}
                     </button>
                 )
+            ) : null}
+
+            {canUndo && !noteOpen ? (
+                <button onClick={onUndo} disabled={busy} className="w-full py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-60" style={{ border: '1px solid #e5e7eb', color: '#6b7280' }}>
+                    ↩ Undo last step
+                </button>
             ) : null}
         </div>
     )
