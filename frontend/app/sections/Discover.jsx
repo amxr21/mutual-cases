@@ -1,11 +1,14 @@
+'use client'
 import { Header, MainSection, DiscoverProducts } from '../components';
+import { useI18n } from '../i18n/I18nProvider'
 
 
 
-async function Discover() {
+function Discover() {
+    const { t } = useI18n()
     return (
         <MainSection classes="gap-10">
-            <Header key='Discover' headerText='Our Products' subheader={true} subheaderText={`Flexible. Secure. Instantly ready. \n Designed to stand, fold, and flex around your workflow — wherever that takes you`} mark={true} markClasses='-top-6 xl:-top-10 left-[30%] xl:left-10 w-36 xl:w-full xl:flex xl:justify-center' textAlignment='center' />
+            <Header key='Discover' headerText={t('home.discoverHeader')} subheader={true} subheaderText={t('home.discoverSub')} mark={true} markClasses='-top-6 xl:-top-10 left-[30%] xl:left-10 w-36 xl:w-full xl:flex xl:justify-center' textAlignment='center' />
             <div className="products grid xl:grid-cols-3 gap-10">
                 <DiscoverProducts />
             </div>

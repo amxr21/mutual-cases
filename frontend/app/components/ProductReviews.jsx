@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getJSON } from '../lib/safeFetch'
+import { useI18n } from '../i18n/I18nProvider'
 
 /**
  * Product reviews block for the detail page: average rating + star summary and
@@ -19,6 +20,7 @@ function StarRow({ value, size = 'size-4' }) {
 }
 
 export default function ProductReviews({ productId }) {
+    const { t } = useI18n()
     const [data, setData] = useState(null)
     const [status, setStatus] = useState('loading')
 
@@ -39,19 +41,19 @@ export default function ProductReviews({ productId }) {
     return (
         <div className="flex flex-col gap-5">
             <div className="flex items-center gap-3">
-                <h3 className="text-xl xl:text-2xl font-semibold">Reviews</h3>
+                <h3 className="text-xl xl:text-2xl font-semibold">{t('products.reviews')}</h3>
                 <span className="h-px grow bg-gradient-to-r from-blue/30 to-transparent" />
             </div>
 
             {data.count === 0 ? (
-                <p className="font-light text-off-black/60">No reviews yet — be the first to review this product after purchase.</p>
+                <p className="font-light text-off-black/60">{t('products.noReviews')}</p>
             ) : (
                 <>
                     <div className="flex items-center gap-4">
                         <span className="text-4xl font-bold text-blue">{data.average}</span>
                         <div className="flex flex-col gap-1">
                             <StarRow value={data.average} size="size-5" />
-                            <span className="text-sm font-light text-off-black/60">{data.count} review{data.count == 1 ? '' : 's'}</span>
+                            <span className="text-sm font-light text-off-black/60">{data.count} {t('products.reviewCount')}</span>
                         </div>
                     </div>
 
@@ -64,7 +66,7 @@ export default function ProductReviews({ productId }) {
                                         {r.verified ? (
                                             <span className="inline-flex items-center gap-1 text-[0.7rem] font-medium text-green-700 bg-green-600/10 rounded-full px-2 py-0.5">
                                                 <svg viewBox="0 0 24 24" className="size-3 fill-none stroke-current" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-                                                Verified purchase
+                                                {t('products.verified')}
                                             </span>
                                         ) : null}
                                     </span>
@@ -74,7 +76,7 @@ export default function ProductReviews({ productId }) {
                                 {r.comment ? <p className="font-light text-off-black/80">{r.comment}</p> : null}
                                 {r.admin_reply ? (
                                     <div className="mt-1.5 ml-3 pl-3 border-l-2 border-blue/30 flex flex-col gap-0.5">
-                                        <span className="text-xs font-semibold text-blue">Mutual replied</span>
+                                        <span className="text-xs font-semibold text-blue">{t('products.mutualReplied')}</span>
                                         <p className="font-light text-sm text-off-black/70">{r.admin_reply}</p>
                                     </div>
                                 ) : null}
