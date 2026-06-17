@@ -195,7 +195,8 @@ export default function GoogleLoginButton() {
             <button
                 type="button"
                 onClick={() => setSignInOpen(true)}
-                className="flex items-center gap-2 bg-blue text-off-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:brightness-110 active:scale-95 cursor-pointer whitespace-nowrap md:mx-4"
+                /* h-11 matches the cart/liked icon box height (py-3 + size-5 icons). */
+                className="flex items-center gap-2 h-11 bg-blue text-off-white font-semibold text-sm px-4 rounded-lg transition-all duration-200 hover:brightness-110 active:scale-95 cursor-pointer whitespace-nowrap md:mx-4"
             >
                 <svg viewBox="0 0 24 24" fill="none" className="size-4 stroke-current" strokeWidth={1.8}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
