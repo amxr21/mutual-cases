@@ -9,6 +9,7 @@ import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
+import { canManageStaff } from '../lib/permissions'
 
 const ROLES = [
     { label: 'Owner', value: 'owner' },
@@ -27,6 +28,7 @@ const fmtDateTime = (d) => d ? new Date(d).toLocaleString(undefined, { dateStyle
 
 export default function AdminStaff() {
     const toast = useToast()
+    const canManage = canManageStaff() // only the owner may add staff / change roles
     const [tab, setTab] = useState('staff')
     const [staff, setStaff] = useState([])
     const [audit, setAudit] = useState([])
@@ -91,7 +93,12 @@ export default function AdminStaff() {
     return (
         <div>
             <PageHeader title="Staff & access" subtitle="Manage admin roles and review the activity log"
-                actions={<><RefreshButton onRefresh={load} /><button className="ui-btn ui-btn-primary" onClick={() => setAdding(true)}>+ Add staff</button></>} />
+                actions={<><RefreshButton onRefresh={load} />{canManage ? <button className="ui-btn ui-btn-primary" onClick={() => setAdding(true)}>+ Add staff</button> : null}</>} />
+
+            {!canManage ? (
+                <AdminMessage variant="info" title="View only"
+                    message="Only the owner can add staff or change roles. You can review the team and the activity log." />
+            ) : null}
 
             <div className="flex gap-2 mb-4">
                 {[['staff', 'Staff roles'], ['audit', 'Activity log']].map(([k, label]) => (
@@ -104,7 +111,7 @@ export default function AdminStaff() {
 
             {tab === 'staff' ? (
                 <DataTable columns={staffColumns} rows={staff} searchKeys={['name', 'email', 'staff_role']} searchPlaceholder="Search staff…"
-                    rowActions={(u) => <button className="ui-btn ui-btn-ghost !py-1 !px-3" onClick={() => openEdit(u)}>Change role</button>}
+                    rowActions={canManage ? (u) => <button className="ui-btn ui-btn-ghost !py-1 !px-3" onClick={() => openEdit(u)}>Change role</button> : undefined}
                 />
             ) : (
                 <DataTable columns={auditColumns} rows={audit} searchKeys={['user_name', 'action', 'entity', 'detail']} searchPlaceholder="Search activity…" pageSize={50} emptyText="No activity recorded yet." />

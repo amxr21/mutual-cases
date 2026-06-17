@@ -107,72 +107,81 @@ router.get("/orders", asyncHandler(listOrders));
 router.get("/delivery-options", asyncHandler(listDeliveryOptions));
 router.get("/orders/:orderNumber", asyncHandler(getOrderDetail));
 router.get("/orders/:orderNumber/invoice", asyncHandler(getOrderInvoice));
-router.patch("/orders/:orderNumber/status", asyncHandler(updateOrderStatus));
+router.patch("/orders/:orderNumber/status", requirePermission("orders"), asyncHandler(updateOrderStatus));
 router.patch(
     "/orders/:orderNumber/delivery",
+    requirePermission("orders"),
     validate({ body: orderAssignSchema }),
     asyncHandler(assignDelivery)
 );
 
 router.get("/custom-requests", asyncHandler(listCustomRequests));
-router.patch("/custom-requests/:id/status", asyncHandler(updateCustomStatus));
+router.patch("/custom-requests/:id/status", requirePermission("orders"), asyncHandler(updateCustomStatus));
 
 router.get("/customers", asyncHandler(listCustomers));
 router.get("/customers/:id", validate({ params: idParam }), asyncHandler(getCustomerDetail));
 router.patch(
     "/customers/:id",
+    requirePermission("customers"),
     validate({ params: idParam, body: userUpdateSchema }),
     asyncHandler(updateCustomer)
 );
 router.patch(
     "/customers/:id/role",
+    requirePermission("staff"), // promoting a customer to admin is staff management
     validate({ params: idParam, body: userRoleSchema }),
     asyncHandler(updateCustomerRole)
 );
-router.delete("/customers/:id", validate({ params: idParam }), asyncHandler(deleteCustomer));
+router.delete("/customers/:id", requirePermission("customers"), validate({ params: idParam }), asyncHandler(deleteCustomer));
 
 // Delivery staff management.
 router.get("/delivery", asyncHandler(listDelivery));
 router.get("/delivery/:id", validate({ params: idParam }), asyncHandler(getDelivery));
-router.post("/delivery", validate({ body: deliveryCreateSchema }), asyncHandler(createDelivery));
+router.post("/delivery", requirePermission("delivery"), validate({ body: deliveryCreateSchema }), asyncHandler(createDelivery));
 router.patch(
     "/delivery/:id",
+    requirePermission("delivery"),
     validate({ params: idParam, body: deliveryUpdateSchema }),
     asyncHandler(updateDelivery)
 );
-router.delete("/delivery/:id", validate({ params: idParam }), asyncHandler(deleteDelivery));
-router.post("/delivery/:id/access-code", validate({ params: idParam }), asyncHandler(generateAccessCode));
+router.delete("/delivery/:id", requirePermission("delivery"), validate({ params: idParam }), asyncHandler(deleteDelivery));
+router.post("/delivery/:id/access-code", requirePermission("delivery"), validate({ params: idParam }), asyncHandler(generateAccessCode));
 
 // Reviews moderation queue.
 router.get("/reviews", asyncHandler(adminListReviews));
 router.get("/reviews/counts", asyncHandler(adminReviewCounts));
 router.patch(
     "/reviews/:id/status",
+    requirePermission("reviews"),
     validate({ params: idParam, body: reviewStatusSchema }),
     asyncHandler(adminSetReviewStatus)
 );
 router.patch(
     "/reviews/:id/reply",
+    requirePermission("reviews"),
     validate({ params: idParam, body: reviewReplySchema }),
     asyncHandler(adminReplyReview)
 );
 router.patch(
     "/reviews/:id/flag",
+    requirePermission("reviews"),
     validate({ params: idParam, body: reviewFlagSchema }),
     asyncHandler(adminFlagReview)
 );
-router.delete("/reviews/:id", validate({ params: idParam }), asyncHandler(adminDeleteReview));
+router.delete("/reviews/:id", requirePermission("reviews"), validate({ params: idParam }), asyncHandler(adminDeleteReview));
 
 // Inventory.
 router.get("/inventory", asyncHandler(listInventory));
 router.get("/inventory/:id/adjustments", validate({ params: idParam }), asyncHandler(listAdjustments));
 router.post(
     "/inventory/:id/adjust",
+    requirePermission("inventory"),
     validate({ params: idParam, body: stockAdjustSchema }),
     asyncHandler(adjustStock)
 );
 router.patch(
     "/inventory/:id/threshold",
+    requirePermission("inventory"),
     validate({ params: idParam, body: stockThresholdSchema }),
     asyncHandler(setThreshold)
 );
@@ -241,6 +250,7 @@ router.get("/settings", asyncHandler(getAllSettings));
 router.get("/settings/:key", validate({ params: settingKeyParam }), asyncHandler(getSetting));
 router.put(
     "/settings/:key",
+    requirePermission("settings"),
     validate({ params: settingKeyParam, body: settingUpdateSchema }),
     asyncHandler(updateSetting)
 );

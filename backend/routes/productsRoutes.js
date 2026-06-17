@@ -11,6 +11,7 @@ const {
 const { subscribeBackInStock } = require("../controllers/inventory");
 const asyncHandler = require("../middleware/asyncHandler");
 const { requireAdmin } = require("../middleware/auth");
+const { requirePermission } = require("../middleware/permissions");
 const validate = require("../middleware/validate");
 const {
     idParam,
@@ -36,16 +37,17 @@ router.post(
     asyncHandler(subscribeBackInStock)
 );
 
-// Admin-only writes.
-router.post("/", requireAdmin, validate({ body: productCreateSchema }), asyncHandler(postProduct));
+// Admin-only writes, scoped to the 'products' permission (owner/manager).
+router.post("/", requireAdmin, requirePermission("products"), validate({ body: productCreateSchema }), asyncHandler(postProduct));
 
 router.patch(
     "/:id",
     requireAdmin,
+    requirePermission("products"),
     validate({ params: idParam, body: productUpdateSchema }),
     asyncHandler(updateProduct)
 );
 
-router.delete("/:id", requireAdmin, validate({ params: idParam }), asyncHandler(deleteProduct));
+router.delete("/:id", requireAdmin, requirePermission("products"), validate({ params: idParam }), asyncHandler(deleteProduct));
 
 module.exports = router;

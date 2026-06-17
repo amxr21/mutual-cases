@@ -5,6 +5,25 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { getJSON } from '../lib/safeFetch'
 import ThemeToggle from './ui/ThemeToggle'
+import { can } from './lib/permissions'
+
+// Map each nav href to the permission area that gates its writes. Items without
+// an entry are visible to all admins (read-only/overview pages). Reads stay open;
+// this only hides sections a role can't act on at all.
+const NAV_PERMISSION = {
+    '/admin/orders': 'orders',
+    '/admin/products': 'products',
+    '/admin/inventory': 'inventory',
+    '/admin/custom-requests': 'orders',
+    '/admin/reviews': 'reviews',
+    '/admin/returns': 'returns',
+    '/admin/discounts': 'discounts',
+    '/admin/customers': 'customers',
+    '/admin/delivery': 'delivery',
+    '/admin/reports': 'reports',
+    '/admin/staff': 'staff',
+    '/admin/settings': 'settings',
+}
 
 /**
  * Admin shell (Medusa-style): collapsible grouped sidebar + topbar with
@@ -64,6 +83,7 @@ export default function AdminGuard({ children }) {
     const [brand, setBrand] = useState({ name: '', logoUrl: '' })
     const [hovered, setHovered] = useState(null) // href of nav item being hovered
     const [unread, setUnread] = useState(0)
+    const [staffRole, setStaffRole] = useState('owner')
 
     useEffect(() => {
         const role = typeof window !== 'undefined' ? localStorage.getItem('userRole') : null
@@ -85,6 +105,14 @@ export default function AdminGuard({ children }) {
         // Load brand (name + logo) from settings for the sidebar header. Only
         // attempt when we have an admin token (the endpoint is admin-gated).
         if (token && role === 'admin') {
+            // Load this admin's staff role so we can hide controls they can't use.
+            ;(async () => {
+                const ov = await getJSON('/admin/overview')
+                if (ov.ok && ov.data?.myStaffRole) {
+                    setStaffRole(ov.data.myStaffRole)
+                    try { localStorage.setItem('staffRole', ov.data.myStaffRole) } catch { /* ignore */ }
+                }
+            })()
             ;(async () => {
                 const root = document.querySelector('.admin-root')
                 const [sp, th] = await Promise.all([
@@ -156,6 +184,18 @@ export default function AdminGuard({ children }) {
         )
     }
 
+    // Hide nav sections this staff role can't act on. An item with no mapped
+    // permission (e.g. Overview) is always shown; empty groups are dropped.
+    const visibleGroups = NAV_GROUPS
+        .map((g) => ({
+            ...g,
+            items: g.items.filter((i) => {
+                const area = NAV_PERMISSION[i.href]
+                return !area || can(area, staffRole)
+            }),
+        }))
+        .filter((g) => g.items.length)
+
     // Active item for breadcrumb.
     const active = ALL_ITEMS.find((i) => (i.exact ? pathname === i.href : pathname.startsWith(i.href) && i.href !== '/admin')) ||
         (pathname === '/admin' ? ALL_ITEMS[0] : null)
@@ -187,7 +227,7 @@ export default function AdminGuard({ children }) {
                 </div>
 
                 <nav className={`flex flex-col p-3 grow overflow-visible ${collapsed ? 'gap-2' : 'gap-2.5'}`}>
-                    {NAV_GROUPS.map((group) => (
+                    {visibleGroups.map((group) => (
                         <div key={group.label} className="flex flex-col gap-0.5">
                             {!collapsed ? (
                                 <span className="ui-muted text-[0.65rem] font-semibold uppercase tracking-wider px-3 mb-0.5 opacity-70">{group.label}</span>

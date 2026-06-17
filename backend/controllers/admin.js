@@ -65,7 +65,13 @@ async function notifyOrderStatus(orderNumber, newStatusId) {
 const REVENUE_STATUSES = "(2,3,4)";
 
 /** Dashboard overview: headline counts, revenue windows, AOV, ops + system detail. */
-const getOverview = async (_req, res) => {
+const getOverview = async (req, res) => {
+    // Current admin's staff role — lets the UI hide controls they can't use.
+    const meRows = await query("SELECT staff_role FROM users WHERE id = ?", [req.user?.id], {
+        op: "overview.myRole",
+    });
+    const myStaffRole = meRows.length ? meRows[0].staff_role || "owner" : "owner";
+
     const [
         [products],
         [orders],
@@ -193,6 +199,7 @@ const getOverview = async (_req, res) => {
         },
         statusBreakdown,
         recentOrders: recent,
+        myStaffRole,
     });
 };
 
