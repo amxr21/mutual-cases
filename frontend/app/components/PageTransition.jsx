@@ -36,15 +36,29 @@ export default function PageTransition({ children }) {
     // instant even before the route resolves (masks any data-fetch delay).
     useEffect(() => {
         const onClick = (e) => {
+            // Ignore clicks on interactive controls (add-to-cart, qty +/-, etc.).
+            // These often sit INSIDE a product-card <Link>; without this guard the
+            // click bubbles to the link, we raise the cover, but no navigation
+            // happens — so it never hides and the page looks stuck loading.
+            if (e.target.closest?.('button, input, select, textarea, [role="button"]')) return
             const a = e.target.closest?.('a[href]')
             if (!a) return
+            // Modifier-clicks / middle-clicks open new tabs — no in-app nav.
+            if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
             const href = a.getAttribute('href')
             if (!href || href.startsWith('#') || a.target === '_blank' || href.startsWith('http') || a.hasAttribute('download')) return
             // Only for in-app navigations to a different path.
-            if (href.startsWith('/') && href !== pathname) setCovering(true)
+            if (href.startsWith('/') && href !== pathname) {
+                setCovering(true)
+                // Safety net: if the navigation never resolves (cancelled, same
+                // route, error), force the cover off so it can't hang forever.
+                clearTimeout(safetyTimer)
+                safetyTimer = setTimeout(() => setCovering(false), 2000)
+            }
         }
+        let safetyTimer
         document.addEventListener('click', onClick, true)
-        return () => document.removeEventListener('click', onClick, true)
+        return () => { document.removeEventListener('click', onClick, true); clearTimeout(safetyTimer) }
     }, [pathname])
 
     return (

@@ -19,7 +19,10 @@ export function I18nProvider({ children }) {
     const [lang, setLangState] = useState('en')
 
     // Restore the saved language on mount + apply lang/dir to <html>.
+    // While LANG_ENABLED is false we force English so stale saved choices
+    // (e.g. a tester left in 'ar') can't keep the UI stuck in RTL.
     useEffect(() => {
+        if (!LANG_ENABLED) { setLangState('en'); return }
         let initial = 'en'
         try { initial = localStorage.getItem(KEY) || 'en' } catch { /* ignore */ }
         setLangState(initial)
