@@ -3,9 +3,12 @@ import { useEffect, useState } from 'react'
 import { getJSON, patchJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge } from '../ui/primitives'
+import AdminMessage from '../ui/AdminMessage'
+import Loader from '../ui/Loader'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
+import ReportLink from '../ui/ReportLink'
 
 const STATUSES = ['pending', 'in_review', 'approved', 'rejected', 'completed']
 const TONE = { pending: 'gold', in_review: 'blue', approved: 'green', rejected: 'red', completed: 'blue' }
@@ -42,12 +45,12 @@ export default function AdminCustomRequests() {
         { key: 'status', header: 'Status', sortable: true, render: (c) => <Badge tone={TONE[c.status] || 'neutral'}>{c.status}</Badge> },
     ]
 
-    if (status === 'loading') return <p className="ui-muted">Loading…</p>
-    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load requests.</p>
+    if (status === 'loading') return <Loader />
+    if (status === 'error') return <AdminMessage variant="error" title="Couldn't load requests" message="Please refresh to try again." />
 
     return (
         <div>
-            <PageHeader title="Custom Requests" subtitle={`${rows.length} total`} />
+            <PageHeader title="Custom Requests" subtitle={`${rows.length} total`} actions={<ReportLink report="custom-requests" />} />
             <DataTable
                 columns={columns}
                 rows={rows}

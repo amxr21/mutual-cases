@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { getJSON, patchJSON, deleteJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
+import Loader from '../ui/Loader'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -86,8 +87,8 @@ export default function AdminCustomers() {
         { key: 'created_at', header: 'Joined', sortable: true, render: (u) => new Date(u.created_at).toLocaleDateString() },
     ]
 
-    if (status === 'loading') return <p className="ui-muted">Loading…</p>
-    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load customers.</p>
+    if (status === 'loading') return <Loader rows={6} />
+    if (status === 'error') return <AdminMessage variant="error" title="Couldn't load customers" message="Something went wrong fetching this data. Please refresh to try again." />
 
     const loaded = detail && !detail.loading
 
@@ -115,7 +116,7 @@ export default function AdminCustomers() {
                     </>
                 ) : null}
             >
-                {!loaded ? <p className="ui-muted">Loading…</p> : (
+                {!loaded ? <Loader rows={6} /> : (
                     <div className="flex flex-col gap-5">
                         {/* Stats */}
                         <div className="flex items-center gap-4">

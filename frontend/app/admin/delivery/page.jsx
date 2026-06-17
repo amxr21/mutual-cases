@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { getJSON, postJSON, patchJSON, deleteJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
+import AdminMessage from '../ui/AdminMessage'
+import Loader from '../ui/Loader'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -116,8 +118,8 @@ export default function AdminDelivery() {
         { key: 'status', header: 'Status', sortable: true, render: (d) => <Badge tone={STATUS_TONE[d.status] || 'neutral'}>{STATUS_LABEL[d.status] || d.status}</Badge> },
     ]
 
-    if (status === 'loading') return <p className="ui-muted">Loading…</p>
-    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load delivery staff.</p>
+    if (status === 'loading') return <Loader rows={6} />
+    if (status === 'error') return <AdminMessage variant="error" title="Couldn't load delivery staff" message="Please refresh to try again." />
 
     return (
         <div>

@@ -3,9 +3,12 @@ import { useEffect, useState } from 'react'
 import { getJSON, patchJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge } from '../ui/primitives'
+import AdminMessage from '../ui/AdminMessage'
+import Loader from '../ui/Loader'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
+import ReportLink from '../ui/ReportLink'
 
 const STATUSES = [
     { id: 1, label: 'Pending' }, { id: 2, label: 'Confirmed' }, { id: 3, label: 'Shipped' },
@@ -103,12 +106,12 @@ export default function AdminOrders() {
         { key: 'status', header: 'Status', sortable: true, render: (o) => <Badge tone={TONE[o.status] || 'neutral'}>{o.status}</Badge> },
     ]
 
-    if (status === 'loading') return <p className="ui-muted">Loading orders…</p>
-    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load orders.</p>
+    if (status === 'loading') return <Loader rows={6} />
+    if (status === 'error') return <AdminMessage variant="error" title="Couldn't load orders" message="Please refresh to try again." />
 
     return (
         <div>
-            <PageHeader title="Orders" subtitle={`${orders.length} total`} />
+            <PageHeader title="Orders" subtitle={`${orders.length} total`} actions={<ReportLink report="orders-detail" />} />
 
             <DataTable
                 columns={columns}
@@ -122,7 +125,7 @@ export default function AdminOrders() {
             />
 
             <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={detail ? detail.order_number : 'Order'} width="40rem">
-                {!detail ? <p className="ui-muted">Loading…</p> : (
+                {!detail ? <Loader rows={6} /> : (
                     <div className="flex flex-col gap-5">
                         {/* Header: status + total */}
                         <div className="flex items-center justify-between">

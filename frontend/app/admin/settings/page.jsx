@@ -41,6 +41,8 @@ export default function AdminSettings() {
     const [fontId, setFontId] = useState('system')
     // Storefront flags
     const [storefront, setStorefront] = useState({ locationAutodetect: false })
+    // Integrations status (read-only)
+    const [integrations, setIntegrations] = useState(null)
     const [busy, setBusy] = useState('')
 
     useEffect(() => {
@@ -56,6 +58,7 @@ export default function AdminSettings() {
             if (sp.ok && sp.data?.value) setBrand((b) => ({ ...b, ...sp.data.value }))
             if (th.ok && th.data?.value) setTheme((t) => ({ ...t, ...th.data.value }))
             if (sf.ok && sf.data?.value) setStorefront((s) => ({ ...s, ...sf.data.value }))
+            getJSON('/admin/integrations').then((ig) => { if (ig.ok && ig.data) setIntegrations(ig.data) })
             const savedFont = cz.ok ? cz.data?.value?.adminFont : null
             const local = typeof window !== 'undefined' ? localStorage.getItem(FONT_KEY) : null
             setFontId(savedFont || FONTS.find((f) => f.stack === local)?.id || 'system')
@@ -194,6 +197,17 @@ export default function AdminSettings() {
                     />
                 </div>
             </Section>
+
+            {/* Integrations (read-only status) */}
+            <Section title="Integrations" desc="Payment, shipping, and messaging providers. Add credentials to the backend .env to activate." className="xl:col-span-2">
+                {!integrations ? <p className="ui-muted text-sm">Loading…</p> : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <IntegrationGroup title="Payments" providers={integrations.payments} />
+                        <IntegrationGroup title="Shipping" providers={integrations.shipping} />
+                        <IntegrationGroup title="Notifications" providers={integrations.notifications} />
+                    </div>
+                )}
+            </Section>
             </div>
         </div>
     )
@@ -215,6 +229,25 @@ function SaveRow({ busy, onClick }) {
     return (
         <div className="flex justify-end">
             <button className="ui-btn ui-btn-primary" onClick={onClick} disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
+        </div>
+    )
+}
+
+function IntegrationGroup({ title, providers }) {
+    return (
+        <div className="flex flex-col gap-2">
+            <span className="ui-muted text-xs font-semibold uppercase tracking-wide">{title}</span>
+            {Object.entries(providers || {}).map(([key, p]) => (
+                <div key={key} className="flex items-center justify-between rounded-lg px-3 py-2" style={{ border: '1px solid var(--ui-border)' }}>
+                    <span className="text-sm" style={{ color: 'var(--ui-text)' }}>{p.label}</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                        style={p.configured
+                            ? { background: 'color-mix(in srgb, var(--ui-success) 18%, transparent)', color: 'var(--ui-success)' }
+                            : { background: 'var(--ui-surface-2)', color: 'var(--ui-text-muted)' }}>
+                        {p.configured ? 'Connected' : 'Not configured'}
+                    </span>
+                </div>
+            ))}
         </div>
     )
 }

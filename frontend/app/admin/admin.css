@@ -101,10 +101,20 @@
 .ui-th-sort { cursor:pointer; user-select:none; }
 .ui-th-sort:hover { color:var(--ui-text); }
 
-/* When printing (e.g. the invoice page), hide the admin chrome so only the
-   document prints. The invoice page also sets its own print rules. */
+/* Loader shimmer (admin) */
+@keyframes uiShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .animate-spin { animation: none !important; } }
+
+/* Print utilities + chrome hiding. */
+.print-only { display:none; }
 @media print {
     .admin-root > aside,
     .admin-root > div > header { display:none !important; }
     .admin-root, .admin-root > div, .admin-root main { background:#fff !important; padding:0 !important; margin:0 !important; }
+    .no-print { display:none !important; }
+    .print-only { display:block !important; }
+    /* Tables print full-width without surface shadows/scroll. */
+    .ui-surface { box-shadow:none !important; border-color:#ddd !important; }
+    .ui-table { font-size:11px !important; }
+    .ui-table tbody tr:hover { background:transparent !important; }
 }

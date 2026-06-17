@@ -25,6 +25,8 @@ const NAV_GROUPS = [
             { href: '/admin/inventory', label: 'Inventory', desc: 'Track stock, reserved/available units, thresholds, and adjustments.', icon: 'M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776' },
             { href: '/admin/custom-requests', label: 'Custom Requests', desc: 'Review “design your own cover” submissions from customers.', icon: 'M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42' },
             { href: '/admin/reviews', label: 'Reviews', desc: 'Moderate reviews — approve, reject, reply, and flag.', icon: 'M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 10-2.636 6.364M16.5 12V8.25' },
+            { href: '/admin/returns', label: 'Returns', desc: 'Approve returns, restock items, and issue refunds or store credit.', icon: 'M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3' },
+            { href: '/admin/discounts', label: 'Discounts', desc: 'Create and manage discount codes, limits, and expiry.', icon: 'M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.567 3z M6 6h.008v.008H6V6z' },
         ],
     },
     {
@@ -34,8 +36,14 @@ const NAV_GROUPS = [
             { href: '/admin/delivery', label: 'Delivery', desc: 'Manage delivery staff — contact, vehicle, coverage zone, and availability.', icon: 'M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12' }],
     },
     {
+        label: 'Insights',
+        items: [{ href: '/admin/reports', label: 'Reports', desc: 'Sales, VAT, customer, and discount reports with CSV export.', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' }],
+    },
+    {
         label: 'System',
-        items: [{ href: '/admin/settings', label: 'Settings', desc: 'Brand, theme, customization, and store configuration.', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a6.759 6.759 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }],
+        items: [
+            { href: '/admin/staff', label: 'Staff & access', desc: 'Admin roles, permissions, and the activity log.', icon: 'M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z' },
+            { href: '/admin/settings', label: 'Settings', desc: 'Brand, theme, customization, and store configuration.', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a6.759 6.759 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }],
     },
 ]
 
@@ -55,6 +63,7 @@ export default function AdminGuard({ children }) {
     const [collapsed, setCollapsed] = useState(false)
     const [brand, setBrand] = useState({ name: '', logoUrl: '' })
     const [hovered, setHovered] = useState(null) // href of nav item being hovered
+    const [unread, setUnread] = useState(0)
 
     useEffect(() => {
         const role = typeof window !== 'undefined' ? localStorage.getItem('userRole') : null
@@ -85,11 +94,13 @@ export default function AdminGuard({ children }) {
                 if (sp.ok && sp.data?.value) {
                     setBrand({ name: sp.data.value.name || '', logoUrl: sp.data.value.logoUrl || '' })
                 }
-                // Apply saved theme (accent + mode). Mode also respects the local
-                // ThemeToggle key; the explicit setting wins when present.
+                // Apply saved accent always. Apply the saved MODE only if the
+                // admin has explicitly chosen one (localStorage key set); otherwise
+                // leave whatever the OS-default (from ThemeToggle) resolved to.
                 if (th.ok && th.data?.value && root) {
                     if (th.data.value.accent) root.style.setProperty('--ui-primary', th.data.value.accent)
-                    if (th.data.value.mode) root.classList.toggle('dark', th.data.value.mode === 'dark')
+                    const hasExplicitMode = (() => { try { return !!localStorage.getItem('mutual_admin_theme') } catch { return false } })()
+                    if (hasExplicitMode && th.data.value.mode) root.classList.toggle('dark', th.data.value.mode === 'dark')
                 }
             })()
         }
@@ -101,6 +112,22 @@ export default function AdminGuard({ children }) {
         window.addEventListener('mutual:brand-updated', onBrand)
         return () => window.removeEventListener('mutual:brand-updated', onBrand)
     }, [])
+
+    // Poll the unread notification count (also refreshes when the notifications
+    // page marks things read, via the 'mutual:notifications-seen' event).
+    useEffect(() => {
+        if (state !== 'ok') return
+        let active = true
+        const fetchCount = async () => {
+            const r = await getJSON('/admin/notifications')
+            if (active && r.ok) setUnread(r.data?.counts?.total || 0)
+        }
+        fetchCount()
+        const id = setInterval(fetchCount, 60000)
+        const onSeen = () => setUnread(0)
+        window.addEventListener('mutual:notifications-seen', onSeen)
+        return () => { active = false; clearInterval(id); window.removeEventListener('mutual:notifications-seen', onSeen) }
+    }, [state, pathname])
 
     const toggleCollapsed = () => {
         setCollapsed((c) => {
@@ -138,7 +165,7 @@ export default function AdminGuard({ children }) {
             {/* Floating sidebar — detached from the edges, rounded, soft-shadowed. */}
             <aside
                 className="ui-float flex flex-col transition-all duration-300 sticky top-4 self-start shrink-0 z-40"
-                style={{ width: collapsed ? '4.5rem' : '15rem', height: 'calc(100vh - 2rem)' }}
+                style={{ width: collapsed ? '4.5rem' : '15rem', minHeight: 'calc(100vh - 2rem)' }}
             >
                 <div className={`flex items-center gap-2 h-16 border-b ui-border shrink-0 ${collapsed ? 'justify-center px-0' : 'px-4'}`}>
                     {/* Square logo placeholder; shows the uploaded brand logo if set in Settings. */}
@@ -159,12 +186,12 @@ export default function AdminGuard({ children }) {
                     {!collapsed ? <span className="ui-muted text-xs ml-auto">Admin</span> : null}
                 </div>
 
-                <nav className="flex flex-col gap-4 p-3 grow overflow-visible">
+                <nav className={`flex flex-col p-3 grow overflow-visible ${collapsed ? 'gap-2' : 'gap-2.5'}`}>
                     {NAV_GROUPS.map((group) => (
-                        <div key={group.label} className="flex flex-col gap-1">
+                        <div key={group.label} className="flex flex-col gap-0.5">
                             {!collapsed ? (
-                                <span className="ui-muted text-[0.7rem] font-semibold uppercase tracking-wider px-3 mb-1">{group.label}</span>
-                            ) : null}
+                                <span className="ui-muted text-[0.65rem] font-semibold uppercase tracking-wider px-3 mb-0.5 opacity-70">{group.label}</span>
+                            ) : <div className="h-px mx-2 my-1" style={{ background: 'var(--ui-border)' }} />}
                             {group.items.map((item) => {
                                 const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
                                 return (
@@ -176,7 +203,7 @@ export default function AdminGuard({ children }) {
                                     >
                                         <Link
                                             href={item.href}
-                                            className={`flex items-center py-2 rounded-lg text-sm font-medium transition-colors ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'}`}
+                                            className={`flex items-center py-[0.4rem] rounded-lg text-sm font-medium transition-colors ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'}`}
                                             style={{
                                                 background: isActive ? 'var(--ui-primary)' : 'transparent',
                                                 color: isActive ? 'var(--ui-primary-contrast)' : 'var(--ui-text)',
@@ -229,6 +256,16 @@ export default function AdminGuard({ children }) {
                         ) : null}
                     </nav>
                     <div className="ml-auto flex items-center gap-2">
+                        <Link href="/admin/notifications" className="relative ui-btn ui-btn-ghost !px-2" title="Notifications" aria-label="Notifications">
+                            <svg viewBox="0 0 24 24" fill="none" className="size-5 stroke-current" strokeWidth={1.7}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                            </svg>
+                            {unread > 0 ? (
+                                <span className="absolute -top-1 -right-1 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full text-[0.65rem] font-bold flex items-center justify-center text-white" style={{ background: 'var(--ui-danger)' }}>
+                                    {unread > 99 ? '99+' : unread}
+                                </span>
+                            ) : null}
+                        </Link>
                         <ThemeToggle />
                         <Link href="/" className="ui-btn ui-btn-ghost text-sm">View store</Link>
                     </div>

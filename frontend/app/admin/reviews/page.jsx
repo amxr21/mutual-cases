@@ -3,9 +3,12 @@ import { useEffect, useState } from 'react'
 import { getJSON, patchJSON, deleteJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge } from '../ui/primitives'
+import AdminMessage from '../ui/AdminMessage'
+import Loader from '../ui/Loader'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
+import ReportLink from '../ui/ReportLink'
 
 const STATUS_TONE = { pending: 'gold', approved: 'green', rejected: 'red' }
 const FILTERS = [
@@ -143,7 +146,7 @@ export default function AdminReviews() {
 
     return (
         <div>
-            <PageHeader title="Reviews" subtitle="Moderate customer reviews before they appear on the storefront" />
+            <PageHeader title="Reviews" subtitle="Moderate customer reviews before they appear on the storefront" actions={<ReportLink report="reviews-detail" />} />
 
             {/* Filter tabs with live counts */}
             <div className="flex flex-wrap gap-2 mb-4">
@@ -167,8 +170,8 @@ export default function AdminReviews() {
                 })}
             </div>
 
-            {status === 'loading' ? <p className="ui-muted">Loading…</p> : null}
-            {status === 'error' ? <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load reviews.</p> : null}
+            {status === 'loading' ? <Loader rows={6} /> : null}
+            {status === 'error' ? <AdminMessage variant="error" title="Couldn't load reviews" message="Please refresh to try again." /> : null}
             {status === 'ready' ? (
                 <DataTable
                     columns={columns}

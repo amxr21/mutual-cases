@@ -3,9 +3,12 @@ import { useEffect, useState } from 'react'
 import { getJSON, postJSON, patchJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
+import AdminMessage from '../ui/AdminMessage'
+import Loader from '../ui/Loader'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
+import ReportLink from '../ui/ReportLink'
 
 const REASONS = [
     { label: 'Restock', value: 'restock' },
@@ -90,14 +93,14 @@ export default function AdminInventory() {
         { key: 'status', header: 'Status', render: (p) => statusBadge(p) },
     ]
 
-    if (status === 'loading') return <p className="ui-muted">Loading…</p>
-    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load inventory.</p>
+    if (status === 'loading') return <Loader rows={6} />
+    if (status === 'error') return <AdminMessage variant="error" title="Couldn't load inventory" message="Please refresh to try again." />
 
     const lowCount = rows.filter((r) => r.lowStock || r.outOfStock).length
 
     return (
         <div>
-            <PageHeader title="Inventory" subtitle={`${rows.length} products · ${lowCount} need attention`} />
+            <PageHeader title="Inventory" subtitle={`${rows.length} products · ${lowCount} need attention`} actions={<ReportLink report="inventory-detail" />} />
 
             <DataTable
                 columns={columns}

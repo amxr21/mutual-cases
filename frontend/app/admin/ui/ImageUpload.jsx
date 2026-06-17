@@ -19,6 +19,7 @@ export default function ImageUpload({ value = '', onChange, folder }) {
     const inputRef = useRef(null)
     const [configured, setConfigured] = useState(null) // null=unknown, bool once checked
     const [busy, setBusy] = useState(false)
+    const [err, setErr] = useState('')
 
     useEffect(() => {
         let active = true
@@ -37,12 +38,13 @@ export default function ImageUpload({ value = '', onChange, folder }) {
         if (!file) return
         if (!file.type.startsWith('image/')) { toast.error('Please choose an image file'); return }
 
+        setErr('')
         setBusy(true)
         // 1) get a signature from our API.
         const sign = await postJSON('/admin/uploads/sign', folder ? { folder } : {})
         if (!sign.ok || !sign.data?.configured) {
             setBusy(false)
-            toast.error('Image uploads are not configured')
+            setErr('Image uploads are not configured on the server.')
             return
         }
         const { cloudName, apiKey, timestamp, signature, folder: signedFolder, uploadUrl } = sign.data
@@ -60,11 +62,22 @@ export default function ImageUpload({ value = '', onChange, folder }) {
                 body: fd,
             })
             const data = await res.json()
-            if (!res.ok || !data.secure_url) throw new Error(data?.error?.message || 'Upload failed')
+            if (!res.ok || !data.secure_url) {
+                const msg = data?.error?.message || 'Upload failed'
+                // Surface common misconfigurations clearly.
+                if (/cloud_name/i.test(msg)) {
+                    throw new Error(`Cloudinary rejected the cloud name "${cloudName}". Check CLOUDINARY_CLOUD_NAME in the backend .env (use the lowercase cloud name from your Cloudinary dashboard).`)
+                }
+                if (/signature|api_key/i.test(msg)) {
+                    throw new Error(`Cloudinary auth failed (${msg}). Check CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET.`)
+                }
+                throw new Error(msg)
+            }
             onChange(data.secure_url)
             toast.success('Image uploaded')
-        } catch (err) {
-            toast.error(err.message || 'Upload failed')
+        } catch (e) {
+            setErr(e.message || 'Upload failed')
+            toast.error('Upload failed')
         } finally {
             setBusy(false)
         }
@@ -94,6 +107,9 @@ export default function ImageUpload({ value = '', onChange, folder }) {
                             ) : null}
                         </div>
                         <span className="ui-muted text-xs">PNG, JPG or SVG. Stored on Cloudinary.</span>
+                        {err ? (
+                            <span className="text-xs rounded-md px-2 py-1.5" style={{ background: 'color-mix(in srgb, var(--ui-danger) 12%, transparent)', color: 'var(--ui-danger)' }}>{err}</span>
+                        ) : null}
                     </>
                 ) : (
                     <label className="flex flex-col gap-1.5 text-sm">

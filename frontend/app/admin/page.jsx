@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getJSON } from '../lib/safeFetch'
 import { PageHeader, StatCard, Badge } from './ui/primitives'
+import AdminMessage from './ui/AdminMessage'
+import Loader from './ui/Loader'
 
 const STATUS_TONE = { Pending: 'gold', Confirmed: 'blue', Shipped: 'blue', Delivered: 'green', Canceled: 'red', Returned: 'neutral' }
 const aed = (n) => `${Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} AED`
@@ -32,8 +34,8 @@ export default function AdminOverview() {
         return () => { active = false }
     }, [])
 
-    if (status === 'loading') return <p className="ui-muted">Loading dashboard…</p>
-    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load the dashboard.</p>
+    if (status === 'loading') return <Loader label="Loading dashboard…" />
+    if (status === 'error') return <AdminMessage variant="error" title="Couldn't load the dashboard" message="Please refresh to try again." />
 
     const { totals, metrics, pendingActions, delivery, lowStock, topProducts, system, statusBreakdown, recentOrders } = data
     const m = metrics || {}

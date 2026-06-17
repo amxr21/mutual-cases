@@ -8,8 +8,20 @@ export function useAdminTheme() {
     const [theme, setTheme] = useState('light')
 
     useEffect(() => {
-        const saved = (typeof window !== 'undefined' && localStorage.getItem(KEY)) || 'light'
-        setTheme(saved)
+        // Use the saved choice if any; otherwise follow the OS light/dark setting.
+        let initial = typeof window !== 'undefined' ? localStorage.getItem(KEY) : null
+        if (!initial && typeof window !== 'undefined' && window.matchMedia) {
+            initial = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        setTheme(initial || 'light')
+
+        // If the user hasn't chosen, keep following OS changes live.
+        if (!localStorage.getItem(KEY) && typeof window !== 'undefined' && window.matchMedia) {
+            const mq = window.matchMedia('(prefers-color-scheme: dark)')
+            const onChange = (e) => { if (!localStorage.getItem(KEY)) setTheme(e.matches ? 'dark' : 'light') }
+            mq.addEventListener?.('change', onChange)
+            return () => mq.removeEventListener?.('change', onChange)
+        }
     }, [])
 
     const apply = (t) => {
