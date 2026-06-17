@@ -6,6 +6,7 @@ import { useToast } from './Toast/ToastProvider'
 import { getJSON, postJSON } from '../lib/safeFetch'
 import SmoothSelect from './SmoothSelect'
 import { GCC_COUNTRIES, citiesFor } from '../constants/gcc'
+import { useI18n } from '../i18n/I18nProvider'
 
 /**
  * Checkout: shipping address form with validation + live order summary
@@ -21,12 +22,17 @@ const REQUIRED = ['country', 'city', 'area']
 export default function CheckoutForm() {
     const router = useRouter()
     const toast = useToast()
+    const { t } = useI18n()
     const { items, requests, totals, clearCart } = useCart()
 
     const [form, setForm] = useState({ country: 'United Arab Emirates', city: '', area: '', address: '' })
     const [cityChoice, setCityChoice] = useState('') // the selected dropdown value ('' | a city | 'Other')
     const [errors, setErrors] = useState({})
     const [submitting, setSubmitting] = useState(false)
+    // Discount code state.
+    const [code, setCode] = useState('')
+    const [discount, setDiscount] = useState(null) // { code, type, amount, freeShipping }
+    const [applyingCode, setApplyingCode] = useState(false)
     const [payment, setPayment] = useState('cod') // 'cod' | 'card_on_delivery'
     const [geoEnabled, setGeoEnabled] = useState(false)
     const [locating, setLocating] = useState(false)
@@ -97,6 +103,20 @@ export default function CheckoutForm() {
         return Object.keys(next).length === 0
     }
 
+    const applyCode = async () => {
+        if (!code.trim()) { toast.error('Enter a code'); return }
+        setApplyingCode(true)
+        const r = await postJSON('/discounts/validate', { code: code.trim(), subtotal: totals.price })
+        setApplyingCode(false)
+        if (!r.ok) { setDiscount(null); toast.error(r.error?.message || 'Invalid code'); return }
+        setDiscount(r.data)
+        toast.success('Discount applied')
+    }
+    const removeCode = () => { setDiscount(null); setCode('') }
+
+    const discountAmount = discount ? Number(discount.amount || 0) : 0
+    const grandTotal = Math.max(0, totals.price - discountAmount)
+
     const placeOrder = async () => {
         const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null
         if (!userId) {
@@ -120,6 +140,7 @@ export default function CheckoutForm() {
             note: requests.note,
             gift: requests.gift,
             payment_method: payment,
+            discount_code: discount?.code || '',
         })
         setSubmitting(false)
 
@@ -145,7 +166,7 @@ export default function CheckoutForm() {
             {/* Address form */}
             <div className="bg-off-white rounded-2xl shadow-lg p-6 xl:p-8 flex flex-col gap-5">
                 <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-2xl font-semibold">Shipping Address</h2>
+                    <h2 className="text-2xl font-semibold">{t('checkout.shipping')}</h2>
                     {geoEnabled ? (
                         <button
                             type="button"
@@ -157,7 +178,7 @@ export default function CheckoutForm() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                             </svg>
-                            {locating ? 'Detecting…' : 'Use my location'}
+                            {locating ? t('common.loading','Detecting…') : t('checkout.useLocation')}
                         </button>
                     ) : null}
                 </div>
@@ -230,7 +251,7 @@ export default function CheckoutForm() {
 
             {/* Order summary */}
             <div className="bg-off-white rounded-2xl shadow-lg p-6 xl:p-8 flex flex-col gap-4 h-fit">
-                <h2 className="text-2xl font-semibold">Order Summary</h2>
+                <h2 className="text-2xl font-semibold">{t('checkout.summary')}</h2>
 
                 <div className="flex flex-col gap-3 max-h-72 overflow-auto pr-1">
                     {items.map((it) => (
@@ -251,9 +272,36 @@ export default function CheckoutForm() {
                     <div className="text-sm bg-blue/5 rounded-md px-3 py-2">📝 Note: {requests.note}</div>
                 ) : null}
 
-                <div className="flex justify-between text-xl font-semibold border-t pt-3">
-                    <span>Total</span>
-                    <span>{totals.price} AED</span>
+                {/* Discount code */}
+                <div className="border-t pt-3">
+                    {discount ? (
+                        <div className="flex items-center justify-between text-sm bg-green-600/10 text-green-700 rounded-md px-3 py-2">
+                            <span>Code <strong>{discount.code}</strong> applied{discount.freeShipping ? ' (free shipping)' : ''}</span>
+                            <button onClick={removeCode} className="underline">Remove</button>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2">
+                            <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder={t('checkout.discountCode')} className="grow bg-off-white border border-gray-300 rounded-lg py-2 px-3 outline-none focus:border-blue text-sm font-mono" />
+                            <button onClick={applyCode} disabled={applyingCode} className="border border-blue text-blue font-semibold px-4 rounded-lg text-sm disabled:opacity-60">{applyingCode ? '…' : 'Apply'}</button>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-1 border-t pt-3">
+                    <div className="flex justify-between text-sm font-light">
+                        <span>{t('common.subtotal')}</span>
+                        <span>{totals.price} AED</span>
+                    </div>
+                    {discountAmount > 0 ? (
+                        <div className="flex justify-between text-sm text-green-700">
+                            <span>Discount</span>
+                            <span>− {discountAmount} AED</span>
+                        </div>
+                    ) : null}
+                    <div className="flex justify-between text-xl font-semibold mt-1">
+                        <span>{t('common.total')}</span>
+                        <span>{grandTotal} AED</span>
+                    </div>
                 </div>
 
                 <button
@@ -262,7 +310,7 @@ export default function CheckoutForm() {
                     disabled={submitting || items.length === 0}
                     className="w-full bg-blue text-off-white text-lg font-semibold py-3 rounded-lg transition-all duration-300 hover:brightness-110 active:scale-[0.99] disabled:opacity-60"
                 >
-                    {submitting ? 'Placing order…' : 'Place Order'}
+                    {submitting ? t('common.loading','Placing order…') : t('checkout.placeOrder')}
                 </button>
             </div>
         </div>

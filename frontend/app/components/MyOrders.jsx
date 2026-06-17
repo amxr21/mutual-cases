@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getJSON } from '../lib/safeFetch'
-import { EmptyState, ReviewForm } from '.'
+import { EmptyState, ReviewForm, ReturnRequest } from '.'
 
 /**
  * Logged-in order history with Current / Previous tabs.
@@ -45,7 +45,12 @@ export default function MyOrders() {
 
     const onReviewed = (rev) => setMyReviews((prev) => ({ ...prev, [rev.product_id]: rev }))
 
-    if (status === 'loading') return <p className="font-light py-8">Loading your orders…</p>
+    if (status === 'loading') return (
+        <div className="flex items-center gap-3 py-8 text-off-black/60">
+            <span className="inline-block w-5 h-5 rounded-full border-2 border-blue/25 border-t-blue animate-spin" />
+            <span className="font-light">Loading your orders…</span>
+        </div>
+    )
     if (status === 'guest')
         return <EmptyState icon="lock" title="Please log in to see your orders" message="Your order history is tied to your account." action={{ label: 'Go to homepage', href: '/' }} />
     if (status === 'error')
@@ -115,9 +120,12 @@ export default function MyOrders() {
                                     ))}
                                 </div>
 
-                                <Link href={`/track-order?order=${encodeURIComponent(o.order_number)}`} className="text-sm text-blue underline self-start">
-                                    Track this order →
-                                </Link>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <Link href={`/track-order?order=${encodeURIComponent(o.order_number)}`} className="text-sm text-blue underline self-start">
+                                        Track this order →
+                                    </Link>
+                                    {canReview ? <ReturnRequest order={o} /> : null}
+                                </div>
                             </div>
                         )
                     })}

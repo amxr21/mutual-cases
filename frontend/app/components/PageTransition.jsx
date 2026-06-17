@@ -32,20 +32,29 @@ export default function PageTransition({ children }) {
         return () => clearTimeout(hide)
     }, [pathname])
 
+    // Show the cover immediately on an internal link click, so navigation feels
+    // instant even before the route resolves (masks any data-fetch delay).
+    useEffect(() => {
+        const onClick = (e) => {
+            const a = e.target.closest?.('a[href]')
+            if (!a) return
+            const href = a.getAttribute('href')
+            if (!href || href.startsWith('#') || a.target === '_blank' || href.startsWith('http') || a.hasAttribute('download')) return
+            // Only for in-app navigations to a different path.
+            if (href.startsWith('/') && href !== pathname) setCovering(true)
+        }
+        document.addEventListener('click', onClick, true)
+        return () => document.removeEventListener('click', onClick, true)
+    }, [pathname])
+
     return (
         <>
-            {/* Transition cover */}
+            {/* Transition cover — backdrop adapts to light/dark. */}
             <div
                 aria-hidden={!covering}
-                className={`fixed inset-0 z-[999998] flex items-center justify-center transition-opacity duration-500 ${
+                className={`page-cover fixed inset-0 z-[999998] flex items-center justify-center transition-opacity duration-500 ${
                     covering ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
-                style={{
-                    // Light, blurred backdrop — not a solid fill.
-                    background: 'rgba(248, 248, 245, 0.55)',
-                    backdropFilter: 'blur(14px)',
-                    WebkitBackdropFilter: 'blur(14px)',
-                }}
             >
                 <div className="relative flex items-center justify-center">
                     {/* Pulsing ring */}

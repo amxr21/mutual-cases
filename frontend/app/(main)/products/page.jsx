@@ -1,5 +1,5 @@
 // import ProductsSection from "@/app/components/ProductsSection";
-import { Filters, Products } from "@/app/components";
+import { Filters, Products, PromoBanner } from "@/app/components";
 import { FilterWrapper } from "../../Context/FilterContext";
 export const metadata = {
   title: "Mutual - Products ",
@@ -7,12 +7,9 @@ export const metadata = {
 };
 
 export default function products() {
-
-
-
   return (
     <main className="">
-      {/* <ProductsSection /> */}
+      <PromoBanner />
       <div className="grid grid-cols-10 gap-8">
         <FilterWrapper>
           <Filters />

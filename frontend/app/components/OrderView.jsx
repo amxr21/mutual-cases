@@ -48,7 +48,12 @@ export default function OrderView({ orderNumber, successMode = false, showTrackL
         }
     }, [orderNumber])
 
-    if (status === 'loading') return <p className="font-light py-8">Loading order…</p>
+    if (status === 'loading') return (
+        <div className="flex items-center gap-3 py-8 text-off-black/60">
+            <span className="inline-block w-5 h-5 rounded-full border-2 border-blue/25 border-t-blue animate-spin" />
+            <span className="font-light">Loading order…</span>
+        </div>
+    )
     if (status === 'notfound')
         return (
             <div className="py-8 flex flex-col gap-3">

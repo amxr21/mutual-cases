@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { LargeButton, QuantityCounter } from "."
 import { useCart } from "../Context/CartContext"
+import { useI18n } from "../i18n/I18nProvider"
 
 /**
  * Add-to-cart control (Task 1).
@@ -15,6 +16,7 @@ import { useCart } from "../Context/CartContext"
  */
 function AddToCart({ id }) {
     const { quantityOf, addToCart, setQuantity } = useCart()
+    const { t } = useI18n()
     const [busy, setBusy] = useState(false)
 
     const qty = quantityOf(id)
@@ -38,7 +40,7 @@ function AddToCart({ id }) {
         // and font sizing so it occupies the identical space as "Add To Cart".
         return (
             <div className="w-full flex items-center justify-between rounded-xl border border-blue bg-blue/5 px-2 xl:px-3 py-1 xl:py-2">
-                <span className="text-lg xl:text-2xl font-semibold text-blue">In cart</span>
+                <span className="text-lg xl:text-2xl font-semibold text-blue">{t('cart.inCart', 'In cart')}</span>
                 <div className="flex items-center gap-1">
                     <button
                         type="button"
@@ -68,7 +70,7 @@ function AddToCart({ id }) {
         <LargeButton
             key={'Add To Cart'}
             handleClick={handleAdd}
-            text={busy ? 'Adding…' : 'Add To Cart'}
+            text={busy ? t('common.loading', 'Adding…') : t('common.add', 'Add To Cart')}
             color="blue"
             classes="w-full transition-all duration-300"
         />

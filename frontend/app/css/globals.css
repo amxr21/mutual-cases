@@ -111,3 +111,10 @@ a, button{
     z-index: -999999 !important;
 
 }
+
+/* Page-transition cover backdrop (blurred translucent). */
+.page-cover {
+    background: rgba(248, 248, 245, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
