@@ -3,12 +3,15 @@ import { useEffect, useState } from 'react'
 import { getJSON, postJSON, patchJSON, deleteJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
+import AdminMessage from '../ui/AdminMessage'
+import Loader from '../ui/Loader'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
 import Select from '../ui/Select'
+import { buildTemplate } from './templates'
 
-const EMPTY = { trend: 0, price: '', model: '', edition: '', category: 'iphone', type: 'normal', quantity: 0, image_url_1: '', image_url_2: '', image_url_3: '' }
+const EMPTY = { trend: 0, price: '', model: '', edition: '', category: 'iphone', type: 'normal', quantity: 0, image_url_1: '', image_url_2: '', image_url_3: '', description: '', material: '', approach: '', features: '' }
 const CATEGORIES = ['iphone', 'ipad', 'special items']
 const TYPES = ['normal', '3d design', 'simple', 'light', 'magnet']
 
@@ -35,8 +38,15 @@ export default function AdminProducts() {
     const openNew = () => { setForm(EMPTY); setEditingId(null); setDrawerOpen(true) }
     const openEdit = (p) => {
         setEditingId(p.id)
-        setForm({ trend: p.trend ? 1 : 0, price: p.price, model: p.model, edition: p.edition, category: p.category, type: p.type, quantity: p.quantity ?? 0, image_url_1: p.image_url_1 || '', image_url_2: p.image_url_2 || '', image_url_3: p.image_url_3 || '' })
+        setForm({ trend: p.trend ? 1 : 0, price: p.price, model: p.model, edition: p.edition, category: p.category, type: p.type, quantity: p.quantity ?? 0, image_url_1: p.image_url_1 || '', image_url_2: p.image_url_2 || '', image_url_3: p.image_url_3 || '', description: p.description || '', material: p.material || '', approach: p.approach || '', features: p.features || '' })
         setDrawerOpen(true)
+    }
+
+    // Fill the 4 detail fields from the type/category template (admin can then edit).
+    const applyTemplate = () => {
+        const t = buildTemplate(form)
+        setForm((f) => ({ ...f, ...t }))
+        toast.success('Template applied — edit as needed')
     }
 
     const submit = async () => {
@@ -73,8 +83,8 @@ export default function AdminProducts() {
         { key: 'trend', header: 'Trend', align: 'center', render: (p) => (p.trend ? <Badge tone="gold">Trending</Badge> : <span className="ui-muted">—</span>) },
     ]
 
-    if (status === 'loading') return <p className="ui-muted">Loading…</p>
-    if (status === 'error') return <p style={{ color: 'var(--ui-danger)' }}>Couldn&apos;t load products.</p>
+    if (status === 'loading') return <Loader rows={6} />
+    if (status === 'error') return <AdminMessage variant="error" title="Couldn't load products" message="Please refresh to try again." />
 
     const field = 'ui-input'
 
@@ -124,6 +134,19 @@ export default function AdminProducts() {
                     <FormField label="Image URL 1"><input value={form.image_url_1} onChange={set('image_url_1')} className={field} /></FormField>
                     <FormField label="Image URL 2"><input value={form.image_url_2} onChange={set('image_url_2')} className={field} /></FormField>
                     <FormField label="Image URL 3"><input value={form.image_url_3} onChange={set('image_url_3')} className={field} /></FormField>
+
+                    {/* Product detail fields — used on the storefront product page. */}
+                    <div className="flex items-center justify-between border-t ui-border pt-3">
+                        <span className="ui-muted text-xs font-semibold uppercase">Details</span>
+                        <button type="button" className="ui-btn ui-btn-ghost !py-1 !px-3" onClick={applyTemplate} title="Auto-fill from type + category">
+                            ✨ Use template
+                        </button>
+                    </div>
+                    <FormField label="Description"><textarea value={form.description} onChange={set('description')} className="ui-textarea" rows={3} placeholder="Shown on the product page…" /></FormField>
+                    <FormField label="Material"><input value={form.material} onChange={set('material')} className={field} placeholder="e.g. Soft-touch polycarbonate" /></FormField>
+                    <FormField label="Design / approach"><textarea value={form.approach} onChange={set('approach')} className="ui-textarea" rows={2} placeholder="How it's designed / made…" /></FormField>
+                    <FormField label="Features" hint="Separate with  |  (pipe)"><textarea value={form.features} onChange={set('features')} className="ui-textarea" rows={2} placeholder="Feature one | Feature two | …" /></FormField>
+
                     <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--ui-text)' }}>
                         <input type="checkbox" checked={!!Number(form.trend)} onChange={(e) => setForm((f) => ({ ...f, trend: e.target.checked ? 1 : 0 }))} /> Mark as trending
                     </label>

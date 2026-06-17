@@ -114,8 +114,11 @@ const resolveId = async (tx, type, value) => {
 };
 
 const postProduct = async (req, res) => {
-    const { trend, price, model, edition, category, type, quantity, image_url_1, image_url_2, image_url_3 } =
-        req.body;
+    const {
+        trend, price, model, edition, category, type, quantity,
+        image_url_1, image_url_2, image_url_3,
+        description = "", material = "", approach = "", features = "",
+    } = req.body;
 
     const insertId = await withTransaction(async (tx) => {
         const stockId = Math.floor(Math.random() * 100000);
@@ -124,8 +127,8 @@ const postProduct = async (req, res) => {
 
         const result = await tx(
             `INSERT INTO products
-                (trend, price, model, edition, category, stock_quantity_id, type_id, image_url_1, image_url_2, image_url_3)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (trend, price, model, edition, category, stock_quantity_id, type_id, image_url_1, image_url_2, image_url_3, description, material, approach, features)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 trend,
                 price,
@@ -137,6 +140,10 @@ const postProduct = async (req, res) => {
                 image_url_1,
                 image_url_2,
                 image_url_3,
+                description || null,
+                material || null,
+                approach || null,
+                features || null,
             ]
         );
 
@@ -191,6 +198,10 @@ const updateProduct = async (req, res) => {
                 case "image_url_1":
                 case "image_url_2":
                 case "image_url_3":
+                case "description":
+                case "material":
+                case "approach":
+                case "features":
                     await tx(`UPDATE products SET \`${field}\` = ? WHERE id = ?`, [value, id]);
                     break;
                 case "quantity":
