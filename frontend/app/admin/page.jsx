@@ -1,10 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { getJSON } from '../lib/safeFetch'
 import { PageHeader, StatCard, Badge } from './ui/primitives'
 import AdminMessage from './ui/AdminMessage'
 import Loader from './ui/Loader'
+
+// How often auto-refresh re-fetches the dashboard when enabled.
+const AUTO_REFRESH_MS = 30000
 
 const STATUS_TONE = { Pending: 'gold', Confirmed: 'blue', Shipped: 'blue', Delivered: 'green', Canceled: 'red', Returned: 'neutral' }
 const aed = (n) => `${Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} AED`
@@ -22,17 +25,40 @@ function Trend({ pct }) {
 export default function AdminOverview() {
     const [data, setData] = useState(null)
     const [status, setStatus] = useState('loading')
+    const [refreshing, setRefreshing] = useState(false)
+    const [updatedAt, setUpdatedAt] = useState(null)
+    const [auto, setAuto] = useState(false)
+    const mounted = useRef(true)
+
+    // Single source of truth for (re)loading the dashboard. `silent` keeps the
+    // existing data on screen and only flips the small "refreshing" indicator,
+    // so manual refresh / auto-refresh don't blank the page.
+    const load = useCallback(async ({ silent = false } = {}) => {
+        if (silent) setRefreshing(true)
+        const r = await getJSON('/admin/overview')
+        if (!mounted.current) return
+        if (r.ok && r.data?.totals) {
+            setData(r.data)
+            setStatus('ready')
+            setUpdatedAt(new Date())
+        } else if (!silent) {
+            setStatus('error')
+        }
+        setRefreshing(false)
+    }, [])
 
     useEffect(() => {
-        let active = true
-        ;(async () => {
-            const r = await getJSON('/admin/overview')
-            if (!active) return
-            if (r.ok && r.data?.totals) { setData(r.data); setStatus('ready') }
-            else setStatus('error')
-        })()
-        return () => { active = false }
-    }, [])
+        mounted.current = true
+        load()
+        return () => { mounted.current = false }
+    }, [load])
+
+    // Optional auto-refresh: poll every AUTO_REFRESH_MS while enabled.
+    useEffect(() => {
+        if (!auto) return
+        const id = setInterval(() => load({ silent: true }), AUTO_REFRESH_MS)
+        return () => clearInterval(id)
+    }, [auto, load])
 
     if (status === 'loading') return <Loader label="Loading dashboard…" />
     if (status === 'error') return <AdminMessage variant="error" title="Couldn't load the dashboard" message="Please refresh to try again." />
@@ -44,7 +70,33 @@ export default function AdminOverview() {
 
     return (
         <div>
-            <PageHeader title="Overview" subtitle="Your store at a glance" />
+            <PageHeader
+                title="Overview"
+                subtitle="Your store at a glance"
+                actions={
+                    <div className="flex items-center gap-2">
+                        {updatedAt ? (
+                            <span className="ui-muted text-xs whitespace-nowrap">
+                                Updated {updatedAt.toLocaleTimeString()}
+                            </span>
+                        ) : null}
+                        <label className="flex items-center gap-1.5 text-xs ui-muted cursor-pointer select-none" title={`Auto-refresh every ${AUTO_REFRESH_MS / 1000}s`}>
+                            <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} />
+                            Auto
+                        </label>
+                        <button
+                            type="button"
+                            onClick={() => load({ silent: true })}
+                            disabled={refreshing}
+                            className="ui-btn ui-btn-ghost !py-1.5 !px-3 flex items-center gap-1.5"
+                            title="Refresh dashboard"
+                        >
+                            <span className={refreshing ? 'inline-block animate-spin' : 'inline-block'} aria-hidden>↻</span>
+                            {refreshing ? 'Refreshing…' : 'Refresh'}
+                        </button>
+                    </div>
+                }
+            />
 
             {/* Revenue windows + KPIs */}
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
