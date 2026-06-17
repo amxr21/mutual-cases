@@ -11,6 +11,10 @@ const I18nContext = createContext(null)
 const KEY = 'mutual_lang'
 const RTL = new Set(['ar'])
 
+// Arabic is temporarily disabled (translations need polishing). The i18n layer
+// stays wired up; only the language switch is hidden — flip this to re-enable it.
+export const LANG_ENABLED = false
+
 export function I18nProvider({ children }) {
     const [lang, setLangState] = useState('en')
 

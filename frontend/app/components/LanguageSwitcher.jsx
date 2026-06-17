@@ -1,9 +1,11 @@
 'use client'
-import { useI18n } from '../i18n/I18nProvider'
+import { useI18n, LANG_ENABLED } from '../i18n/I18nProvider'
 
 /** EN / ع toggle for the storefront. Switching applies RTL for Arabic. */
 export default function LanguageSwitcher({ className = '' }) {
     const { lang, setLang } = useI18n()
+    // Arabic is temporarily disabled — hide the toggle entirely.
+    if (!LANG_ENABLED) return null
     return (
         <button
             onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
