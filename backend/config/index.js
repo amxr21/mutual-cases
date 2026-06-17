@@ -42,14 +42,21 @@ const config = {
 
     db: {
         host: process.env.DB_HOST,
+        port: int(process.env.DB_PORT, 3306),
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         name: process.env.DB_NAME,
         connectionLimit: int(process.env.DB_CONNECTION_LIMIT, 25),
         queueLimit: int(process.env.DB_QUEUE_LIMIT, 100),
-        // SSL cert validation. Off by default (managed dev DBs often use
-        // self-signed certs); turn on in production via DB_SSL_REJECT_UNAUTHORIZED=true.
+        // TLS for the DB connection.
+        //   DB_SSL=true                       -> connect over TLS (required for AWS RDS public)
+        //   DB_SSL_REJECT_UNAUTHORIZED=true   -> verify the server cert (recommended in prod)
+        //   DB_SSL_CA=/path/to/rds-ca.pem     -> CA bundle used to verify (AWS RDS global CA)
+        // For a public RDS instance set DB_SSL=true, DB_SSL_REJECT_UNAUTHORIZED=true,
+        // and point DB_SSL_CA at the downloaded AWS RDS CA bundle.
+        ssl: bool(process.env.DB_SSL, false),
         sslRejectUnauthorized: bool(process.env.DB_SSL_REJECT_UNAUTHORIZED, false),
+        sslCaPath: process.env.DB_SSL_CA || "",
         // Stacked queries are a SQL-injection amplifier; disabled unless explicitly enabled.
         multipleStatements: bool(process.env.DB_MULTIPLE_STATEMENTS, false),
     },

@@ -11,11 +11,34 @@
  * Prefer the helpers in ./db/index.js (query / withTransaction) over using this
  * pool directly, so DB errors are logged and mapped consistently.
  */
+const fs = require("fs");
 const mysql = require("mysql2/promise");
 const config = require("./config");
 
+/**
+ * Build the mysql2 `ssl` option.
+ *   - Returns `undefined` (no TLS) unless DB_SSL=true, so local dev is unaffected.
+ *   - When a CA bundle path is given (DB_SSL_CA, e.g. the AWS RDS global CA), it's
+ *     read and supplied so the server certificate can be properly verified.
+ */
+function buildSslConfig() {
+    if (!config.db.ssl) return undefined;
+    const ssl = { rejectUnauthorized: config.db.sslRejectUnauthorized };
+    if (config.db.sslCaPath) {
+        try {
+            ssl.ca = fs.readFileSync(config.db.sslCaPath, "utf8");
+        } catch (err) {
+            // Fail loudly: a missing CA when verification is on would silently
+            // break every connection, so surface it at startup instead.
+            throw new Error(`Could not read DB_SSL_CA at "${config.db.sslCaPath}": ${err.message}`);
+        }
+    }
+    return ssl;
+}
+
 const pool = mysql.createPool({
     host: config.db.host,
+    port: config.db.port,
     user: config.db.user,
     password: config.db.password,
     database: config.db.name,
@@ -26,7 +49,7 @@ const pool = mysql.createPool({
     multipleStatements: config.db.multipleStatements,
     enableKeepAlive: true,
     keepAliveInitialDelay: 10000,
-    ssl: { rejectUnauthorized: config.db.sslRejectUnauthorized },
+    ssl: buildSslConfig(),
     typeCast: (field, next) => {
         // Map TINYINT(1) -> boolean.
         if (field.type === "TINY" && field.length === 1) {
