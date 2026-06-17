@@ -104,4 +104,4 @@ const listAuditLog = async (req, res) => {
     res.json(rows);
 };
 
-module.exports = { audit, listStaff, setStaffRole, listAuditLog };
+module.exports = { audit, listStaff, createStaff, setStaffRole, listAuditLog };
