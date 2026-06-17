@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getJSON } from '../lib/safeFetch'
 import { EmptyState, ReviewForm, ReturnRequest } from '.'
+import { useI18n } from '../i18n/I18nProvider'
 
 /**
  * Logged-in order history with Current / Previous tabs.
@@ -18,6 +19,7 @@ const STATUS_COLOR = {
 }
 
 export default function MyOrders() {
+    const { t } = useI18n()
     const [orders, setOrders] = useState([])
     const [myReviews, setMyReviews] = useState({}) // product_id -> {rating, comment}
     const [tab, setTab] = useState('current')
@@ -48,7 +50,7 @@ export default function MyOrders() {
     if (status === 'loading') return (
         <div className="flex items-center gap-3 py-8 text-off-black/60">
             <span className="inline-block w-5 h-5 rounded-full border-2 border-blue/25 border-t-blue animate-spin" />
-            <span className="font-light">Loading your orders…</span>
+            <span className="font-light">{t('common.loading')}</span>
         </div>
     )
     if (status === 'guest')
@@ -66,7 +68,7 @@ export default function MyOrders() {
         <div className="flex flex-col gap-5">
             {/* Tabs */}
             <div className="flex gap-1 bg-blue/5 p-1 rounded-lg w-fit">
-                {[['current', 'Current'], ['previous', 'Previous']].map(([key, label]) => (
+                {[['current', t('orders.current')], ['previous', t('orders.previous')]].map(([key, label]) => (
                     <button
                         key={key}
                         onClick={() => setTab(key)}
@@ -122,7 +124,7 @@ export default function MyOrders() {
 
                                 <div className="flex flex-wrap items-center gap-4">
                                     <Link href={`/track-order?order=${encodeURIComponent(o.order_number)}`} className="text-sm text-blue underline self-start">
-                                        Track this order →
+                                        {t('orders.trackThis')} →
                                     </Link>
                                     {canReview ? <ReturnRequest order={o} /> : null}
                                 </div>
