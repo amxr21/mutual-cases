@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -146,7 +147,7 @@ export default function AdminReviews() {
 
     return (
         <div>
-            <PageHeader title="Reviews" subtitle="Moderate customer reviews before they appear on the storefront" actions={<ReportLink report="reviews-detail" />} />
+            <PageHeader title="Reviews" subtitle="Moderate customer reviews before they appear on the storefront" actions={<><RefreshButton onRefresh={load} /><ReportLink report="reviews-detail" /></>} />
 
             {/* Filter tabs with live counts */}
             <div className="flex flex-wrap gap-2 mb-4">

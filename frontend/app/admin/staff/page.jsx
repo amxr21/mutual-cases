@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
@@ -90,7 +91,7 @@ export default function AdminStaff() {
     return (
         <div>
             <PageHeader title="Staff & access" subtitle="Manage admin roles and review the activity log"
-                actions={<button className="ui-btn ui-btn-primary" onClick={() => setAdding(true)}>+ Add staff</button>} />
+                actions={<><RefreshButton onRefresh={load} /><button className="ui-btn ui-btn-primary" onClick={() => setAdding(true)}>+ Add staff</button></>} />
 
             <div className="flex gap-2 mb-4">
                 {[['staff', 'Staff roles'], ['audit', 'Activity log']].map(([k, label]) => (

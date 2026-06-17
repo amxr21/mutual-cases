@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
@@ -97,7 +98,7 @@ export default function AdminReturns() {
 
     return (
         <div>
-            <PageHeader title="Returns" subtitle="Approve, restock, and refund customer returns" actions={<ReportLink report="returns-detail" />} />
+            <PageHeader title="Returns" subtitle="Approve, restock, and refund customer returns" actions={<><RefreshButton onRefresh={load} /><ReportLink report="returns-detail" /></>} />
 
             <div className="flex flex-wrap gap-2 mb-4">
                 {FILTERS.map((f) => {

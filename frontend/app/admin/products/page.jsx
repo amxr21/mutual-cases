@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -93,7 +94,7 @@ export default function AdminProducts() {
             <PageHeader
                 title="Products"
                 subtitle={`${products.length} total`}
-                actions={<button className="ui-btn ui-btn-primary" onClick={openNew}>+ New product</button>}
+                actions={<><RefreshButton onRefresh={load} /><button className="ui-btn ui-btn-primary" onClick={openNew}>+ New product</button></>}
             />
 
             <DataTable

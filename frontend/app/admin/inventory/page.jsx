@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
@@ -100,7 +101,7 @@ export default function AdminInventory() {
 
     return (
         <div>
-            <PageHeader title="Inventory" subtitle={`${rows.length} products · ${lowCount} need attention`} actions={<ReportLink report="inventory-detail" />} />
+            <PageHeader title="Inventory" subtitle={`${rows.length} products · ${lowCount} need attention`} actions={<><RefreshButton onRefresh={load} /><ReportLink report="inventory-detail" /></>} />
 
             <DataTable
                 columns={columns}

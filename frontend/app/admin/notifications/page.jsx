@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 
 const TYPE_META = {
     custom: { label: 'Custom request', tone: 'blue', icon: 'M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128z' },
@@ -47,7 +48,7 @@ export default function AdminNotifications() {
             <PageHeader
                 title="Notifications"
                 subtitle={counts.total ? `${counts.total} unread` : 'All caught up'}
-                actions={counts.total ? <button className="ui-btn ui-btn-ghost" onClick={markAllRead}>Mark all read</button> : null}
+                actions={<><RefreshButton onRefresh={load} />{counts.total ? <button className="ui-btn ui-btn-ghost" onClick={markAllRead}>Mark all read</button> : null}</>}
             />
 
             {/* Summary chips */}

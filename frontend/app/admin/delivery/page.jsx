@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -126,7 +127,7 @@ export default function AdminDelivery() {
             <PageHeader
                 title="Delivery"
                 subtitle={`${rows.length} delivery staff`}
-                actions={<button className="ui-btn ui-btn-primary" onClick={openNew}>+ New delivery person</button>}
+                actions={<><RefreshButton onRefresh={load} /><button className="ui-btn ui-btn-primary" onClick={openNew}>+ New delivery person</button></>}
             />
 
             <DataTable

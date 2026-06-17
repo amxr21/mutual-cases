@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
@@ -111,7 +112,7 @@ export default function AdminOrders() {
 
     return (
         <div>
-            <PageHeader title="Orders" subtitle={`${orders.length} total`} actions={<ReportLink report="orders-detail" />} />
+            <PageHeader title="Orders" subtitle={`${orders.length} total`} actions={<><RefreshButton onRefresh={load} /><ReportLink report="orders-detail" /></>} />
 
             <DataTable
                 columns={columns}

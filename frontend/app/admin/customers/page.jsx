@@ -4,6 +4,7 @@ import { getJSON, patchJSON, deleteJSON } from '../../lib/safeFetch'
 import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge, FormField } from '../ui/primitives'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -94,7 +95,7 @@ export default function AdminCustomers() {
 
     return (
         <div>
-            <PageHeader title="Customers" subtitle={`${rows.length} total`} />
+            <PageHeader title="Customers" subtitle={`${rows.length} total`} actions={<RefreshButton onRefresh={load} />} />
             <DataTable
                 columns={columns}
                 rows={rows}

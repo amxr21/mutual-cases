@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast/ToastProvider'
 import { PageHeader, Badge } from '../ui/primitives'
 import AdminMessage from '../ui/AdminMessage'
 import Loader from '../ui/Loader'
+import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
@@ -50,7 +51,7 @@ export default function AdminCustomRequests() {
 
     return (
         <div>
-            <PageHeader title="Custom Requests" subtitle={`${rows.length} total`} actions={<ReportLink report="custom-requests" />} />
+            <PageHeader title="Custom Requests" subtitle={`${rows.length} total`} actions={<><RefreshButton onRefresh={load} /><ReportLink report="custom-requests" /></>} />
             <DataTable
                 columns={columns}
                 rows={rows}
