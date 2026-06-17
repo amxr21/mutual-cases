@@ -55,6 +55,8 @@ CREATE TABLE `users` (
   `country` varchar(100) DEFAULT NULL,
   -- Per-driver portal login code (scripts/migrateDeliveryPortal.js).
   `access_code` varchar(20) DEFAULT NULL,
+  -- Store-credit balance for store-credit refunds (scripts/migrateReturns.js).
+  `store_credit` decimal(10,2) NOT NULL DEFAULT '0.00',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -276,6 +278,36 @@ CREATE TABLE `delivery_profiles` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_delivery_user` (`user_id`),
   CONSTRAINT `fk_delivery_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Returns / RMA (scripts/migrateReturns.js).
+CREATE TABLE `returns` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `order_id` bigint NOT NULL,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `status` enum('requested','approved','rejected','completed') NOT NULL DEFAULT 'requested',
+  `reason` varchar(255) DEFAULT NULL,
+  `resolution` enum('refund','store_credit','exchange') DEFAULT NULL,
+  `refund_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `restock` tinyint(1) NOT NULL DEFAULT '1',
+  `admin_note` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `resolved_at` timestamp NULL DEFAULT NULL,
+  `resolved_by` bigint unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_returns_order` (`order_id`),
+  KEY `idx_returns_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `return_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `return_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned NOT NULL,
+  `quantity` bigint NOT NULL,
+  `price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  PRIMARY KEY (`id`),
+  KEY `idx_return_items_return` (`return_id`),
+  CONSTRAINT `fk_return_items_return` FOREIGN KEY (`return_id`) REFERENCES `returns` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Custom-it page submissions (the "design your own cover" form).

@@ -5,6 +5,7 @@
  */
 const { query, withTransaction } = require("../dbClient");
 const { notFound, badRequest } = require("../errors/AppError");
+const { evaluateDiscount } = require("./discounts");
 
 const STATUS = { PENDING: 1, CONFIRMED: 2, SHIPPED: 3, DELIVERED: 4, CANCELED: 5, RETURNED: 6 };
 
@@ -19,7 +20,7 @@ const genOrderNumber = () =>
  */
 const createOrder = async (req, res) => {
     const user_id = req.user.id; // from JWT
-    const { address, items, note = "", gift = 0, gift_message = "", payment_method = "cod" } = req.body;
+    const { address, items, note = "", gift = 0, gift_message = "", payment_method = "cod", discount_code = "" } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
         throw badRequest("Your cart is empty");
@@ -49,12 +50,38 @@ const createOrder = async (req, res) => {
 
         if (!resolved.length) throw badRequest("None of the cart items are valid");
 
+        const subtotal = total;
+
+        // Apply a discount code if provided (re-validated server-side against the
+        // trusted subtotal, never the client's claimed amount).
+        let appliedCode = null;
+        let discountAmount = 0;
+        let appliedDiscountId = null;
+        if (discount_code) {
+            const result = await evaluateDiscount(discount_code, subtotal, user_id);
+            if (!result.ok) throw badRequest(result.reason);
+            appliedCode = result.discount.code;
+            discountAmount = result.discount.amount; // free_shipping has amount 0 here
+            appliedDiscountId = result.discount.id;
+        }
+
+        const finalTotal = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
+
         const orderRes = await tx(
-            `INSERT INTO orders (user_id, order_date, status_id, note, gift, gift_message, total, order_number, payment_method)
-             VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?)`,
-            [String(user_id), STATUS.PENDING, note, gift ? 1 : 0, gift_message, total, orderNumber, payment_method]
+            `INSERT INTO orders (user_id, order_date, status_id, note, gift, gift_message, total, order_number, payment_method, discount_code, discount_amount)
+             VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [String(user_id), STATUS.PENDING, note, gift ? 1 : 0, gift_message, finalTotal, orderNumber, payment_method, appliedCode, discountAmount]
         );
         const orderId = orderRes.insertId;
+
+        // Record the redemption + bump usage count (inside the same transaction).
+        if (appliedDiscountId) {
+            await tx(
+                "INSERT INTO discount_redemptions (discount_id, order_id, user_id, amount) VALUES (?, ?, ?, ?)",
+                [appliedDiscountId, orderId, String(user_id), discountAmount]
+            );
+            await tx("UPDATE discounts SET used_count = used_count + 1 WHERE id = ?", [appliedDiscountId]);
+        }
 
         for (const r of resolved) {
             await tx(
@@ -81,7 +108,7 @@ const createOrder = async (req, res) => {
         // Clear the user's cart now that it's an order.
         await tx(`DELETE FROM cart_items WHERE user_id = ?`, [user_id]);
 
-        return { orderId, orderNumber, total };
+        return { orderId, orderNumber, total: finalTotal, discountAmount, discountCode: appliedCode };
     }, { op: "createOrder" });
 
     res.status(201).json({

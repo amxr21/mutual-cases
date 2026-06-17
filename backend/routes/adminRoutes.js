@@ -26,12 +26,39 @@ const {
 } = require("../controllers/reviews");
 const { getAllSettings, getSetting, updateSetting } = require("../controllers/settings");
 const { getUploadConfig, signUpload } = require("../controllers/uploads");
+const { getIntegrationsStatus } = require("../integrations");
+const {
+    summaryReport,
+    salesReport,
+    productsReport,
+    customersReport,
+    vatReport,
+    discountsReport,
+    ordersDetailReport,
+    returnsDetailReport,
+    inventoryDetailReport,
+    stockLogReport,
+    customRequestsReport,
+    reviewsDetailReport,
+} = require("../controllers/reports");
 const {
     listInventory,
     adjustStock,
     listAdjustments,
     setThreshold,
 } = require("../controllers/inventory");
+const {
+    listReturns,
+    getReturn,
+    approveReturn,
+    rejectReturn,
+} = require("../controllers/returns");
+const {
+    listDiscounts,
+    createDiscount,
+    updateDiscount,
+    deleteDiscount,
+} = require("../controllers/discounts");
 const {
     listDelivery,
     getDelivery,
@@ -40,8 +67,11 @@ const {
     deleteDelivery,
     generateAccessCode,
 } = require("../controllers/delivery");
+const { listStaff, createStaff, setStaffRole, listAuditLog } = require("../controllers/staff");
+const { listNotifications, markSeen } = require("../controllers/notifications");
 const asyncHandler = require("../middleware/asyncHandler");
 const { requireAdmin } = require("../middleware/auth");
+const { requirePermission } = require("../middleware/permissions");
 const validate = require("../middleware/validate");
 const {
     idParam,
@@ -57,6 +87,12 @@ const {
     orderAssignSchema,
     stockAdjustSchema,
     stockThresholdSchema,
+    returnApproveSchema,
+    returnRejectSchema,
+    discountCreateSchema,
+    discountUpdateSchema,
+    staffRoleSchema,
+    staffCreateSchema,
 } = require("../validation/schemas");
 
 const router = express.Router();
@@ -140,6 +176,61 @@ router.patch(
     validate({ params: idParam, body: stockThresholdSchema }),
     asyncHandler(setThreshold)
 );
+
+// Returns / RMA.
+router.get("/returns", asyncHandler(listReturns));
+router.get("/returns/:id", validate({ params: idParam }), asyncHandler(getReturn));
+router.patch(
+    "/returns/:id/approve",
+    requirePermission("returns"),
+    validate({ params: idParam, body: returnApproveSchema }),
+    asyncHandler(approveReturn)
+);
+router.patch(
+    "/returns/:id/reject",
+    requirePermission("returns"),
+    validate({ params: idParam, body: returnRejectSchema }),
+    asyncHandler(rejectReturn)
+);
+
+// Reports / analytics (JSON or ?format=csv).
+router.get("/reports/summary", asyncHandler(summaryReport));
+router.get("/reports/sales", asyncHandler(salesReport));
+router.get("/reports/products", asyncHandler(productsReport));
+router.get("/reports/customers", asyncHandler(customersReport));
+router.get("/reports/vat", asyncHandler(vatReport));
+router.get("/reports/discounts", asyncHandler(discountsReport));
+// Detailed (row-level) reports.
+router.get("/reports/orders-detail", asyncHandler(ordersDetailReport));
+router.get("/reports/returns-detail", asyncHandler(returnsDetailReport));
+router.get("/reports/inventory-detail", asyncHandler(inventoryDetailReport));
+router.get("/reports/stock-log", asyncHandler(stockLogReport));
+router.get("/reports/custom-requests", asyncHandler(customRequestsReport));
+router.get("/reports/reviews-detail", asyncHandler(reviewsDetailReport));
+
+// Discounts / promotions (writes scoped to the 'discounts' permission).
+router.get("/discounts", asyncHandler(listDiscounts));
+router.post("/discounts", requirePermission("discounts"), validate({ body: discountCreateSchema }), asyncHandler(createDiscount));
+router.patch("/discounts/:id", requirePermission("discounts"), validate({ params: idParam, body: discountUpdateSchema }), asyncHandler(updateDiscount));
+router.delete("/discounts/:id", requirePermission("discounts"), validate({ params: idParam }), asyncHandler(deleteDiscount));
+
+// Notifications (derived from pending items).
+router.get("/notifications", asyncHandler(listNotifications));
+router.post("/notifications/seen", asyncHandler(markSeen));
+
+// Staff roles + audit log (owner-only writes).
+router.get("/staff", asyncHandler(listStaff));
+router.post("/staff", requirePermission("staff"), validate({ body: staffCreateSchema }), asyncHandler(createStaff));
+router.patch(
+    "/staff/:id/role",
+    requirePermission("staff"),
+    validate({ params: idParam, body: staffRoleSchema }),
+    asyncHandler(setStaffRole)
+);
+router.get("/audit-log", asyncHandler(listAuditLog));
+
+// Integrations status (which payment/shipping/WhatsApp providers are configured).
+router.get("/integrations", asyncHandler(async (_req, res) => res.json(getIntegrationsStatus())));
 
 // Image uploads (Cloudinary signing).
 router.get("/uploads/config", asyncHandler(getUploadConfig));

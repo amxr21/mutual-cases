@@ -9,6 +9,8 @@ const config = require("../config");
 const logger = require("../logger");
 const { sendEmail } = require("../email/mailer");
 const { orderStatusEmail } = require("../email/templates");
+const { notifications } = require("../integrations");
+const whatsapp = notifications.whatsapp;
 
 const VALID_STATUS_IDS = new Set([1, 2, 3, 4, 5, 6]); // order_status table
 const STATUS_LABEL = { 1: "Pending", 2: "Confirmed", 3: "Shipped", 4: "Delivered", 5: "Canceled", 6: "Returned" };
@@ -23,13 +25,19 @@ const STATUS_RETURNED = 6;
 async function notifyOrderStatus(orderNumber, newStatusId) {
     try {
         const rows = await query(
-            `SELECT o.id, o.order_number, o.total, u.name AS customer_name, u.email AS customer_email
+            `SELECT o.id, o.order_number, o.total, u.name AS customer_name, u.email AS customer_email, u.phone AS customer_phone
              FROM orders o LEFT JOIN users u ON u.id = o.user_id
              WHERE o.order_number = ?`,
             [orderNumber]
         );
         if (!rows.length || !rows[0].customer_email) return;
         const o = rows[0];
+
+        // WhatsApp order-update hook alongside email (stub until configured).
+        if (o.customer_phone) {
+            whatsapp.sendOrderUpdate({ to: o.customer_phone, orderNumber: o.order_number, status: STATUS_LABEL[newStatusId] })
+                .catch((e) => logger.error("whatsapp order update failed", { orderNumber, message: e?.message }));
+        }
 
         const items = await query(
             `SELECT oi.quantity, oi.price, p.model, p.category

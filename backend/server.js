@@ -19,6 +19,8 @@ const adminRouter = require("./routes/adminRoutes.js");
 const reviewsRouter = require("./routes/reviewsRoutes.js");
 const settingsRouter = require("./routes/settingsRoutes.js");
 const deliveryRouter = require("./routes/deliveryRoutes.js");
+const returnsRouter = require("./routes/returnsRoutes.js");
+const discountsRouter = require("./routes/discountsRoutes.js");
 
 // --- Fail fast on missing critical configuration --------------------------
 const missingEnv = config.validate();
@@ -66,6 +68,8 @@ app.use("/admin", adminRouter);
 app.use("/reviews", reviewsRouter);
 app.use("/settings", settingsRouter);
 app.use("/delivery", deliveryRouter);
+app.use("/returns", returnsRouter);
+app.use("/discounts", discountsRouter);
 app.use("/", authRouter);
 
 // 404 for anything unmatched, then the centralized error handler. Order matters:

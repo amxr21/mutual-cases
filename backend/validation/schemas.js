@@ -32,6 +32,10 @@ const productCreateSchema = z.object({
     image_url_1: z.string().trim().max(500).optional().default(""),
     image_url_2: z.string().trim().max(500).optional().default(""),
     image_url_3: z.string().trim().max(500).optional().default(""),
+    description: z.string().trim().max(2000).optional().default(""),
+    material: z.string().trim().max(1000).optional().default(""),
+    approach: z.string().trim().max(1000).optional().default(""),
+    features: z.string().trim().max(1000).optional().default(""),
 });
 
 // All fields optional for PATCH; at least one must be present.
@@ -47,6 +51,10 @@ const productUpdateSchema = z
         image_url_1: z.string().trim().max(500).optional(),
         image_url_2: z.string().trim().max(500).optional(),
         image_url_3: z.string().trim().max(500).optional(),
+        description: z.string().trim().max(2000).optional(),
+        material: z.string().trim().max(1000).optional(),
+        approach: z.string().trim().max(1000).optional(),
+        features: z.string().trim().max(1000).optional(),
     })
     .refine((obj) => Object.keys(obj).length > 0, {
         message: "Provide at least one field to update",
@@ -113,6 +121,7 @@ const orderCreateSchema = z.object({
     gift: z.coerce.boolean().optional().default(false),
     gift_message: z.string().trim().max(300).optional().default(""),
     payment_method: z.enum(["cod", "card_on_delivery"]).optional().default("cod"),
+    discount_code: z.string().trim().max(40).optional().default(""),
 });
 
 const orderNumberParam = z.object({
@@ -124,6 +133,67 @@ const reviewSchema = z.object({
     product_id: z.coerce.number().int().positive(),
     rating: z.coerce.number().int().min(1).max(5),
     comment: z.string().trim().max(1000).optional().default(""),
+});
+
+// --- Staff roles ---
+const staffRoleSchema = z.object({
+    staff_role: z.enum(["owner", "manager", "fulfillment", "support"]),
+});
+
+const staffCreateSchema = z.object({
+    name: nonEmptyStr(255),
+    email: z.string().trim().email().max(255),
+    staff_role: z.enum(["owner", "manager", "fulfillment", "support"]),
+});
+
+// --- Discounts ---
+const discountValidateSchema = z.object({
+    code: z.string().trim().min(1).max(40),
+    subtotal: z.coerce.number().nonnegative().max(10_000_000),
+});
+
+const discountCreateSchema = z.object({
+    code: z.string().trim().min(2).max(40),
+    type: z.enum(["percent", "fixed", "free_shipping"]),
+    value: z.coerce.number().nonnegative().max(1_000_000).optional().default(0),
+    min_spend: z.coerce.number().nonnegative().max(1_000_000).optional().default(0),
+    max_uses: z.coerce.number().int().positive().max(1_000_000).nullable().optional(),
+    per_customer_limit: z.coerce.number().int().positive().max(10_000).nullable().optional(),
+    starts_at: z.string().trim().optional().nullable(),
+    expires_at: z.string().trim().optional().nullable(),
+    active: z.coerce.boolean().optional().default(true),
+    first_order_only: z.coerce.boolean().optional().default(false),
+    featured: z.coerce.boolean().optional().default(false),
+});
+
+const discountUpdateSchema = discountCreateSchema.partial().omit({ code: true }).refine(
+    (o) => Object.keys(o).length > 0,
+    { message: "Provide at least one field to update" }
+);
+
+// --- Returns / RMA ---
+const returnRequestSchema = z.object({
+    order_number: nonEmptyStr(40),
+    reason: z.string().trim().max(255).optional().default(""),
+    items: z
+        .array(
+            z.object({
+                product_id: z.coerce.number().int().positive(),
+                quantity: z.coerce.number().int().min(1).max(1000),
+            })
+        )
+        .min(1),
+});
+
+const returnApproveSchema = z.object({
+    resolution: z.enum(["refund", "store_credit", "exchange"]),
+    restock: z.coerce.boolean().optional().default(true),
+    refund_amount: z.coerce.number().nonnegative().max(1_000_000).optional(),
+    admin_note: z.string().trim().max(500).optional().default(""),
+});
+
+const returnRejectSchema = z.object({
+    admin_note: z.string().trim().max(500).optional().default(""),
 });
 
 // --- Delivery portal (driver) ---
@@ -273,4 +343,12 @@ module.exports = {
     driverAuthSchema,
     driverStatusSchema,
     driverAvailabilitySchema,
+    returnRequestSchema,
+    returnApproveSchema,
+    returnRejectSchema,
+    discountValidateSchema,
+    discountCreateSchema,
+    discountUpdateSchema,
+    staffRoleSchema,
+    staffCreateSchema,
 };

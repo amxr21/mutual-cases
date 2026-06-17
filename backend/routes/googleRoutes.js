@@ -55,15 +55,31 @@ router.post(
         });
 
         let user;
-        if (!existing.length) {
-            const result = await query(
-                "INSERT INTO users (google_id, name, email, profile_picture) VALUES (?, ?, ?, ?)",
-                [googleId, name, email, picture],
-                { op: "auth.createUser" }
-            );
-            user = { id: result.insertId, google_id: googleId, email, name, picture, role: "customer" };
-        } else {
+        if (existing.length) {
             user = existing[0];
+        } else {
+            // No google_id match — but an admin may have pre-created an account by
+            // email (e.g. a staff member). Adopt that record on first sign-in so
+            // their pre-assigned role/staff_role carries over (and no duplicate is
+            // created). Otherwise create a fresh customer.
+            const byEmail = await query("SELECT * FROM users WHERE email = ?", [email], {
+                op: "auth.findByEmail",
+            });
+            if (byEmail.length) {
+                await query(
+                    "UPDATE users SET google_id = ?, name = COALESCE(NULLIF(name,''), ?), profile_picture = ? WHERE id = ?",
+                    [googleId, name, picture, byEmail[0].id],
+                    { op: "auth.linkByEmail" }
+                );
+                user = { ...byEmail[0], google_id: googleId, picture };
+            } else {
+                const result = await query(
+                    "INSERT INTO users (google_id, name, email, profile_picture) VALUES (?, ?, ?, ?)",
+                    [googleId, name, email, picture],
+                    { op: "auth.createUser" }
+                );
+                user = { id: result.insertId, google_id: googleId, email, name, picture, role: "customer" };
+            }
         }
 
         const role = user.role || "customer";
