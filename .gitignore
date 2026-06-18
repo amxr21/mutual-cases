@@ -45,3 +45,10 @@ jspm_packages/
 *.swp
 *.pid
 *.seed
+
+# Internal / private docs — kept locally for personal use, never committed.
+.claude/
+ARCHITECTURE.md
+FEATURES-REVIEW.md
+GENERIC-ADMIN-DESIGN.md
+The-Idea.md

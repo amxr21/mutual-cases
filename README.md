@@ -14,11 +14,7 @@ portal, built on **Next.js + a custom Express/MySQL API**.
 ```
 Mutual/
 ├─ backend/      Express + MySQL API (auth, products, orders, admin, delivery, …)
-├─ frontend/     Next.js app — storefront (/), admin (/admin), delivery (/delivery)
-├─ ARCHITECTURE.md        Full technical map (schema, API, pages, infra)
-├─ FEATURES-REVIEW.md     Feature-by-feature QA / review checklist
-├─ The-Idea.md            Reuse/productization strategy (options analysis)
-└─ GENERIC-ADMIN-DESIGN.md  Design for a schema-driven admin engine
+└─ frontend/     Next.js app — storefront (/), admin (/admin), delivery (/delivery)
 ```
 
 ## Tech stack
@@ -56,7 +52,7 @@ Mutual/
 **Next**
 Reserve-stock-on-order, products/variants, returns/RMA, discounts/promotions,
 reports/analytics, multi-currency, roles & permissions, Arabic/RTL, and payment/
-shipping/WhatsApp integrations. See **FEATURES-REVIEW.md** for the full punch list.
+shipping/WhatsApp integrations.
 
 ---
 
@@ -100,11 +96,3 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=...
 Schema lives in `backend/schema.sql`; incremental changes are idempotent
 migration scripts in `backend/scripts/` (`migrate*.js`). Seed data via
 `seed*.js`. Run a migration with `node scripts/<name>.js`.
-
----
-
-## Documentation
-
-- **ARCHITECTURE.md** — schema, API routes, pages, infrastructure.
-- **FEATURES-REVIEW.md** — what's built (verification checklist) + what's left.
-- **The-Idea.md** / **GENERIC-ADMIN-DESIGN.md** — admin reuse/product strategy.
