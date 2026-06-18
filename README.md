@@ -42,17 +42,18 @@ Mutual/
 - Admin: overview KPIs + pending actions, orders (full detail, status history,
   driver assignment, VAT invoice/packing slip), inventory (adjustments,
   thresholds, audit log), products, reviews moderation, customers (full account
-  management), delivery staff, settings (brand/theme/customization/storefront),
-  Cloudinary logo upload.
+  management), delivery staff, returns/RMA, discounts, reports, notifications,
+  staff & access (granular roles/permissions), settings
+  (brand/theme/customization/storefront), Cloudinary logo upload.
 - Delivery portal: access-code login, own-orders-only view, delivery sub-status
   flow (auto-syncs main order status), driver profile + availability.
-- Cross-cutting: role-scoped auth (admin/delivery), themed admin notifications,
-  smooth scrolling, generic admin UI primitives.
+- Cross-cutting: role-scoped auth (admin/delivery) + staff-role permissions
+  (owner/manager/fulfillment/support, server-enforced), themed admin
+  notifications, smooth scrolling, generic admin UI primitives.
 
 **Next**
-Reserve-stock-on-order, products/variants, returns/RMA, discounts/promotions,
-reports/analytics, multi-currency, roles & permissions, Arabic/RTL, and payment/
-shipping/WhatsApp integrations.
+Reserve-stock-on-order, products/variants, reports/analytics expansion,
+multi-currency, Arabic/RTL, and payment/shipping/WhatsApp integrations.
 
 ---
 
