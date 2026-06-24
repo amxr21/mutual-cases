@@ -24,7 +24,7 @@ const SECTIONS = [
     },
     {
         t: "Contact",
-        d: "For any privacy questions or requests, contact us at support@mutualcovers.",
+        d: "For any privacy questions or requests, contact us at support@mutualcovers.ae.",
     },
 ]
 

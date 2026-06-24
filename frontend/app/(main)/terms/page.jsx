@@ -28,7 +28,7 @@ const SECTIONS = [
     },
     {
         t: "Contact",
-        d: "Questions about these terms? Reach us at support@mutualcovers.",
+        d: "Questions about these terms? Reach us at support@mutualcovers.ae.",
     },
 ]
 
