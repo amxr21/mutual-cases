@@ -4,8 +4,11 @@ E-commerce platform for **phone cases & mobile accessories** serving the **UAE /
 market — a customer storefront, an owner admin dashboard, and a delivery-staff
 portal, built on **Next.js + a custom Express/MySQL API**.
 
-> Currently on the **`dev`** branch. Database runs on AWS RDS; production
-> deployment comes later.
+> **Status: ✅ Completed & Published — live in production.**
+> Frontend on **Vercel**, backend API on **Render**, database on **AWS RDS (MySQL)**.
+> Live since 2026-06-17. Arabic/RTL is built but disabled pending copy polish.
+
+🔗 **Live:** https://mutual-cases.vercel.app
 
 ---
 
@@ -19,9 +22,12 @@ Mutual/
 
 ## Tech stack
 
-- **Frontend:** Next.js 15 (App Router), React 19, Tailwind v4, self-hosted fonts.
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind v4, self-hosted fonts.
 - **Backend:** Node/Express 5, MySQL (`mysql2`), Zod validation, JWT auth,
   Google OAuth, Resend email, Cloudinary uploads, Winston logging.
+- **Security:** server-side RBAC + staff-role permissions, server-authoritative
+  pricing, `helmet` security headers, per-IP rate limiting, parameterized queries.
+- **Hosting:** Vercel (frontend) · Render (API) · AWS RDS (MySQL).
 
 ## Three areas
 
@@ -33,27 +39,88 @@ Mutual/
 
 ---
 
-## Progress
+## Features — shipped & live
 
-**Done**
-- Storefront: catalog + DB-driven filters, cart, checkout (GCC country→city,
-  optional geolocation), order success, track order, my-orders, liked, custom-it,
-  reviews, back-in-stock notify.
-- Admin: overview KPIs + pending actions, orders (full detail, status history,
-  driver assignment, VAT invoice/packing slip), inventory (adjustments,
-  thresholds, audit log), products, reviews moderation, customers (full account
-  management), delivery staff, returns/RMA, discounts, reports, notifications,
-  staff & access (granular roles/permissions), settings
-  (brand/theme/customization/storefront), Cloudinary logo upload.
-- Delivery portal: access-code login, own-orders-only view, delivery sub-status
-  flow (auto-syncs main order status), driver profile + availability.
-- Cross-cutting: role-scoped auth (admin/delivery) + staff-role permissions
-  (owner/manager/fulfillment/support, server-enforced), themed admin
-  notifications, smooth scrolling, generic admin UI primitives.
+Everything below is implemented and running in production. Pages are grouped by
+the three areas; ✅ marks a delivered page/feature.
 
-**Next**
-Reserve-stock-on-order, products/variants, reports/analytics expansion,
-multi-currency, Arabic/RTL, and payment/shipping/WhatsApp integrations.
+### 1. Storefront (`/`) — customer-facing
+
+| Page | Route | What it does |
+|---|---|---|
+| ✅ Home / landing | `/` | Hero, "More than just a Cover" intro, About, feature highlights, how-it-works steps, what-makes-us-unique, and a discover-products strip. |
+| ✅ Products catalog | `/products` | DB-driven grid with filter sidebar (model, edition, category, type), active-filter tags, clear-filters, loading skeletons, empty state. |
+| ✅ Product details | `/products/[id]` | Image gallery/slider, price, category, specs, quantity counter, add-to-cart, like, back-in-stock notify when sold out. |
+| ✅ Custom It | `/custom-it` | "Design your own cover" request form (submits a custom request to the admin queue). |
+| ✅ Cart | `/cart` | Line items, quantity edit, remove, running total, proceed-to-checkout (cart persists per signed-in user). |
+| ✅ Checkout | `/checkout` | GCC country→city address selection, optional geolocation, gift/note, discount-code entry, server-authoritative totals, order placement. |
+| ✅ Order success | `/order-success` | Confirmation with order number + summary after a successful checkout. |
+| ✅ Track order | `/track-order` | Look up an order by number to see status, carrier/tracking, and ETA. |
+| ✅ My Orders | `/my-orders` | Authenticated order history with line items and per-product review forms. |
+| ✅ Order journey | `/order-journey` | Visual order-status stepper / explainer. |
+| ✅ Liked / wishlist | `/liked` | Saved products for the signed-in user. |
+| ✅ Why us | `/why-us` | Brand/value proposition page. |
+| ✅ About | `/about` | About-the-brand content page. |
+| ✅ Privacy policy | `/privacy-policy` | Legal content page. |
+| ✅ Terms | `/terms` | Legal content page. |
+| ✅ 404 / not-found | `*` | Graceful catch-all not-found page; route-level error boundaries throughout. |
+
+**Storefront cross-cutting:** Google sign-in (optional for browsing, required to
+order), navbar with cart + liked + sign-in, reviews (submit + display with star
+ratings), themed footer with contact + quick links, global error listeners and
+error/loading states.
+
+### 2. Admin dashboard (`/admin`) — owner & staff
+
+Collapsible grouped sidebar shell with breadcrumbs, dark-mode toggle, and a live
+unread-notifications badge. Server-side `role=admin` gate; staff-role permissions
+hide sections a role can't act on.
+
+| Page | Route | What it does |
+|---|---|---|
+| ✅ Overview | `/admin` | KPIs, recent orders, and pending-action callouts (the store at a glance). |
+| ✅ Orders | `/admin/orders` | List + full order detail, status history, status changes, driver assignment. |
+| ✅ Invoice / packing slip | `/admin/orders/[orderNumber]/invoice` | Printable VAT invoice & packing slip. |
+| ✅ Products | `/admin/products` | Catalog management — create, edit, remove (Cloudinary image uploads). |
+| ✅ Inventory | `/admin/inventory` | Stock levels, reserved/available units, low-stock thresholds, adjustments + audit log. |
+| ✅ Custom Requests | `/admin/custom-requests` | Review and advance "design your own" submissions. |
+| ✅ Reviews | `/admin/reviews` | Moderation queue — approve, reject, reply, flag, delete; status counts. |
+| ✅ Returns / RMA | `/admin/returns` | Approve/reject returns, restock, issue refund or store credit. |
+| ✅ Discounts | `/admin/discounts` | Create/manage discount codes — limits, conditions, expiry, usage tracking. |
+| ✅ Customers | `/admin/customers` | Account management — view, edit details, change role, delete. |
+| ✅ Delivery staff | `/admin/delivery` | Manage drivers — contact, vehicle, coverage zone, availability, access codes. |
+| ✅ Reports | `/admin/reports` | Sales, VAT, customers, products, discounts + row-level detail reports, CSV export. |
+| ✅ Notifications | `/admin/notifications` | Themed notification center derived from pending items; mark-as-seen. |
+| ✅ Staff & access | `/admin/staff` | Granular staff roles/permissions + activity/audit log. |
+| ✅ Settings | `/admin/settings` | Brand, theme, customization, storefront config, integrations status. |
+
+**Staff roles (server-enforced):** `owner` (full), `manager` (all but staff/role
+management), `fulfillment` (orders/delivery/inventory/returns), `support`
+(reviews/customers/returns/orders). Reads stay open to any admin; writes are gated
+per-area.
+
+### 3. Delivery portal (`/delivery`) — drivers
+
+| Page | Route | What it does |
+|---|---|---|
+| ✅ Driver login | `/delivery/login` | Sign in with an admin-generated access code. |
+| ✅ Driver dashboard | `/delivery` | Own-orders-only view, delivery sub-status flow (auto-syncs the main order status), driver profile + availability toggle. |
+
+### Backend API surface
+
+Express/MySQL API mounted at `/products`, `/cart`, `/liked`, `/custom`, `/orders`,
+`/admin`, `/reviews`, `/settings`, `/delivery`, `/returns`, `/discounts`, plus
+`/api/auth` (Google OAuth → JWT) and `/health`. Every mutating route validates
+input with Zod and enforces auth/role server-side; pricing and discounts are
+recomputed from trusted DB data on every order.
+
+---
+
+## Roadmap (post-launch)
+
+Products variants, multi-currency, analytics expansion, enabling Arabic/RTL, and
+live payment/shipping/WhatsApp integrations (provider adapters are stubbed and
+config-gated).
 
 ---
 
@@ -63,7 +130,7 @@ multi-currency, Arabic/RTL, and payment/shipping/WhatsApp integrations.
 ```bash
 cd backend
 npm install
-# create .env (see required vars below), then:
+cp .env.example .env   # then fill in real values (see below)
 npm start
 ```
 
