@@ -60,6 +60,7 @@ export { default as AddToCart } from "./AddToCart.jsx";
 export { default as BackInStock } from "./BackInStock.jsx";
 export { default as ReturnRequest } from "./ReturnRequest.jsx";
 export { default as PromoBanner } from "./PromoBanner.jsx";
+export { default as PromoPopup } from "./PromoPopup.jsx";
 export { default as CartBtn } from "./CartBtn.jsx";
 export { default as RemoveItemBtn } from "./RemoveItemBtn.jsx";
 export { default as DiscoverProducts } from "./DiscoverProducts.jsx";

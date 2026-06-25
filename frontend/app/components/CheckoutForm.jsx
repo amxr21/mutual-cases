@@ -33,6 +33,8 @@ export default function CheckoutForm() {
     const [code, setCode] = useState('')
     const [discount, setDiscount] = useState(null) // { code, type, amount, freeShipping }
     const [applyingCode, setApplyingCode] = useState(false)
+    // The best featured/exclusive coupon to nudge the customer with (if any).
+    const [featured, setFeatured] = useState(null)
     const [payment, setPayment] = useState('cod') // 'cod' | 'card_on_delivery'
     const [geoEnabled, setGeoEnabled] = useState(false)
     const [locating, setLocating] = useState(false)
@@ -44,6 +46,33 @@ export default function CheckoutForm() {
             if (r.ok && r.data) setGeoEnabled(!!r.data.locationAutodetect)
         })()
     }, [])
+
+    // Pull the featured/exclusive coupon so we can nudge the customer to apply
+    // it without typing. We surface the first one (the API orders by soonest to
+    // expire). Only show codes whose min-spend is met by the current subtotal.
+    useEffect(() => {
+        let active = true
+        ;(async () => {
+            const r = await getJSON('/discounts/featured')
+            if (!active || !r.ok || !Array.isArray(r.data) || !r.data.length) return
+            const eligible = r.data.find((d) => Number(d.min_spend || 0) <= Number(totals.price || 0))
+            setFeatured(eligible || r.data[0])
+        })()
+        return () => { active = false }
+    }, [totals.price])
+
+    // Apply a specific code directly (used by the one-tap featured nudge).
+    const applyCodeValue = async (raw) => {
+        const c = String(raw || '').trim()
+        if (!c) return
+        setCode(c)
+        setApplyingCode(true)
+        const r = await postJSON('/discounts/validate', { code: c, subtotal: totals.price })
+        setApplyingCode(false)
+        if (!r.ok) { setDiscount(null); toast.error(r.error?.message || 'Invalid code'); return }
+        setDiscount(r.data)
+        toast.success('Discount applied')
+    }
 
     const setField = (k) => (e) => {
         setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -105,12 +134,7 @@ export default function CheckoutForm() {
 
     const applyCode = async () => {
         if (!code.trim()) { toast.error('Enter a code'); return }
-        setApplyingCode(true)
-        const r = await postJSON('/discounts/validate', { code: code.trim(), subtotal: totals.price })
-        setApplyingCode(false)
-        if (!r.ok) { setDiscount(null); toast.error(r.error?.message || 'Invalid code'); return }
-        setDiscount(r.data)
-        toast.success('Discount applied')
+        await applyCodeValue(code)
     }
     const removeCode = () => { setDiscount(null); setCode('') }
 
@@ -280,9 +304,29 @@ export default function CheckoutForm() {
                             <button onClick={removeCode} className="underline">Remove</button>
                         </div>
                     ) : (
-                        <div className="flex gap-2">
-                            <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder={t('checkout.discountCode')} className="grow bg-off-white border border-gray-300 rounded-lg py-2 px-3 outline-none focus:border-blue text-sm font-mono" />
-                            <button onClick={applyCode} disabled={applyingCode} className="border border-blue text-blue font-semibold px-4 rounded-lg text-sm disabled:opacity-60">{applyingCode ? '…' : 'Apply'}</button>
+                        <div className="flex flex-col gap-2">
+                            {/* Exclusive-coupon nudge: one tap fills + applies the code. */}
+                            {featured ? (
+                                <div className="flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 bg-blue/5 border border-blue/20 text-sm">
+                                    <span className="text-base">🎁</span>
+                                    <span className="font-light">
+                                        Exclusive: <strong className="font-semibold">{featured.type === 'percent' ? `${Number(featured.value)}% off` : featured.type === 'fixed' ? `${Number(featured.value)} AED off` : 'Free shipping'}</strong>
+                                        {Number(featured.min_spend) > 0 ? <span className="text-off-black/60"> (min {Number(featured.min_spend)} AED)</span> : null}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => applyCodeValue(featured.code)}
+                                        disabled={applyingCode}
+                                        className="ml-auto bg-blue text-off-white font-mono font-bold rounded-md px-3 py-1 text-xs hover:brightness-110 transition-all disabled:opacity-60"
+                                    >
+                                        {applyingCode ? '…' : `Apply ${featured.code}`}
+                                    </button>
+                                </div>
+                            ) : null}
+                            <div className="flex gap-2">
+                                <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder={t('checkout.discountCode')} className="grow bg-off-white border border-gray-300 rounded-lg py-2 px-3 outline-none focus:border-blue text-sm font-mono" />
+                                <button onClick={applyCode} disabled={applyingCode} className="border border-blue text-blue font-semibold px-4 rounded-lg text-sm disabled:opacity-60">{applyingCode ? '…' : 'Apply'}</button>
+                            </div>
                         </div>
                     )}
                 </div>
