@@ -9,17 +9,21 @@ import RefreshButton from '../ui/RefreshButton'
 import DataTable from '../ui/DataTable'
 import Drawer from '../ui/Drawer'
 import Select from '../ui/Select'
-import { canManageStaff } from '../lib/permissions'
+import { canManageStaff, canManageOwners } from '../lib/permissions'
 
 const ROLES = [
     { label: 'Owner', value: 'owner' },
+    { label: 'Developer', value: 'developer' },
     { label: 'Manager', value: 'manager' },
     { label: 'Fulfillment', value: 'fulfillment' },
     { label: 'Support', value: 'support' },
 ]
-const ROLE_TONE = { owner: 'blue', manager: 'green', fulfillment: 'gold', support: 'neutral' }
+// Privileged roles only an owner may assign/change.
+const PRIVILEGED_ROLES = new Set(['owner', 'developer'])
+const ROLE_TONE = { owner: 'blue', developer: 'blue', manager: 'green', fulfillment: 'gold', support: 'neutral' }
 const ROLE_DESC = {
-    owner: 'Full access, including staff roles',
+    owner: 'Full access, including managing owners & developers',
+    developer: 'Full operational + technical access; cannot manage owners/developers',
     manager: 'Everything except staff management',
     fulfillment: 'Orders, delivery, inventory, returns',
     support: 'Reviews, customers, returns, orders',
@@ -28,7 +32,11 @@ const fmtDateTime = (d) => d ? new Date(d).toLocaleString(undefined, { dateStyle
 
 export default function AdminStaff() {
     const toast = useToast()
-    const canManage = canManageStaff() // only the owner may add staff / change roles
+    const canManage = canManageStaff()   // owner OR developer may manage staff
+    const canManagePrivileged = canManageOwners() // only owner may touch owner/developer accounts
+    // Role options this actor is allowed to assign. A developer can manage lower
+    // staff but not create owners/developers, so those options are hidden for them.
+    const assignableRoles = canManagePrivileged ? ROLES : ROLES.filter((r) => !PRIVILEGED_ROLES.has(r.value))
     const [tab, setTab] = useState('staff')
     const [staff, setStaff] = useState([])
     const [audit, setAudit] = useState([])
@@ -97,7 +105,10 @@ export default function AdminStaff() {
 
             {!canManage ? (
                 <AdminMessage variant="info" title="View only"
-                    message="Only the owner can add staff or change roles. You can review the team and the activity log." />
+                    message="Only owners and developers can add staff or change roles. You can review the team and the activity log." />
+            ) : !canManagePrivileged ? (
+                <AdminMessage variant="info" title="Limited staff management"
+                    message="You can manage manager, fulfillment, and support staff. Only an owner can create or change owner and developer accounts." />
             ) : null}
 
             <div className="flex gap-2 mb-4">
@@ -111,7 +122,13 @@ export default function AdminStaff() {
 
             {tab === 'staff' ? (
                 <DataTable columns={staffColumns} rows={staff} searchKeys={['name', 'email', 'staff_role']} searchPlaceholder="Search staff…"
-                    rowActions={canManage ? (u) => <button className="ui-btn ui-btn-ghost !py-1 !px-3" onClick={() => openEdit(u)}>Change role</button> : undefined}
+                    rowActions={canManage ? (u) => {
+                        // A developer can't change owner/developer accounts — hide the action for those rows.
+                        if (PRIVILEGED_ROLES.has(u.staff_role || 'owner') && !canManagePrivileged) {
+                            return <span className="ui-muted text-xs">Owner-managed</span>
+                        }
+                        return <button className="ui-btn ui-btn-ghost !py-1 !px-3" onClick={() => openEdit(u)}>Change role</button>
+                    } : undefined}
                 />
             ) : (
                 <DataTable columns={auditColumns} rows={audit} searchKeys={['user_name', 'action', 'entity', 'detail']} searchPlaceholder="Search activity…" pageSize={50} emptyText="No activity recorded yet." />
@@ -123,7 +140,7 @@ export default function AdminStaff() {
                 {editing ? (
                     <div className="flex flex-col gap-4">
                         <div className="text-sm ui-muted">{editing.email}</div>
-                        <FormField label="Staff role"><Select value={roleDraft} onChange={setRoleDraft} options={ROLES} /></FormField>
+                        <FormField label="Staff role"><Select value={roleDraft} onChange={setRoleDraft} options={assignableRoles} /></FormField>
                         <div className="rounded-lg p-3 text-sm" style={{ border: '1px solid var(--ui-border)', background: 'var(--ui-surface-2)' }}>
                             <span className="font-medium" style={{ color: 'var(--ui-text)' }}>{ROLES.find((r) => r.value === roleDraft)?.label}</span>
                             <p className="ui-muted mt-1">{ROLE_DESC[roleDraft]}</p>
@@ -140,7 +157,7 @@ export default function AdminStaff() {
                     <p className="ui-muted text-sm">They&apos;ll get admin access the moment they sign in with Google using this email.</p>
                     <FormField label="Name"><input value={newStaff.name} onChange={(e) => setNewStaff((s) => ({ ...s, name: e.target.value }))} className="ui-input" /></FormField>
                     <FormField label="Email" hint="Must match their Google account"><input type="email" value={newStaff.email} onChange={(e) => setNewStaff((s) => ({ ...s, email: e.target.value }))} className="ui-input" /></FormField>
-                    <FormField label="Role"><Select value={newStaff.staff_role} onChange={(v) => setNewStaff((s) => ({ ...s, staff_role: v }))} options={ROLES} /></FormField>
+                    <FormField label="Role"><Select value={newStaff.staff_role} onChange={(v) => setNewStaff((s) => ({ ...s, staff_role: v }))} options={assignableRoles} /></FormField>
                     <div className="rounded-lg p-3 text-sm" style={{ border: '1px solid var(--ui-border)', background: 'var(--ui-surface-2)' }}>
                         <p className="ui-muted">{ROLE_DESC[newStaff.staff_role]}</p>
                     </div>

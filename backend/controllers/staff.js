@@ -9,23 +9,13 @@
  * admin action; it never throws into the request.
  */
 const { query } = require("../dbClient");
-const { badRequest, notFound, conflict } = require("../errors/AppError");
-const logger = require("../logger");
+const { badRequest, notFound, conflict, forbidden } = require("../errors/AppError");
+const { canManageOwners } = require("../middleware/permissions");
+const { audit } = require("../audit");
 
-const STAFF_ROLES = new Set(["owner", "manager", "fulfillment", "support"]);
-
-/** Record an admin action (best-effort). */
-async function audit(req, action, { entity = null, entityId = null, detail = null } = {}) {
-    try {
-        await query(
-            "INSERT INTO audit_log (user_id, user_name, action, entity, entity_id, detail) VALUES (?, ?, ?, ?, ?, ?)",
-            [req.user?.id || null, req.user?.email || null, action, entity, entityId != null ? String(entityId) : null, detail],
-            { op: "audit" }
-        );
-    } catch (err) {
-        logger.error("audit failed", { action, message: err?.message });
-    }
-}
+const STAFF_ROLES = new Set(["owner", "developer", "manager", "fulfillment", "support"]);
+// Privileged roles whose accounts only an owner may create, change, or demote.
+const PRIVILEGED_ROLES = new Set(["owner", "developer"]);
 
 /** GET /admin/staff — list admin users + their staff role. */
 const listStaff = async (_req, res) => {
@@ -49,6 +39,12 @@ const createStaff = async (req, res) => {
     const role = String(req.body.staff_role || "").toLowerCase();
     if (!name) throw badRequest("Name is required");
     if (!STAFF_ROLES.has(role)) throw badRequest("Invalid staff role");
+
+    // Governance rail: only an owner may create an owner or developer account.
+    // req.user.staffRole is loaded by requirePermission("staff") on the route.
+    if (PRIVILEGED_ROLES.has(role) && !canManageOwners(req.user.staffRole)) {
+        throw forbidden("Only an owner can add an owner or developer");
+    }
 
     const existing = await query("SELECT id, role FROM users WHERE email = ?", [email]);
     if (existing.length) {
@@ -79,10 +75,19 @@ const setStaffRole = async (req, res) => {
     const role = String(req.body.staff_role || "").toLowerCase();
     if (!STAFF_ROLES.has(role)) throw badRequest("Invalid staff role");
 
-    // Don't allow demoting the last owner (mirrors the last-admin guard).
     const target = await query("SELECT staff_role FROM users WHERE id = ? AND role = 'admin'", [id]);
     if (!target.length) throw notFound("Staff member not found");
-    if ((target[0].staff_role || "owner") === "owner" && role !== "owner") {
+    const currentRole = target[0].staff_role || "owner";
+
+    // Governance rail: only an owner may set a role TO owner/developer, or change
+    // the role of an account that is currently an owner/developer (demotion).
+    const touchesPrivileged = PRIVILEGED_ROLES.has(role) || PRIVILEGED_ROLES.has(currentRole);
+    if (touchesPrivileged && !canManageOwners(req.user.staffRole)) {
+        throw forbidden("Only an owner can change owner or developer roles");
+    }
+
+    // Don't allow demoting the last owner (so the store can't be orphaned).
+    if (currentRole === "owner" && role !== "owner") {
         const [owners] = await query("SELECT COUNT(*) AS c FROM users WHERE role = 'admin' AND (staff_role = 'owner' OR staff_role IS NULL)");
         if (Number(owners.c) <= 1) throw badRequest("Cannot demote the last owner");
     }
@@ -104,4 +109,4 @@ const listAuditLog = async (req, res) => {
     res.json(rows);
 };
 
-module.exports = { audit, listStaff, createStaff, setStaffRole, listAuditLog };
+module.exports = { listStaff, createStaff, setStaffRole, listAuditLog };

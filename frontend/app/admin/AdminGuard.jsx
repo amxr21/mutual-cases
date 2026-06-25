@@ -83,7 +83,11 @@ export default function AdminGuard({ children }) {
     const [brand, setBrand] = useState({ name: '', logoUrl: '' })
     const [hovered, setHovered] = useState(null) // href of nav item being hovered
     const [unread, setUnread] = useState(0)
-    const [staffRole, setStaffRole] = useState('owner')
+    // null until the overview API returns the real staff_role. Defaulting to a
+    // privileged role ('owner') would briefly render owner-only nav items (e.g.
+    // Staff & access) for a manager before the real role loads — a visible
+    // flicker. With null, permission-gated items stay hidden until we know.
+    const [staffRole, setStaffRole] = useState(null)
 
     useEffect(() => {
         const role = typeof window !== 'undefined' ? localStorage.getItem('userRole') : null
