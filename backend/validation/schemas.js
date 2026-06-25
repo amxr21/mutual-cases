@@ -122,6 +122,9 @@ const orderCreateSchema = z.object({
     gift_message: z.string().trim().max(300).optional().default(""),
     payment_method: z.enum(["cod", "card_on_delivery"]).optional().default("cod"),
     discount_code: z.string().trim().max(40).optional().default(""),
+    // "Buy Now" express checkout: order only the listed item(s) and DON'T clear
+    // the rest of the user's cart.
+    buy_now: z.coerce.boolean().optional().default(false),
 });
 
 const orderNumberParam = z.object({

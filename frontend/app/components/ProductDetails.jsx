@@ -1,5 +1,4 @@
-import Link from "next/link"
-import { LargeButton, ShippingFeatures, ProductDetailsHeader, ProductDetailsPrice, ProductDetailsCategory, AddToCart, LikeButton, BackInStock } from "."
+import { ShippingFeatures, ProductDetailsHeader, ProductDetailsPrice, ProductDetailsCategory, AddToCart, BuyNowButton, LikeButton, BackInStock } from "."
 
 function ProductDetails({ details }) {
   const outOfStock = details && Number(details.quantity) <= 0
@@ -22,9 +21,7 @@ function ProductDetails({ details }) {
             ) : (
                 <div className="buttons flex flex-col xl:flex-row gap-2 xl:gap-5">
                     <AddToCart id={ details?.id } />
-                    <Link href={'/cart'} className="w-full">
-                      <LargeButton key={'Checkout'} handleClick={() => {}} text="Checkout" color="white" classes="w-full"  />
-                    </Link>
+                    <BuyNowButton id={ details?.id } />
                 </div>
             )}
         </div>

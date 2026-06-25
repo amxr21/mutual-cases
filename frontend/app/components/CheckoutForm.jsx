@@ -1,6 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCart } from '../Context/CartContext'
 import { useToast } from './Toast/ToastProvider'
 import { getJSON, postJSON } from '../lib/safeFetch'
@@ -21,9 +21,26 @@ const REQUIRED = ['country', 'city', 'area']
 
 export default function CheckoutForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const toast = useToast()
     const { t } = useI18n()
-    const { items, requests, totals, clearCart } = useCart()
+    const { items: cartItems, requests, totals: cartTotals, clearCart, refresh } = useCart()
+
+    // "Buy Now" mode: ?buynow=<productId> checks out only that single product,
+    // bypassing (and leaving untouched) the cart.
+    const buyNowId = searchParams.get('buynow')
+    const [buyNowItem, setBuyNowItem] = useState(null) // single product line, or null
+    const [buyNowLoading, setBuyNowLoading] = useState(!!buyNowId)
+
+    // The effective lines + totals the page operates on: the single buy-now
+    // product when in that mode, otherwise the full cart.
+    const items = buyNowId ? (buyNowItem ? [buyNowItem] : []) : cartItems
+    const totals = useMemo(() => {
+        if (!buyNowId) return cartTotals
+        if (!buyNowItem) return { count: 0, price: 0, lines: 0 }
+        const price = Number(buyNowItem.price || 0) * Number(buyNowItem.quantity || 1)
+        return { count: Number(buyNowItem.quantity || 1), price, lines: 1 }
+    }, [buyNowId, buyNowItem, cartTotals])
 
     const [form, setForm] = useState({ country: 'United Arab Emirates', city: '', area: '', address: '' })
     const [cityChoice, setCityChoice] = useState('') // the selected dropdown value ('' | a city | 'Other')
@@ -46,6 +63,35 @@ export default function CheckoutForm() {
             if (r.ok && r.data) setGeoEnabled(!!r.data.locationAutodetect)
         })()
     }, [])
+
+    // Buy Now: fetch the single product and shape it like a cart line so the
+    // summary, totals, and order submission all work unchanged.
+    useEffect(() => {
+        if (!buyNowId) return
+        let active = true
+        ;(async () => {
+            setBuyNowLoading(true)
+            const r = await getJSON(`/products/${buyNowId}`)
+            if (!active) return
+            if (r.ok && r.data && r.data.id) {
+                const p = r.data
+                setBuyNowItem({
+                    product_id: p.id,
+                    price: p.price,
+                    model: p.model,
+                    edition: p.edition,
+                    category: p.category,
+                    image_url_1: p.image_url_1,
+                    type: p.type,
+                    quantity: 1,
+                })
+            } else {
+                toast.error("Couldn't load that product")
+            }
+            setBuyNowLoading(false)
+        })()
+        return () => { active = false }
+    }, [buyNowId])
 
     // Pull the featured/exclusive coupon so we can nudge the customer to apply
     // it without typing. We surface the first one (the API orders by soonest to
@@ -148,7 +194,7 @@ export default function CheckoutForm() {
             return
         }
         if (items.length === 0) {
-            toast.error('Your cart is empty')
+            toast.error(buyNowId ? 'This product is unavailable' : 'Your cart is empty')
             return
         }
         if (!validate()) {
@@ -165,6 +211,7 @@ export default function CheckoutForm() {
             gift: requests.gift,
             payment_method: payment,
             discount_code: discount?.code || '',
+            buy_now: !!buyNowId,
         })
         setSubmitting(false)
 
@@ -173,9 +220,14 @@ export default function CheckoutForm() {
             return
         }
 
-        // Order confirmed — clear the cart locally so the UI/badge update
-        // immediately (the backend already cleared cart_items server-side).
-        clearCart()
+        // Order confirmed. In Buy Now mode only the single item was ordered, so
+        // re-sync the cart from the server (it keeps the rest intact). Otherwise
+        // clear the whole cart locally to match the server-side clear.
+        if (buyNowId) {
+            await refresh()
+        } else {
+            clearCart()
+        }
         toast.success('Order placed!')
         router.push(`/order-success?order=${encodeURIComponent(result.data.orderNumber)}`)
     }
@@ -275,7 +327,14 @@ export default function CheckoutForm() {
 
             {/* Order summary */}
             <div className="bg-off-white rounded-2xl shadow-lg p-6 xl:p-8 flex flex-col gap-4 h-fit">
-                <h2 className="text-2xl font-semibold">{t('checkout.summary')}</h2>
+                <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-2xl font-semibold">{t('checkout.summary')}</h2>
+                    {buyNowId ? <span className="text-xs font-semibold bg-blue/10 text-blue rounded-full px-3 py-1">Buy Now</span> : null}
+                </div>
+
+                {buyNowLoading ? (
+                    <p className="text-sm font-light text-off-black/60">Loading product…</p>
+                ) : null}
 
                 <div className="flex flex-col gap-3 max-h-72 overflow-auto pr-1">
                     {items.map((it) => (

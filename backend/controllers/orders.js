@@ -20,7 +20,7 @@ const genOrderNumber = () =>
  */
 const createOrder = async (req, res) => {
     const user_id = req.user.id; // from JWT
-    const { address, items, note = "", gift = 0, gift_message = "", payment_method = "cod", discount_code = "" } = req.body;
+    const { address, items, note = "", gift = 0, gift_message = "", payment_method = "cod", discount_code = "", buy_now = false } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
         throw badRequest("Your cart is empty");
@@ -105,8 +105,20 @@ const createOrder = async (req, res) => {
             [orderId, address.country, address.city, address.area, address.address || null]
         );
 
-        // Clear the user's cart now that it's an order.
-        await tx(`DELETE FROM cart_items WHERE user_id = ?`, [user_id]);
+        // Clear the cart now that it's an order. In "Buy Now" express checkout we
+        // only ordered the listed item(s), so leave the rest of the cart intact —
+        // just drop the purchased product line(s) if they happened to be in it.
+        if (buy_now) {
+            const ids = resolved.map((r) => r.id);
+            if (ids.length) {
+                await tx(
+                    `DELETE FROM cart_items WHERE user_id = ? AND product_id IN (${ids.map(() => "?").join(",")})`,
+                    [user_id, ...ids]
+                );
+            }
+        } else {
+            await tx(`DELETE FROM cart_items WHERE user_id = ?`, [user_id]);
+        }
 
         return { orderId, orderNumber, total: finalTotal, discountAmount, discountCode: appliedCode };
     }, { op: "createOrder" });

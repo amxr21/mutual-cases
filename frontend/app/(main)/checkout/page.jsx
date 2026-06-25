@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { CheckoutForm } from "@/app/components"
 
 export const metadata = {
@@ -11,7 +12,10 @@ export default function CheckoutPage() {
             <div className="border-b border-gray-500 pb-2">
                 <h1 className="text-3xl xl:text-4xl font-semibold">Checkout</h1>
             </div>
-            <CheckoutForm />
+            {/* Suspense boundary required because CheckoutForm reads useSearchParams (?buynow). */}
+            <Suspense fallback={<p className="font-light text-off-black/60">Loading…</p>}>
+                <CheckoutForm />
+            </Suspense>
         </main>
     )
 }
