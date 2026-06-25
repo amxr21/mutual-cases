@@ -102,7 +102,11 @@ export function CartProvider({ children }) {
                 return false
             }
             await refresh()
-            toast.success(result.data?.itemStatus === 'incremented' ? 'Cart updated' : 'Added to your cart')
+            // Customer-facing confirmation with a quick way to jump to the cart.
+            toast.success(
+                result.data?.itemStatus === 'incremented' ? 'Cart updated' : 'Added to your cart',
+                { title: '🛒 In your cart', action: { label: 'Check Cart', href: '/cart' } }
+            )
             return true
         },
         [refresh, toast]

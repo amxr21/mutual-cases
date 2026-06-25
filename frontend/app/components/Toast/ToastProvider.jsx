@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import Link from 'next/link'
 
 /**
  * Themed toast/notification system — replaces window.alert across the app.
@@ -144,6 +145,18 @@ function ToastItem({ toast, onDismiss, admin }) {
                         <p className="text-off-black font-semibold text-sm leading-tight">{toast.title}</p>
                     ) : null}
                     <p className="text-off-black/80 text-sm leading-snug">{toast.message}</p>
+                    {toast.action?.href ? (
+                        <Link
+                            href={toast.action.href}
+                            onClick={dismiss}
+                            className="inline-flex items-center gap-1 mt-1 text-blue font-semibold text-sm hover:underline"
+                        >
+                            {toast.action.label || 'View'}
+                            <svg viewBox="0 0 24 24" fill="none" className="size-3.5 stroke-current" strokeWidth={2.4}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </Link>
+                    ) : null}
                 </div>
                 <button
                     type="button"
@@ -181,10 +194,10 @@ export function ToastProvider({ children }) {
         setToasts((prev) => prev.filter((t) => t.id !== id))
     }, [])
 
-    const push = useCallback((message, { variant = 'info', title, duration = 3500 } = {}) => {
+    const push = useCallback((message, { variant = 'info', title, duration = 3500, action } = {}) => {
         const id = ++idCounter
         // Cap concurrent toasts so they never flood the screen.
-        setToasts((prev) => [...prev.slice(-3), { id, message, variant, title, duration }])
+        setToasts((prev) => [...prev.slice(-3), { id, message, variant, title, duration, action }])
         return id
     }, [])
 
