@@ -140,13 +140,13 @@ const reviewSchema = z.object({
 
 // --- Staff roles ---
 const staffRoleSchema = z.object({
-    staff_role: z.enum(["owner", "manager", "fulfillment", "support"]),
+    staff_role: z.enum(["owner", "developer", "manager", "fulfillment", "support"]),
 });
 
 const staffCreateSchema = z.object({
     name: nonEmptyStr(255),
     email: z.string().trim().email().max(255),
-    staff_role: z.enum(["owner", "manager", "fulfillment", "support"]),
+    staff_role: z.enum(["owner", "developer", "manager", "fulfillment", "support"]),
 });
 
 // --- Discounts ---
