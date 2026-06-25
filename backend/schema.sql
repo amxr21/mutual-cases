@@ -139,7 +139,7 @@ CREATE TABLE `cart_items` (
   `quantity` bigint DEFAULT '1',
   `added_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `product_id_UNIQUE` (`product_id`),
+  UNIQUE KEY `uniq_user_product` (`user_id`,`product_id`),
   KEY `fk_cart_item` (`user_id`),
   CONSTRAINT `fk_cart_item` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_product_cart_item` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)

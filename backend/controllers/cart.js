@@ -23,34 +23,37 @@ const addToCart = async (req, res) => {
     const { product_id, quantity } = req.body;
     const qty = quantity || 1;
 
-    const existing = await query(
-        "SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_id = ?",
-        [user_id, product_id],
-        { op: "addToCart.check" }
-    );
-
-    if (existing.length) {
-        // Already in the cart — increment the quantity instead of blocking.
-        const newQty = Number(existing[0].quantity) + qty;
-        await query(
-            "UPDATE cart_items SET quantity = ? WHERE id = ?",
-            [newQty, existing[0].id],
-            { op: "addToCart.increment" }
-        );
-        return res
-            .status(200)
-            .json({ message: "Cart updated", itemStatus: "incremented", quantity: newQty });
-    }
-
+    // Atomic upsert keyed on (user_id, product_id): insert a new line, or bump
+    // the quantity if this user already has the product. Relies on the composite
+    // UNIQUE(user_id, product_id) key (scripts/migrateCartUnique.js). This avoids
+    // the read-then-write race and the old product-only unique key that wrongly
+    // blocked a second customer from adding a product another user had in cart.
     const result = await query(
-        "INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)",
+        `INSERT INTO cart_items (user_id, product_id, quantity)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)`,
         [user_id, product_id, qty],
-        { op: "addToCart.insert" }
+        { op: "addToCart.upsert" }
     );
+
+    // mysql2 affectedRows: 1 = inserted new row, 2 = updated existing (incremented).
+    const incremented = result.affectedRows === 2;
+
+    // Read back the resulting quantity so the client shows the truth.
+    const rows = await query(
+        "SELECT quantity FROM cart_items WHERE user_id = ? AND product_id = ?",
+        [user_id, product_id],
+        { op: "addToCart.read" }
+    );
+    const newQty = rows.length ? Number(rows[0].quantity) : qty;
 
     res
-        .status(201)
-        .json({ message: "Item added to cart", itemStatus: "added", id: result.insertId, quantity: qty });
+        .status(incremented ? 200 : 201)
+        .json({
+            message: incremented ? "Cart updated" : "Item added to cart",
+            itemStatus: incremented ? "incremented" : "added",
+            quantity: newQty,
+        });
 };
 
 const viewCart = async (req, res) => {
