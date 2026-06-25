@@ -90,8 +90,32 @@ export default function AdminDiscounts() {
     const valueLabel = (d) => d.type === 'percent' ? `${d.value}%` : d.type === 'fixed' ? `${d.value} AED` : '—'
     const isExpired = (d) => d.expires_at && new Date(d.expires_at) < new Date()
 
+    const copyCode = async (code) => {
+        try {
+            await navigator.clipboard.writeText(code)
+            toast.success(`Copied ${code}`)
+        } catch {
+            toast.error('Could not copy')
+        }
+    }
+
     const columns = [
-        { key: 'code', header: 'Code', sortable: true, render: (d) => <span className="font-mono font-semibold">{d.code}</span> },
+        { key: 'code', header: 'Code', sortable: true, render: (d) => (
+            <span className="inline-flex items-center gap-1.5">
+                <span className="font-mono font-semibold">{d.code}</span>
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); copyCode(d.code) }}
+                    title="Copy code"
+                    aria-label={`Copy ${d.code}`}
+                    className="ui-muted hover:opacity-70 transition-opacity"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" className="size-4 stroke-current" strokeWidth={1.7}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                    </svg>
+                </button>
+            </span>
+        ) },
         { key: 'type', header: 'Type', render: (d) => TYPE_LABEL[d.type] },
         { key: 'value', header: 'Value', render: (d) => valueLabel(d) },
         { key: 'min_spend', header: 'Min spend', render: (d) => Number(d.min_spend) ? `${d.min_spend} AED` : '—' },
