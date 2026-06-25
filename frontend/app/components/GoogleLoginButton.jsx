@@ -34,10 +34,13 @@ export default function GoogleLoginButton() {
         return () => document.removeEventListener("mousedown", onClick)
     }, [menuOpen])
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // Record the sign-out server-side (activity log) before discarding the
+        // token. Best-effort — never block logout on it.
+        try { await postJSON("/api/auth/logout", {}) } catch { /* ignore */ }
         // Clear session + cart/like-related local state, then reload so all
         // global contexts re-hydrate to a signed-out state.
-        ["token", "userName", "userPicture", "userId", "userRole", "mutual_cart_requests"].forEach((k) =>
+        ["token", "userName", "userPicture", "userId", "userRole", "staffRole", "mutual_cart_requests"].forEach((k) =>
             localStorage.removeItem(k)
         )
         toast.success("Signed out")

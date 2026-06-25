@@ -15,6 +15,8 @@ const asyncHandler = require("../middleware/asyncHandler");
 const validate = require("../middleware/validate");
 const { authSchema } = require("../validation/schemas");
 const { unauthorized, serviceUnavailable } = require("../errors/AppError");
+const { requireAuth } = require("../middleware/auth");
+const { record } = require("../audit");
 const logger = require("../logger");
 
 const router = express.Router();
@@ -90,7 +92,24 @@ router.post(
             expiresIn: config.auth.jwtExpiresIn,
         });
 
+        // Activity log: record the sign-in (who + which role). Best-effort.
+        record({ userId: user.id, userName: user.email, action: "auth.login", entity: "user", entityId: user.id, detail: `role=${role}` });
+
         res.json({ success: true, token, name, email, picture, userId: user.id, role });
+    })
+);
+
+/**
+ * POST /api/auth/logout — records a sign-out in the activity log. JWTs are
+ * stateless so there's no server session to destroy; the client discards the
+ * token. Auth is required so we log the real actor from their token.
+ */
+router.post(
+    "/api/auth/logout",
+    requireAuth,
+    asyncHandler(async (req, res) => {
+        record({ userId: req.user.id, userName: req.user.email, action: "auth.logout", entity: "user", entityId: req.user.id });
+        res.json({ success: true });
     })
 );
 

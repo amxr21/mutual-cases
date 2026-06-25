@@ -15,6 +15,7 @@ const logger = require("../logger");
 const { sendEmail } = require("../email/mailer");
 const { backInStockEmail } = require("../email/templates");
 const config = require("../config");
+const { audit } = require("../audit");
 
 const REASONS = new Set(["restock", "correction", "damaged", "lost", "return", "manual"]);
 
@@ -79,6 +80,7 @@ const adjustStock = async (req, res) => {
         return { resultingQty: next, wasZero: current <= 0 };
     }, { op: "admin.adjustStock" });
 
+    await audit(req, "inventory.adjust", { entity: "product", entityId: productId, detail: `${delta > 0 ? "+" : ""}${delta} (${reason}) → ${resultingQty}` });
     res.json({ message: "Stock adjusted", quantity: resultingQty });
 
     // If stock just came back (0 -> positive), notify subscribers (best-effort).
@@ -148,6 +150,7 @@ const setThreshold = async (req, res) => {
         { op: "admin.setThreshold" }
     );
     if (!result.affectedRows) throw notFound("Product not found");
+    await audit(req, "inventory.threshold", { entity: "product", entityId: Number(req.params.id), detail: `= ${threshold}` });
     res.json({ message: "Threshold updated", low_stock_threshold: threshold });
 };
 

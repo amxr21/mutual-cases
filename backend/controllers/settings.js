@@ -10,6 +10,7 @@
  */
 const { query } = require("../dbClient");
 const { badRequest, notFound } = require("../errors/AppError");
+const { audit } = require("../audit");
 
 // Keys the Settings module knows about. Extend this as later phases add panels
 // (e.g. payments, shipping, notification templates).
@@ -61,6 +62,7 @@ const updateSetting = async (req, res) => {
         [key, JSON.stringify(value)],
         { op: "settings.update" }
     );
+    await audit(req, "settings.update", { entity: "setting", entityId: key, detail: key });
     res.json({ key, value });
 };
 

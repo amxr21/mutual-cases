@@ -7,6 +7,7 @@ const { query } = require("../dbClient");
 const { badRequest, notFound } = require("../errors/AppError");
 const config = require("../config");
 const logger = require("../logger");
+const { audit } = require("../audit");
 const { sendEmail } = require("../email/mailer");
 const { orderStatusEmail } = require("../email/templates");
 const { notifications } = require("../integrations");
@@ -438,6 +439,7 @@ const assignDelivery = async (req, res) => {
         autoShipped = true;
     }
 
+    await audit(req, "order.assign_delivery", { entity: "order", entityId: orderNumber, detail: delivery_user_id ? `driver=${delivery_user_id}${autoShipped ? " (auto-shipped)" : ""}` : "cleared" });
     res.json({ message: "Delivery details updated", autoShipped });
 
     if (autoShipped) notifyOrderStatus(orderNumber, STATUS_SHIPPED);
@@ -478,6 +480,7 @@ const updateOrderStatus = async (req, res) => {
     // Record the transition in the audit timeline (only when it actually changed).
     if (changed) {
         await recordStatusChange(orderId, statusId, req.user.id);
+        await audit(req, "order.status_change", { entity: "order", entityId: orderNumber, detail: `${prevStatus} → ${statusId}` });
     }
 
     // Respond immediately; send the notification in the background (best-effort).
@@ -545,6 +548,7 @@ const updateCustomStatus = async (req, res) => {
         op: "admin.updateCustomStatus",
     });
     if (!result.affectedRows) throw notFound("Request not found");
+    await audit(req, "custom_request.status_change", { entity: "custom_order", entityId: id, detail: `→ ${status}` });
     res.json({ message: "Request updated", status });
 };
 
@@ -619,6 +623,7 @@ const updateCustomer = async (req, res) => {
         const exists = await query("SELECT 1 FROM users WHERE id = ?", [id]);
         if (!exists.length) throw notFound("Customer not found");
     }
+    await audit(req, "customer.update", { entity: "user", entityId: id, detail: updates.map((u) => u.split(" ")[0].replace(/`/g, "")).join(",") });
     res.json({ message: "Customer updated" });
 };
 
@@ -642,6 +647,7 @@ const updateCustomerRole = async (req, res) => {
     await query("UPDATE users SET role = ? WHERE id = ?", [role, id], {
         op: "admin.updateCustomerRole",
     });
+    await audit(req, "customer.role_change", { entity: "user", entityId: id, detail: `${target[0].role} → ${role}` });
     res.json({ message: "Role updated", role });
 };
 
@@ -662,6 +668,7 @@ const deleteCustomer = async (req, res) => {
     }
 
     await query("DELETE FROM users WHERE id = ?", [id], { op: "admin.deleteCustomer" });
+    await audit(req, "customer.delete", { entity: "user", entityId: id, detail: `role=${target[0].role}` });
     res.json({ message: "Customer deleted" });
 };
 

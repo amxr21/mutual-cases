@@ -12,6 +12,7 @@
  */
 const { query } = require("../dbClient");
 const { forbidden, notFound, badRequest } = require("../errors/AppError");
+const { audit } = require("../audit");
 
 /** GET /reviews/product/:id — APPROVED reviews + aggregate for a product. */
 const getProductReviews = async (req, res) => {
@@ -178,6 +179,7 @@ const adminSetReviewStatus = async (req, res) => {
         { op: "admin.setReviewStatus" }
     );
     if (!result.affectedRows) throw notFound("Review not found");
+    await audit(req, "review.status_change", { entity: "review", entityId: id, detail: `→ ${status}` });
     res.json({ message: "Review status updated", status });
 };
 
@@ -192,6 +194,7 @@ const adminReplyReview = async (req, res) => {
         { op: "admin.replyReview" }
     );
     if (!result.affectedRows) throw notFound("Review not found");
+    await audit(req, "review.reply", { entity: "review", entityId: id, detail: reply ? "set" : "cleared" });
     res.json({ message: reply ? "Reply saved" : "Reply removed", admin_reply: reply || null });
 };
 
@@ -205,6 +208,7 @@ const adminFlagReview = async (req, res) => {
         { op: "admin.flagReview" }
     );
     if (!result.affectedRows) throw notFound("Review not found");
+    await audit(req, "review.flag", { entity: "review", entityId: id, detail: flagged ? "flagged" : "cleared" });
     res.json({ message: flagged ? "Review flagged" : "Flag cleared", flagged: !!flagged });
 };
 
@@ -215,6 +219,7 @@ const adminDeleteReview = async (req, res) => {
         op: "admin.deleteReview",
     });
     if (!result.affectedRows) throw notFound("Review not found");
+    await audit(req, "review.delete", { entity: "review", entityId: id });
     res.json({ message: "Review deleted" });
 };
 

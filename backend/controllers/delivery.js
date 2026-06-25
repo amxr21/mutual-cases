@@ -11,6 +11,7 @@
  */
 const { query, withTransaction } = require("../dbClient");
 const { notFound, badRequest, conflict } = require("../errors/AppError");
+const { audit } = require("../audit");
 
 const SELECT = `
     SELECT u.id, u.name, u.email, u.phone, u.access_code, u.created_at,
@@ -72,6 +73,7 @@ const createDelivery = async (req, res) => {
         return userId;
     }, { op: "admin.createDelivery" });
 
+    await audit(req, "delivery.create", { entity: "user", entityId: id, detail: email });
     res.status(201).json({ id, message: "Delivery person created" });
 };
 
@@ -127,6 +129,7 @@ const updateDelivery = async (req, res) => {
         }
     }, { op: "admin.updateDelivery" });
 
+    await audit(req, "delivery.update", { entity: "user", entityId: id, detail: [...userSet, ...profSet].map((s) => s.split(" ")[0].replace(/`/g, "")).join(",") });
     res.json({ message: "Delivery person updated" });
 };
 
@@ -137,6 +140,7 @@ const deleteDelivery = async (req, res) => {
         op: "admin.deleteDelivery",
     });
     if (!result.affectedRows) throw notFound("Delivery person not found");
+    await audit(req, "delivery.delete", { entity: "user", entityId: id });
     res.json({ message: "Delivery person deleted" });
 };
 
@@ -161,6 +165,7 @@ const generateAccessCode = async (req, res) => {
             await query("UPDATE users SET access_code = ? WHERE id = ?", [code, id], {
                 op: "admin.generateAccessCode",
             });
+            await audit(req, "delivery.access_code", { entity: "user", entityId: id });
             return res.json({ message: "Access code generated", access_code: code });
         } catch (err) {
             if (err && err.code === "CONFLICT") continue; // dup code, retry

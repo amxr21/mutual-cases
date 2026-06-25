@@ -8,6 +8,7 @@
  */
 const { query, withTransaction } = require("../dbClient");
 const { notFound } = require("../errors/AppError");
+const { audit } = require("../audit");
 
 // Shared SELECT shape for products (joined with category/stock/type).
 // avg_rating / review_count come from the reviews table (NULL/0 when none).
@@ -160,6 +161,7 @@ const postProduct = async (req, res) => {
         return result.insertId;
     }, { op: "postProduct" });
 
+    await audit(req, "product.create", { entity: "product", entityId: insertId });
     res.status(201).json({ id: insertId, message: "Product created" });
 };
 
@@ -214,6 +216,7 @@ const updateProduct = async (req, res) => {
         }
     }, { op: "updateProduct" });
 
+    await audit(req, "product.update", { entity: "product", entityId: Number(req.params.id) });
     res.json({ message: "Product updated successfully" });
 };
 
@@ -223,6 +226,7 @@ const deleteProduct = async (req, res) => {
     if (!result.affectedRows) {
         throw notFound("No product exists with that id");
     }
+    await audit(req, "product.delete", { entity: "product", entityId: id });
     res.json({ message: "Product deleted" });
 };
 

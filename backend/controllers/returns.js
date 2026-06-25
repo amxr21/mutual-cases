@@ -14,7 +14,7 @@ const { query, withTransaction } = require("../dbClient");
 const { badRequest, notFound, forbidden, conflict } = require("../errors/AppError");
 const logger = require("../logger");
 const { processRefund } = require("../payments/refundProvider");
-const { audit } = require("./staff");
+const { audit } = require("../audit");
 
 const STATUS_RETURNED = 6;
 
@@ -240,6 +240,7 @@ const rejectReturn = async (req, res) => {
         if (!exists.length) throw notFound("Return not found");
         throw badRequest("This return is no longer pending");
     }
+    await audit(req, "return.reject", { entity: "return", entityId: id });
     res.json({ message: "Return rejected" });
 };
 

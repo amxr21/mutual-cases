@@ -10,7 +10,7 @@
  */
 const { query } = require("../dbClient");
 const { badRequest, notFound, conflict } = require("../errors/AppError");
-const { audit } = require("./staff");
+const { audit } = require("../audit");
 
 /**
  * Evaluate a code for a given subtotal + user. Returns
@@ -153,6 +153,7 @@ const updateDiscount = async (req, res) => {
         const exists = await query("SELECT 1 FROM discounts WHERE id = ?", [id]);
         if (!exists.length) throw notFound("Discount not found");
     }
+    await audit(req, "discount.update", { entity: "discount", entityId: id, detail: sets.map((s) => s.split(" ")[0].replace(/`/g, "")).join(",") });
     res.json({ message: "Discount updated" });
 };
 
@@ -160,6 +161,7 @@ const deleteDiscount = async (req, res) => {
     const id = Number(req.params.id);
     const result = await query("DELETE FROM discounts WHERE id = ?", [id], { op: "admin.deleteDiscount" });
     if (!result.affectedRows) throw notFound("Discount not found");
+    await audit(req, "discount.delete", { entity: "discount", entityId: id });
     res.json({ message: "Discount deleted" });
 };
 
