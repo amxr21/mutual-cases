@@ -28,6 +28,7 @@ Mutual/
 - **Security:** server-side RBAC + staff-role permissions, server-authoritative
   pricing, `helmet` security headers, per-IP rate limiting, parameterized queries.
 - **Hosting:** Vercel (frontend) · Render (API) · AWS RDS (MySQL).
+- **Tests:** Jest + supertest (backend) · Vitest + Testing Library (frontend).
 
 ## Three areas
 
@@ -94,10 +95,12 @@ hide sections a role can't act on.
 | ✅ Staff & access | `/admin/staff` | Granular staff roles/permissions + activity/audit log. |
 | ✅ Settings | `/admin/settings` | Brand, theme, customization, storefront config, integrations status. |
 
-**Staff roles (server-enforced):** `owner` (full), `manager` (all but staff/role
-management), `fulfillment` (orders/delivery/inventory/returns), `support`
+**Staff roles (server-enforced):** `owner` (full, incl. managing owners/developers),
+`developer` (full operational + technical access; **cannot** manage owner/developer
+accounts — so a developer can never lock the owner out), `manager` (all but
+staff/role management), `fulfillment` (orders/delivery/inventory/returns), `support`
 (reviews/customers/returns/orders). Reads stay open to any admin; writes are gated
-per-area.
+per-area, and creating/demoting owner/developer accounts is reserved to owners.
 
 ### 3. Delivery portal (`/delivery`) — drivers
 
@@ -164,3 +167,17 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=...
 Schema lives in `backend/schema.sql`; incremental changes are idempotent
 migration scripts in `backend/scripts/` (`migrate*.js`). Seed data via
 `seed*.js`. Run a migration with `node scripts/<name>.js`.
+
+### Tests
+
+```bash
+cd backend  && npm test   # Jest + supertest — API behaviour with the DB mocked
+cd frontend && npm test   # Vitest + Testing Library — component/logic tests
+```
+
+Backend tests run offline against the Express app (`app.js`) with the DB layer
+mocked, covering the highest-risk paths: **access control / RBAC**, the
+**owner↔developer governance rail**, **server-authoritative pricing**, the
+**cart upsert + IDOR** scoping, and **Buy Now** cart behaviour. Frontend tests
+cover the client permissions mirror and the promo-popup cooldown. Watch mode:
+`npm run test:watch`.

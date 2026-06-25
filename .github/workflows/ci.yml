@@ -1,0 +1,81 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Continuous Integration: run the backend + frontend test suites automatically.
+#
+# Lives at .github/workflows/ci.yml — GitHub auto-discovers any .yml here.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# A human-readable name shown in the GitHub "Actions" tab.
+name: CI
+
+# WHEN this workflow runs (the trigger).
+#   - push to dev/main         → catch breakage as soon as it lands
+#   - pull_request into dev/main → check a PR's changes before merging
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  # ── Job 1: backend tests ──────────────────────────────────────────────────
+  backend:
+    name: Backend (Jest)
+    # The fresh virtual machine to run on. "ubuntu-latest" = a clean Linux box,
+    # thrown away after the run.
+    runs-on: ubuntu-latest
+    # The job's working directory: every "run" step executes inside backend/.
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      # Step 1: check out (download) your repo onto the runner. Without this the
+      # box is empty. "uses:" pulls in a published, reusable action.
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      # Step 2: install Node 22 (matching local dev) and enable npm caching so
+      # repeat runs are faster. The cache key is derived from package-lock.json.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # Step 3: install exactly the locked dependencies. "npm ci" (vs "npm
+      # install") is the CI-standard: it's faster, deterministic, and fails if
+      # package.json and package-lock.json disagree.
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: run the tests. If "npm test" exits non-zero (a failing test),
+      # the step fails → the job fails → the whole workflow is marked red.
+      - name: Run tests
+        run: npm test
+
+  # ── Job 2: frontend tests ─────────────────────────────────────────────────
+  # Declared separately, so it runs on its OWN machine IN PARALLEL with backend.
+  frontend:
+    name: Frontend (Vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
