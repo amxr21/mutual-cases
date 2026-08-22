@@ -78,10 +78,16 @@ const buildDetails = (category, type, edition) => {
     };
 };
 
-/** Resolve (or create) a lookup id, parameterized. */
+/** Resolve (or create) a lookup id, parameterized. staticMap is just a hint —
+ *  always verified against the row's actual name so a fresh/reseeded DB
+ *  (where ids don't match an old static map) still resolves correctly. */
 const resolveId = async (tx, table, column, value, staticMap) => {
     const val = String(value).toLowerCase();
-    if (staticMap && staticMap[val]) return staticMap[val];
+    const hintId = staticMap && staticMap[val];
+    if (hintId) {
+        const hinted = await tx(`SELECT id FROM \`${table}\` WHERE id = ? AND \`${column}\` = ?`, [hintId, val]);
+        if (hinted.length) return hinted[0].id;
+    }
     const rows = await tx(`SELECT id FROM \`${table}\` WHERE \`${column}\` = ?`, [val]);
     if (rows.length) return rows[0].id;
     const result = await tx(`INSERT INTO \`${table}\` (\`${column}\`) VALUES (?)`, [val]);

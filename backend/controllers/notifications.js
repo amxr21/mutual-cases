@@ -79,7 +79,7 @@ const listNotifications = async (_req, res) => {
 const markSeen = async (_req, res) => {
     const at = new Date().toISOString();
     await query(
-        "INSERT INTO settings (`key`, `value`) VALUES (?, CAST(? AS JSON)) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)",
+        "INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)",
         [SEEN_KEY, JSON.stringify({ at })],
         { op: "admin.markNotificationsSeen" }
     );
