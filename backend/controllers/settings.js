@@ -57,7 +57,7 @@ const updateSetting = async (req, res) => {
     const value = req.body.value;
 
     await query(
-        `INSERT INTO settings (\`key\`, \`value\`) VALUES (?, CAST(? AS JSON))
+        `INSERT INTO settings (\`key\`, \`value\`) VALUES (?, ?)
          ON DUPLICATE KEY UPDATE \`value\` = VALUES(\`value\`)`,
         [key, JSON.stringify(value)],
         { op: "settings.update" }

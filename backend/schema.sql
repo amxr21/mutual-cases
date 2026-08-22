@@ -145,14 +145,20 @@ CREATE TABLE `cart_items` (
   CONSTRAINT `fk_product_cart_item` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- NOTE: the live orders table also has order_number, total, payment_method,
--- gift, gift_message, note (added in app code) and shipment columns
+-- Core order fields order_number/total/payment_method/note/gift/gift_message
+-- added by scripts/migrateOrderCore.js; shipment columns
 -- delivery_user_id/tracking_number/carrier/eta (scripts/migrateOrderShipment.js).
 CREATE TABLE `orders` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `user_id` varchar(255) NOT NULL,
   `order_date` datetime NOT NULL,
   `status_id` bigint NOT NULL,
+  `order_number` varchar(40) DEFAULT NULL,
+  `total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `payment_method` varchar(40) DEFAULT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `gift` tinyint(1) NOT NULL DEFAULT '0',
+  `gift_message` varchar(500) DEFAULT NULL,
   `delivery_user_id` bigint unsigned DEFAULT NULL,
   `tracking_number` varchar(120) DEFAULT NULL,
   `carrier` varchar(80) DEFAULT NULL,
@@ -161,6 +167,7 @@ CREATE TABLE `orders` (
   `delivery_status` enum('assigned','picked_up','out_for_delivery','delivered','handed_over') DEFAULT NULL,
   `delivery_note` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_order_number` (`order_number`),
   KEY `idx_orders_delivery_user` (`delivery_user_id`),
   CONSTRAINT `fk_orders_delivery_user` FOREIGN KEY (`delivery_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

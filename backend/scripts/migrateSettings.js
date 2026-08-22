@@ -36,7 +36,7 @@ const main = async () => {
 
     for (const [key, value] of Object.entries(DEFAULTS)) {
         const res = await query(
-            "INSERT IGNORE INTO settings (`key`, `value`) VALUES (?, CAST(? AS JSON))",
+            "INSERT IGNORE INTO settings (`key`, `value`) VALUES (?, ?)",
             [key, JSON.stringify(value)]
         );
         console.log(`${res.affectedRows ? "✓ seeded" : "• kept existing"} ${key}`);
