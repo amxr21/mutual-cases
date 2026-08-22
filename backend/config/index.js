@@ -32,11 +32,15 @@ const config = {
 
     server: {
         port: int(process.env.PORT, 3000),
-        // Comma-separated list in env, e.g. "http://localhost:3000,https://foo.com"
+        // Comma-separated list in env, e.g. "http://localhost:3000,https://foo.com".
+        // These are the browser origins allowed to call this API (i.e. the
+        // storefront), never the API's own address. Trailing slashes are stripped
+        // because the browser's Origin header never has one, and a mismatch there
+        // fails the CORS check in a way that's hard to spot.
         allowedOrigins: (process.env.ALLOWED_ORIGINS ||
-            "http://localhost:3000,http://localhost:3001,https://mutual-cases.vercel.app,https://mutual-cases.onrender.com")
+            "http://localhost:3000,http://localhost:3001,https://mutual.amxr.site")
             .split(",")
-            .map((o) => o.trim())
+            .map((o) => o.trim().replace(/\/+$/, ""))
             .filter(Boolean),
     },
 

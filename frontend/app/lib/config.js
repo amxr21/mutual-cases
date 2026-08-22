@@ -12,7 +12,10 @@
 import path from "path";
 
 export const publicConfig = {
-    apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "",
+    // Trailing slashes are stripped: callers pass paths that already begin with
+    // '/', so a base url ending in '/' would produce '//path' — which misses the
+    // backend's route and fails CORS preflight in a confusing way.
+    apiBaseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, ""),
     googleClientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
     // Where the browser POSTs client-side error reports.
     clientLogEndpoint: process.env.NEXT_PUBLIC_CLIENT_LOG_ENDPOINT || "/api/client-log",
